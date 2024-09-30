@@ -62,6 +62,12 @@ if ( ! class_exists( 'ES_Dashboard' ) ) {
 		public static function get_subscribers_stats() {
 
 			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+			$can_access_audience = ES_Common::ig_es_can_access( 'audience' );
+			if ( ! $can_access_audience ) {
+				return 0;
+			}
+
 			$page           = 'es_dashboard';
 			$days           = ig_es_get_request_data( 'days' );
 			$list_id        = ig_es_get_request_data( 'list_id' );

@@ -22,6 +22,16 @@ if ( ! function_exists( 'ig_es_get_additional_info' ) ) {
 			$additional_info['plugin_meta_info'] = ES_Plugin_Usage_Data_Collector::get_ig_es_meta_info();
 		}
 
+		$admin_email = ES_Common::get_admin_email();
+		$user        = get_user_by( 'email', $admin_email );
+		$admin_name  = '';
+		if ( $user instanceof WP_User ) {
+			$admin_name = $user->display_name;
+		}
+
+		$additional_info['email'] = $admin_email;
+		$additional_info['name']  = $admin_name;
+
 		return $additional_info;
 	}
 }

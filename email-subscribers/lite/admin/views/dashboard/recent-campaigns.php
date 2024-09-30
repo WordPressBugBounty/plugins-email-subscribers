@@ -37,9 +37,9 @@ if ( ! empty( $campaigns ) && count( $campaigns ) > 0 ) { ?>
 								<?php echo "<a class='dash-recent-p es-ellipsis-text' href='admin.php?page=es_campaigns#!/campaign/edit/" . esc_html( $campaign['id'] ) . "' target='_blank'>" . esc_html( $campaign['name'] ) . '</a>'; ?>
 							</div>
 						</td>
-						<td class="text-right"><?php echo ($campaign_kpi['total_email_sent']) ? $campaign_kpi['total_email_sent'] : '0';?></td>
-						<td class="text-right"><?php echo $campaign_kpi['open_rate'].'%';?></td>
-						<td class="text-right"><?php echo $campaign_kpi['click_rate'].'%';?></td>
+						<td class="text-right"><?php echo ( $campaign_kpi['total_email_sent'] ) ? $campaign_kpi['total_email_sent'] : '0'; ?></td>
+						<td class="text-right"><?php echo $campaign_kpi['open_rate'] . '%'; ?></td>
+						<td class="text-right"><?php echo $campaign_kpi['click_rate'] . '%'; ?></td>
 						<td class="pl-1 py-3 text-gray-600 text-right"> 
 							<div>
 							<?php

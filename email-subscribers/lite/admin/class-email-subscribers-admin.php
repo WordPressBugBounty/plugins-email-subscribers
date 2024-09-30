@@ -65,15 +65,9 @@ class Email_Subscribers_Admin {
 		add_action( 'wp_ajax_es_klawoo_subscribe', array( $this, 'klawoo_subscribe' ) );
 		add_action( 'admin_footer', array( $this, 'remove_submenu' ) );
 
-		// Ajax handler for campaign status toggle.
-		add_action( 'wp_ajax_ig_es_toggle_campaign_status', array( $this, 'toggle_campaign_status' ) );
-
 		add_action( 'admin_init', array( $this, 'ob_start' ) );
 
 		add_action( 'init', array( $this, 'save_screen_option' ) );
-
-		// Add spam score ajax action.
-		add_action( 'wp_ajax_es_get_spam_score', array( &$this, 'get_spam_score' ) );
 
 		add_action( 'wp_ajax_es_send_auth_test_email', array( &$this, 'send_authentication_header_test_email' ) );
 		add_action( 'wp_ajax_es_get_auth_headers', array( &$this, 'get_email_authentication_headers') );
@@ -101,7 +95,6 @@ class Email_Subscribers_Admin {
 		// Ajax handler for email preview
 		add_action( 'wp_ajax_ig_es_preview_email_report', array( $this, 'preview_email_in_report' ) );
 		add_action( 'wp_ajax_ajax_fetch_report_list', array( $this, 'ajax_fetch_report_list_callback' ) );
-		add_action( 'wp_ajax_ig_es_preview_template', array( $this, 'preview_email_template_design' ) );
 
 		if ( class_exists( 'IG_ES_Premium_Services_UI' ) ) {
 			IG_ES_Premium_Services_UI::instance();
@@ -1028,69 +1021,6 @@ class Email_Subscribers_Admin {
 	}
 
 	/**
-	 * Method to get spam score
-	 *
-	 * @since 4.6.1
-	 */
-	public function get_spam_score() {
-
-		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
-
-		global $post;
-
-		$response = array(
-		'status'        => 'error',
-		'error_message' => __( 'Something went wrong', 'email-subscribers' ),
-		);
-
-		$admin_email = get_option( 'admin_email' );
-		if ( ! empty( $_REQUEST['action'] ) && 'es_get_spam_score' == $_REQUEST['action'] ) {
-
-			$sender_data = array();
-
-			if ( ! empty( $_REQUEST['tmpl_id'] ) ) {
-				$content_post = get_post( sanitize_text_field( $_REQUEST['tmpl_id'] ) );
-				$content      = $content_post->post_content;
-				$subject      = $content_post->post_title;
-			} else {
-				$content    = ig_es_get_request_data( 'content', '', false );
-				$subject    = ig_es_get_request_data( 'subject', '', false );
-				$from_email = ig_es_get_request_data( 'from_email' );
-				$from_name  = ig_es_get_request_data( 'from_name' );
-
-				$sender_data['from_name']  = $from_name;
-				$sender_data['from_email'] = $from_email;
-			}
-			// $data['content'] = $content;
-			$header = $this->get_email_headers( $sender_data );
-
-			// Add a new line character to allow following header data to be appended correctly.
-			$header .= "\n";
-
-			// Add subject if set.
-			if ( ! empty( $subject ) ) {
-				$header .= 'Subject: ' . $subject . "\n";
-			}
-
-			$header         .= 'Date: ' . gmdate( 'r' ) . "\n";
-			$header         .= 'To: ' . $admin_email . "\n";
-			$header         .= 'Message-ID: <' . $admin_email . ">\n";
-			$header         .= "MIME-Version: 1.0\n";
-			$data['email']   = $header . $content;
-			$data['tasks'][] = 'spam-score';
-
-			$spam_score_service = new ES_Service_Spam_Score_Check();
-			$service_response   = $spam_score_service->get_spam_score( $data );
-			if ( ! empty( $service_response['status'] ) && 'success' === $service_response['status'] ) {
-				$response['status'] = 'success';
-				$response['res']    = $service_response['data'];
-			}
-
-			wp_send_json( $response );
-		}
-	}
-
-	/**
 	 * Method to get email header.
 	 *
 	 * @param array $sender_data .
@@ -1365,6 +1295,11 @@ class Email_Subscribers_Admin {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
+		$can_access_reports = ES_Common::ig_es_can_access( 'reports' );
+		if ( ! $can_access_reports ) {
+			return 0;
+		}
+
 		$report_id     = ig_es_get_request_data( 'campaign_id' );
 		$campaign_type = ig_es_get_request_data( 'campaign_type' );
 		$response      = array();
@@ -1501,6 +1436,11 @@ class Email_Subscribers_Admin {
 	public function ajax_fetch_report_list_callback() {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$can_access_reports = ES_Common::ig_es_can_access( 'reports' );
+		if ( ! $can_access_reports ) {
+			return 0;
+		}
 
 		$wp_list_table = new ES_Campaign_Report();
 		$wp_list_table->ajax_response();
@@ -1748,104 +1688,6 @@ class Email_Subscribers_Admin {
 	}
 
 	/**
-	 * Method to preview email template on templates screen
-	 *
-	 * @since 4.9.2
-	 */
-	public function preview_email_template_design() {
-
-		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
-
-		$template_id  = ig_es_get_request_data( 'template_id' );
-		$gallery_type = ig_es_get_request_data( 'gallery_type' );
-
-		if ( 'remote' === $gallery_type ) {
-			$gallery_controller  = ES_Gallery_Controller::get_instance();
-			$template = $gallery_controller::get_remote_gallery_item( $template_id );
-			
-			$es_template_body = $template->content->rendered;
-			$es_template_type = $template->es_template_type;
-			$custom_css       = $template->es_custom_css;
-			$es_template_body = $custom_css . $es_template_body;
-		} else {
-			$template         = get_post( $template_id, ARRAY_A );
-			$es_template_body = $template['post_content'];
-			$es_template_type = get_post_meta( $template_id, 'es_template_type', true );
-		}
-		
-		if ( $template ) {
-			$current_user = wp_get_current_user();
-			$username     = $current_user->user_login;
-			$useremail    = $current_user->user_email;
-			$display_name = $current_user->display_name;
-
-			$contact_id = ES()->contacts_db->get_contact_id_by_email( $useremail );
-			$first_name = '';
-			$last_name  = '';
-
-			// Use details from contacts data if present else fetch it from wp profile.
-			if ( ! empty( $contact_id ) ) {
-				$contact_data = ES()->contacts_db->get_by_id( $contact_id );
-				$first_name   = $contact_data['first_name'];
-				$last_name    = $contact_data['last_name'];
-			} elseif ( ! empty( $display_name ) ) {
-				$contact_details = explode( ' ', $display_name );
-				$first_name      = $contact_details[0];
-				// Check if last name is set.
-				if ( ! empty( $contact_details[1] ) ) {
-					$last_name = $contact_details[1];
-				}
-			}
-
-			// Don't replace placeholder keywords in remote templates.
-			if ( 'remote' !== $gallery_type ) {
-				if ( 'post_notification' === $es_template_type ) {
-					$args         = array(
-						'numberposts' => '1',
-						'order'       => 'DESC',
-						'post_status' => 'publish',
-					);
-					$recent_posts = wp_get_recent_posts( $args );
-	
-					if ( count( $recent_posts ) > 0 ) {
-						$recent_post = array_shift( $recent_posts );
-	
-						$post_id          = $recent_post['ID'];
-						$es_template_body = ES_Handle_Post_Notification::prepare_body( $es_template_body, $post_id, $template_id );
-					}
-				} else {
-					$es_template_body = ES_Common::es_process_template_body( $es_template_body, $template_id );
-				}
-			}
-
-			$es_template_body = ES_Common::replace_keywords_with_fallback( $es_template_body, array(
-				'FIRSTNAME' => $first_name,
-				'NAME'      => $username,
-				'LASTNAME'  => $last_name,
-				'EMAIL'     => $useremail
-			) );
-
-			$es_template_body = ES_Common::replace_keywords_with_fallback( $es_template_body, array(
-				'subscriber.first_name' => $first_name,
-				'subscriber.name'      => $username,
-				'subscriber.last_name'  => $last_name,
-				'subscriber.email'     => $useremail
-			) );
-
-			add_filter( 'safe_style_css', 'ig_es_allowed_css_style' );
-			$response['template_html'] = apply_filters( 'the_content', $es_template_body );
-		} else {
-			$response['template_html'] = __( 'Please publish it or save it as a draft.', 'email-subscribers' );
-		}
-
-		if ( ! empty( $response ) ) {
-			wp_send_json_success( $response );
-		} else {
-			wp_send_json_error();
-		}
-	}
-
-	/**
 	 * Delete all child campaigns based on $parent_campaign_id
 	 *
 	 * @param int $parent_campaign_id
@@ -1936,6 +1778,11 @@ class Email_Subscribers_Admin {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
+		$can_access_settings = ES_Common::ig_es_can_access( 'settings' );
+		if ( ! ( $can_access_settings ) ) {
+			return 0;
+		}
+
 		$response = array(
 		'status'        => 'error',
 		'error_message' => __( 'Something went wrong', 'email-subscribers' ),
@@ -1958,6 +1805,11 @@ class Email_Subscribers_Admin {
 	public function get_email_authentication_headers() {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$can_access_settings = ES_Common::ig_es_can_access( 'settings' );
+		if ( ! ( $can_access_settings ) ) {
+			return 0;
+		}
 
 		$response = array(
 			'status'        => 'error',

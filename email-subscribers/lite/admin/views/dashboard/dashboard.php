@@ -38,13 +38,13 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 					<span>
 						<img src="<?php echo ES_PLUGIN_URL . 'lite/admin/images/new/brand-logo/IG LOGO 192X192.svg'; ?>" alt="brand logo" />
 						<div class="divide"></div>
-						<h1><?php echo esc_html_e('Icegram Express', 'email-subscriber');?></h1>
+						<h1><?php echo esc_html_e('Icegram Express', 'email-subscriber'); ?></h1>
 					</span>
 				</div>
 
 				<div class="cta">
 					<div class=" py-2 text-sm leading-5">
-						<a href="<?php echo esc_url( $campaign_url ); ?>" class="font-bold hover:font-semibold text-indigo-600" target="_blank"><?php echo esc_html_e('Campaigns', 'email-subscriber');?></a>・<a href="<?php echo esc_url( $form_url ); ?>" class="font-bold hover:font-semibold text-indigo-600" target="_blank"><?php echo esc_html_e('Forms', 'email-subscriber');?></a>・<a href="<?php echo esc_url( $reports_url ); ?>" class="font-bold hover:font-semibold text-indigo-600" target="_blank"><?php echo esc_html_e('Reports', 'email-subscriber');?></a>・<a href="<?php echo esc_url( $settings_url ); ?>" class="font-bold hover:font-semibold text-indigo-600" target="_blank"><?php echo esc_html_e('Settings', 'email-subscriber');?></a>
+						<a href="<?php echo esc_url( $campaign_url ); ?>" class="font-bold hover:font-semibold text-indigo-600" target="_blank"><?php echo esc_html_e('Campaigns', 'email-subscriber'); ?></a>・<a href="<?php echo esc_url( $form_url ); ?>" class="font-bold hover:font-semibold text-indigo-600" target="_blank"><?php echo esc_html_e('Forms', 'email-subscriber'); ?></a>・<a href="<?php echo esc_url( $reports_url ); ?>" class="font-bold hover:font-semibold text-indigo-600" target="_blank"><?php echo esc_html_e('Reports', 'email-subscriber'); ?></a>・<a href="<?php echo esc_url( $settings_url ); ?>" class="font-bold hover:font-semibold text-indigo-600" target="_blank"><?php echo esc_html_e('Settings', 'email-subscriber'); ?></a>
 					</div>
 				</div>
 			</nav>
@@ -52,7 +52,7 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 	</div>
 	<main class="mx-auto max-w-7xl">
 		<div class="overview max-w-7xl mx-auto py-8 sm:px-3 xl:px-8 mr-4 ml-4 dashboard-kpi">
-			<p class="text-lg font-medium leading-6 text-gray-400"><?php echo esc_html_e('Last 30 days', 'email-subscriber');?></p>
+			<p class="text-lg font-medium leading-6 text-gray-400"><?php echo esc_html_e('Last 30 days', 'email-subscriber'); ?></p>
 			<?php
 				ES_Admin::get_view(
 					'dashboard/dashboard-kpi', 
@@ -60,7 +60,7 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 						'dashboard_kpi' => $dashboard_kpi,
 					)
 				);
-			?>
+				?>
 			
 		</div>
 
@@ -121,7 +121,7 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 									'campaigns' => $campaigns,
 								)
 							);
-						?>
+							?>
 					</div>
 				</section>
 				<!-- Forms & Lists -->
@@ -131,10 +131,10 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 							<p class="text-lg font-medium leading-6 text-gray-400"><?php echo esc_html__( 'Forms', 'email-subscribers' ); ?></a>
 							</p>
 							<p class="new_form_link">
-								<a class="font-bold mr-2 hover:font-semibold text-indigo-600" href="<?php echo esc_url( $form_url ); ?>" target="_blank">
-									<?php echo esc_html__( 'View all', 'email-subscribers' ); ?>
+								<a class="font-bold mr-4 hover:font-semibold" href="<?php echo esc_url( $form_url ); ?>" target="_blank">
+									<?php echo esc_html__( 'View all', 'email-subscribers' ); ?> &rarr;
 								</a>
-								<a class="font-bold hover:font-semibold text-indigo-600" href="<?php echo esc_url( $new_form_url ); ?>" target="_blank"><button class="secondary"><?php echo esc_html__( 'Create', 'email-subscribers' ); ?></button>
+								<a class="font-bold hover:font-semibold text-indigo-600" href="<?php echo esc_url( $new_form_url ); ?>" target="_blank"><button class="lighter-gray"><?php echo esc_html__( 'Create', 'email-subscribers' ); ?></button>
 								</a>
 							</p>
 						</div>
@@ -145,17 +145,17 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 									'forms' => $forms,
 								)
 							);
-						?>
-				    </div>
+							?>
+					</div>
 
 					<div class="lists-container">
 						<div class="flex items-center md:justify-between">
 							<p class="text-lg font-medium leading-6 text-gray-400"><?php echo esc_html__( 'Lists', 'email-subscribers' ); ?></a>
 							</p>
 							<p class="new_list_link">
-								<a class="font-bold mr-2 hover:font-semibold text-indigo-600" href="<?php echo esc_url( $list_url ); ?>" target="_blank"><?php echo esc_html__('View all', 'email-subscribers'); ?></a>
+								<a class="font-bold mr-4 hover:font-semibold" href="<?php echo esc_url( $list_url ); ?>" target="_blank"><?php echo esc_html__('View all', 'email-subscribers'); ?> &rarr;</a>
 
-								<a class="font-bold hover:font-semibold text-indigo-600" href="<?php echo esc_url( $new_list_url ); ?>" target="_blank"><button class="secondary"><?php echo esc_html__('Create', 'email-subscribers'); ?></button>
+								<a class="font-bold hover:font-semibold text-indigo-600" href="<?php echo esc_url( $new_list_url ); ?>" target="_blank"><button class="lighter-gray"><?php echo esc_html__('Create', 'email-subscribers'); ?></button>
 								</a>
 							</p>
 						</div>
@@ -166,8 +166,8 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 									'lists' => $lists,
 								)
 							);
-						?>
-				    </div>
+							?>
+					</div>
 				</section>
 			</div>
 			
@@ -182,7 +182,7 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 						</p>
 						
 						<a href="<?php echo esc_url( $import_url ); ?>">
-							<button type="button" class="secondary">
+							<button type="button" class="lighter-gray">
 								<span>
 									<?php echo esc_html__( 'Import', 'email-subscribers' ); ?>
 								</span>
@@ -214,7 +214,7 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 			</div>
 			
 			<!-- Email sending service section -->
-			<div class="flex-auto min-w-0 es-w-35 pr-3">
+			<div class="flex-auto min-w-0 es-w-35 pr-3 ess-block">
 				<?php
 				if ( ES_Service_Email_Sending::is_onboarding_completed() ) {
 					$current_month        = ig_es_get_current_month();

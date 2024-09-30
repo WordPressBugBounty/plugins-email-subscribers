@@ -47,14 +47,6 @@ if ( ! class_exists( 'ES_Admin' ) ) {
 
 
 			add_action( 'ig_es_before_template_settings', array( $this, 'show_template_setting_fields' ) );
-
-			// preview popup
-			//add_action( 'ig_es_template_preview_options_content', array( $this, 'show_campaign_preview_options_content' ) );
-
-			add_action( 'wp_ajax_ig_es_draft_campaign', array( $this, 'draft_campaign' ) );
-
-
-			//add_action( 'media_buttons', array( $this, 'add_tag_button' ) );
 		}
 
 		public function setup() {

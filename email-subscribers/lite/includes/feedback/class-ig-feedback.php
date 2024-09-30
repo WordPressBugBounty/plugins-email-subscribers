@@ -1993,28 +1993,26 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 			$system_info   = ( isset( $data['misc']['system_info'] ) && $data['misc']['system_info'] === 'true' ) ? true : false;
 			$meta_info     = ! empty( $data['misc']['meta_info'] ) ? $data['misc']['meta_info'] : array();
 
-			unset( $data['misc'] );
-
+			unset( $data['misc'] );		
 			$default_meta_info = array(
 				'plugin'      => sanitize_key( $plugin ),
 				'locale'      => get_locale(),
 				'wp_version'  => get_bloginfo( 'version' ),
 				'php_version' => PHP_VERSION,
 			);
-
+			
 			$meta_info = wp_parse_args( $meta_info, $default_meta_info );
-
 			$additional_info = array();
 			$additional_info = apply_filters( $plugin_abbr . '_additional_feedback_meta_info', $additional_info, $system_info ); // Get Additional meta information
 
 			if ( is_array( $additional_info ) && count( $additional_info ) > 0 ) {
 				$meta_info = array_merge( $meta_info, $additional_info );
 			}
-
+			
 			$data['meta'] = $meta_info;
-
+			
 			$data = wp_unslash( $data );
-
+			
 			$args = array(
 				'timeout'   => 15,
 				'sslverify' => false,

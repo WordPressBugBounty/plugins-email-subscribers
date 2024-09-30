@@ -24,34 +24,34 @@ class ES_Service_List_Cleanup extends ES_Services {
 
 	public function handle_spam_email_check( $data ) {
 
-	if ( ES()->trial->is_trial_valid() && !ES()->is_premium() ) {
+		if ( ES()->trial->is_trial_valid() && !ES()->is_premium() ) {
 		
-		if ( ES()->validate_service_request( array( 'list_cleanup' ) ) ) {
+			if ( ES()->validate_service_request( array( 'list_cleanup' ) ) ) {
 
-			$email_arr = array( $data['email'] );
-			$res       = self::es_list_cleanup( $email_arr );
+				$email_arr = array( $data['email'] );
+				$res       = self::es_list_cleanup( $email_arr );
 		
-			if ( ! empty( $res['status'] ) && 'SUCCESS' == $res['status'] ) {
+				if ( ! empty( $res['status'] ) && 'SUCCESS' == $res['status'] ) {
 
-				$res           = $res['data'][0];
-				$status        = ( 1 == $res['attributes']['disposable'] || 0 == $res['attributes']['deliverable'] ) ? 'spam' : $data['status'];
-				update_option( 'ig_es_close_list_cleanup_notice', 'no',false );
-				if ( 'spam' === $status ) {
+					$res           = $res['data'][0];
+					$status        = ( 1 == $res['attributes']['disposable'] || 0 == $res['attributes']['deliverable'] ) ? 'spam' : $data['status'];
+					update_option( 'ig_es_close_list_cleanup_notice', 'no', false );
+					if ( 'spam' === $status ) {
 					
-					$stored_spam_emails = get_option( 'ig_es_spam_emails', array() );
-					$stored_spam_emails[] = $data['email'];
-					update_option( 'ig_es_spam_detected', true );
-					update_option( 'ig_es_spam_emails', $stored_spam_emails,false );	
-				}else{
-					update_option( 'ig_es_spam_detected', false );
+						$stored_spam_emails = get_option( 'ig_es_spam_emails', array() );
+						$stored_spam_emails[] = $data['email'];
+						update_option( 'ig_es_spam_detected', true );
+						update_option( 'ig_es_spam_emails', $stored_spam_emails, false );	
+					} else {
+						update_option( 'ig_es_spam_detected', false );
+					}
 				}
-		    }
 		
-	     }
-    }
+			}
+		}
 
 	return $data;
-}
+	}
 
 
 	public static function es_list_cleanup( $subscribers ) {
@@ -90,7 +90,7 @@ class ES_Service_List_Cleanup extends ES_Services {
 		if ( !ES()->is_es_admin_screen() ) {
 			return;
 		}
-		if( !ES()->trial->is_trial_valid() || ES()->is_premium()) {
+		if ( !ES()->trial->is_trial_valid() || ES()->is_premium()) {
 			return;
 		}
 		$current_page = ig_es_get_request_data('page');
@@ -100,38 +100,40 @@ class ES_Service_List_Cleanup extends ES_Services {
 		$spam_emails = get_option( 'ig_es_spam_emails', array());
 		$spam_emails_count=count($spam_emails);
 		
-		if (ig_es_get_request_data('ig_es_close_list_cleanup_notice') && check_admin_referer('ig_es_close_list_cleanup_notice_nonce')) {
-			update_option( 'ig_es_close_list_cleanup_notice', 'yes',false );
-		}
+			if (ig_es_get_request_data('ig_es_close_list_cleanup_notice') && check_admin_referer('ig_es_close_list_cleanup_notice_nonce')) {
+				update_option( 'ig_es_close_list_cleanup_notice', 'yes', false );
+			}
 
-		if ('yes'=== get_option('ig_es_close_list_cleanup_notice')) {
-			return;
-		}
+			if ('yes'=== get_option('ig_es_close_list_cleanup_notice')) {
+				return;
+			}
 
-		?>
+			?>
 
 <div class="notice notice-success is-dismissible" id="ig-list-cleanup-custom-notice">
 	<span>
 		<?php
 		$is_spam_detected = get_option( 'ig_es_spam_detected', false );
-		if ( $is_spam_detected) {  ?>
+			if ( $is_spam_detected) {  
+				?>
 
 		  <p> <strong>Alert:</strong>
-				<?php echo sprintf(esc_html__( "%s spam emails were found in your audience. Sending to them may harm delivery and site reputation.", 'email-subscribers' ),
+					<?php 
+				echo sprintf(esc_html__( '%s spam emails were found in your audience. Sending to them may harm delivery and site reputation.', 'email-subscribers' ),
 					wp_kses_post( $spam_emails_count ));
-				?>
+					?>
 			</p>
-			<p><strong>[Note]:</strong><?php echo sprintf( esc_html__( " Spam detection is available in the trial and Max plans. Upgrade to %s to avoid this.", 'email-subscribers' ),'<a target="_blank" href="https://www.icegram.com/docs/category/icegram-express-premium/how-to-mark-an-email-as-spam/?utm_source=in_app&utm_medium=admin_notice&utm_campaign=trial_spam_detect_upsale"  style="color: blue;"> Max</a>'); ?></p>
-			<?php
-		} else {
-			?>
-			<p><?php echo esc_html__( "Congrats! No spam emails found in your audience. It’s safe to send.", 'email-subscribers' ); ?></p>
+			<p><strong>[Note]:</strong><?php echo sprintf( esc_html__( ' Spam detection is available in the trial and Max plans. Upgrade to %s to avoid this.', 'email-subscribers' ), '<a target="_blank" href="https://www.icegram.com/docs/category/icegram-express-premium/how-to-mark-an-email-as-spam/?utm_source=in_app&utm_medium=admin_notice&utm_campaign=trial_spam_detect_upsale"  style="color: blue;"> Max</a>'); ?></p>
+				<?php
+			} else {
+				?>
+			<p><?php echo esc_html__( 'Congrats! No spam emails found in your audience. It’s safe to send.', 'email-subscribers' ); ?></p>
 
-			<p><strong>[Note]:</strong><?php echo sprintf( esc_html__( " Spam detection is available only in trial and Max plans. Upgrade to %s to protect your reputation.", 'email-subscribers' ),'<a target="_blank" href="https://www.icegram.com/docs/category/icegram-express-premium/how-to-mark-an-email-as-spam/?utm_source=in_app&utm_medium=admin_notice&utm_campaign=trial_spam_detect_upsale" style="color: blue;"> Max</a>'); ?></p>
+			<p><strong>[Note]:</strong><?php echo sprintf( esc_html__( ' Spam detection is available only in trial and Max plans. Upgrade to %s to protect your reputation.', 'email-subscribers' ), '<a target="_blank" href="https://www.icegram.com/docs/category/icegram-express-premium/how-to-mark-an-email-as-spam/?utm_source=in_app&utm_medium=admin_notice&utm_campaign=trial_spam_detect_upsale" style="color: blue;"> Max</a>'); ?></p>
 			
 			<?php
-		}
-		?>
+			}
+			?>
 	</span>
 	
 	<button type="button" class="notice-dismiss">
@@ -156,9 +158,9 @@ class ES_Service_List_Cleanup extends ES_Services {
 		
 		<?php
 		
-	}
+		}
 
-}
+	}
 }
 
 new ES_Service_List_Cleanup();

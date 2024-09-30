@@ -677,6 +677,11 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 
 			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
+			$can_access_forms = ES_Common::ig_es_can_access( 'forms' );
+			if ( ! $can_access_forms ) {
+				return 0;
+			}
+
 			$response = array();
 
 			$form_data = ig_es_get_request_data( 'form_data', array(), false );

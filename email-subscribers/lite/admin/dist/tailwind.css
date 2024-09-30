@@ -1215,6 +1215,18 @@ button:focus,
           box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
   --tw-ring-color: var(--brand-color-2);
 }
+.lighter-gray:is(button,.tab) {
+  background-color: var(--lighter-gray);
+  --tw-text-opacity: 1;
+  color: rgb(22 30 46 / var(--tw-text-opacity));
+}
+.lighter-gray:is(button,.tab):hover {
+  --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
+  --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0.5px + var(--tw-ring-offset-width)) var(--tw-ring-color);
+  -webkit-box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+          box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
+  --tw-ring-color: var(--brand-color-2);
+}
 .cross:is(button,.tab) {
   border-radius: 0.375rem;
   background-color: var(--secondary);
@@ -1804,7 +1816,7 @@ input[type="time"] {
   font-weight: 500;
   line-height: 1.5rem;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) input:not([type="radio"]) {
   display: block;
@@ -2105,8 +2117,8 @@ input[type="time"] {
 }
 .overview > :not([hidden]) ~ :not([hidden]) {
   --tw-space-y-reverse: 0;
-  margin-top: calc(1.25rem * calc(1 - var(--tw-space-y-reverse)));
-  margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));
+  margin-top: calc(0.75rem * calc(1 - var(--tw-space-y-reverse)));
+  margin-bottom: calc(0.75rem * var(--tw-space-y-reverse));
 }
 .overview {
   border-radius: 0.375rem;
@@ -4503,7 +4515,7 @@ table td
       border-width: 0px;
   }
 /* End */
-body.admin-bar .sticky {
+.toplevel_page_es_dashboard .sticky {
   top: 32px; /* Adjust for standard admin bar height */
 }
 /* Dashboard page CSS */
@@ -4597,10 +4609,13 @@ body.admin-bar .sticky {
 .toplevel_page_es_dashboard .forms-lists .new_form_link, .toplevel_page_es_dashboard .forms-lists .new_list_link {
   font-size: 0.75rem;
   font-weight: 400;
-  font-style: italic;
   line-height: 1.75rem;
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity));
+  color: rgb(0 0 0 / var(--tw-text-opacity));
+}
+.toplevel_page_es_dashboard .forms-lists .new_form_link a:hover, .toplevel_page_es_dashboard .forms-lists .new_list_link a:hover {
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity));
 }
 .toplevel_page_es_dashboard .lists-container {
   margin-top: 0 !important;
@@ -4673,11 +4688,11 @@ body.admin-bar .sticky {
 .ig-dashboardcommon-section #ig-es-trial-expired-block, .ig-dashboardcommon-section #ig-es-trial-active-block, .ig-dashboardcommon-section #ig-es-trial-optin-block {
   width: 100%;
   padding-right: 1.5rem;
-  padding-top: 1rem;
+  padding-top: 0.75rem;
 }
 .ig-dashboardcommon-section #ig-es-trial-expired-block .sec-title, .ig-dashboardcommon-section #ig-es-trial-active-block .sec-title, .ig-dashboardcommon-section #ig-es-trial-optin-block .sec-title {
-  padding-top: 0.5rem;
-  padding-bottom: 0.5rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.25rem;
   font-size: 1.125rem;
   font-weight: 500;
   line-height: 1.5rem;
@@ -4712,21 +4727,100 @@ body.admin-bar .sticky {
 .ig-dashboardcommon-section #ig-es-trial-expired-block #ig-es-trial-optin-btn svg path, .ig-dashboardcommon-section #ig-es-trial-active-block #ig-es-trial-optin-btn svg path, .ig-dashboardcommon-section #ig-es-trial-optin-block #ig-es-trial-optin-btn svg path {
   opacity: 0.75;
 }
+.ig-dashboardcommon-section #ig-es-trial-expired-block ul.features_list, .ig-dashboardcommon-section #ig-es-trial-active-block ul.features_list, .ig-dashboardcommon-section #ig-es-trial-optin-block ul.features_list {
+  list-style-type: disc;
+  padding-top: 0.75rem;
+  padding-bottom: 0.75rem;
+  padding-left: 1rem;
+  --tw-text-opacity: 1;
+  color: rgb(107 114 128 / var(--tw-text-opacity));
+}
+.ig-dashboardcommon-section #ig-es-trial-expired-block .block-status, .ig-dashboardcommon-section #ig-es-trial-active-block .block-status, .ig-dashboardcommon-section #ig-es-trial-optin-block .block-status {
+  margin-left: 0.5rem;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  border-radius: 9999px;
+  --tw-bg-opacity: 1;
+  background-color: rgb(222 247 236 / var(--tw-bg-opacity));
+  padding: 0.25rem;
+  vertical-align: sub;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity));
+}
+.ig-dashboardcommon-section #ig-es-trial-expired-block .block-status svg, .ig-dashboardcommon-section #ig-es-trial-active-block .block-status svg, .ig-dashboardcommon-section #ig-es-trial-optin-block .block-status svg {
+  display: inline-block;
+  height: 1.25rem;
+  width: 1.25rem;
+  --tw-text-opacity: 1;
+  color: rgb(5 122 85 / var(--tw-text-opacity));
+}
+.ig-dashboardcommon-section #ig-es-trial-expired-block .trial-ended-block, .ig-dashboardcommon-section #ig-es-trial-active-block .trial-ended-block, .ig-dashboardcommon-section #ig-es-trial-optin-block .trial-ended-block {
+  margin-left: 0.5rem;
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  border-radius: 9999px;
+  --tw-bg-opacity: 1;
+  background-color: rgb(224 36 36 / var(--tw-bg-opacity));
+  padding: 0.25rem;
+  vertical-align: sub;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
+.ig-dashboardcommon-section #ig-es-trial-expired-block .trial-ended-block svg, .ig-dashboardcommon-section #ig-es-trial-active-block .trial-ended-block svg, .ig-dashboardcommon-section #ig-es-trial-optin-block .trial-ended-block svg {
+  margin-left: 0.25rem;
+  display: inline-block;
+  height: 1.25rem;
+  width: 1.25rem;
+  --tw-text-opacity: 1;
+  color: rgb(255 255 255 / var(--tw-text-opacity));
+}
 .ig-dashboardcommon-section #ig-ess-account-overview-block {
   position: relative;
   width: 100%;
-  padding-right: 1.5rem;
   padding-left: 1.5rem;
 }
 .ig-dashboardcommon-section #ig-ess-account-overview-block #subscribers-stats .stats-info {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+          justify-content: space-between;
   padding-top: 1rem;
   padding-bottom: 1rem;
   text-align: center;
   --tw-text-opacity: 1;
   color: rgb(75 85 99 / var(--tw-text-opacity));
+}
+.ig-dashboardcommon-section #ig-ess-account-overview-block .block-status {
+  display: -webkit-inline-box;
+  display: -ms-inline-flexbox;
+  display: inline-flex;
+  border-radius: 9999px;
+  --tw-bg-opacity: 1;
+  background-color: rgb(222 247 236 / var(--tw-bg-opacity));
+  padding: 0.25rem;
+  vertical-align: sub;
+  font-size: 0.75rem;
+  font-weight: 600;
+  line-height: 1.25rem;
+  --tw-text-opacity: 1;
+  color: rgb(0 0 0 / var(--tw-text-opacity));
+}
+.ig-dashboardcommon-section #ig-ess-account-overview-block .block-status svg {
+  display: inline-block;
+  height: 1.25rem;
+  width: 1.25rem;
+  --tw-text-opacity: 1;
+  color: rgb(5 122 85 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section #sending-service-benefits .item-dots, .ig-dashboardcommon-section #sending-service-onboarding-tasks-list .item-dots {
   position: relative;
@@ -4743,7 +4837,6 @@ body.admin-bar .sticky {
   -webkit-box-pack: center;
       -ms-flex-pack: center;
           justify-content: center;
-  padding-top: 0.25rem;
 }
 .ig-dashboardcommon-section #sending-service-benefits .item-dots span, .ig-dashboardcommon-section #sending-service-onboarding-tasks-list .item-dots span {
   display: block;
@@ -4792,8 +4885,11 @@ body.admin-bar .sticky {
   --tw-text-opacity: 1;
   color: rgb(88 80 236 / var(--tw-text-opacity));
 }
+.ig-dashboardcommon-section .ess-block {
+  margin-left: 1rem;
+}
 .ig-dashboardcommon-section .tips-trick-section {
-  margin-left: 5rem;
+  margin-left: 4rem;
 }
 /* End */
 /* Reports dashboard CSS */
@@ -5120,7 +5216,7 @@ body.admin-bar .sticky {
   z-index: 40;
   height: 0;
 }
-body.admin-bar .campaign-msg-box {
+.toplevel_page_es_dashboard .campaign-msg-box {
   top: 32px; /* Adjust for standard admin bar height */
 }
 @media (min-width: 1024px) {
