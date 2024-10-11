@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, newsletters, autoresponders, email aut
 Requires at least: 3.9
 Tested up to: 6.6
 Requires PHP: 7.0
-Stable tag: 5.7.35
+Stable tag: 5.7.36
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -438,11 +438,17 @@ Refer [here](https://www.icegram.com/docs/category/icegram-express/faq/?utm_sour
 
 == Upgrade Notice ==
 
-= 5.7.35 =
+= 5.7.36 =
 
-* Fix: Missing authorization check in template preview - CVE-2024-8771 [Thanks to Wordfence team]
+* Enhancement: Reduce batch size for first two batches when sending campaigns
+* Fix: Fatal error on dashboard page
 
 == Changelog ==
+
+**5.7.36 (10.10.2024)**
+
+* Enhancement: Reduce batch size for first two batches when sending campaigns
+* Fix: Fatal error on dashboard page
 
 **5.7.35 (25.09.2024)**
 

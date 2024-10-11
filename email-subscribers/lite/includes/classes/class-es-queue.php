@@ -348,7 +348,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 						'status'		=> 'subscribed',
 						'subscriber_status'		=> array( 'verified' ),
 					);
-
+					$grace_period = apply_filters('ig_es_sequence_grace_period', $grace_period,$delay_unit,$delay_amount);
 					if ( $grace_period && 'after_subscription' === $send_when ) {
 						$start_time = gmdate( 'Y-m-d H:i:s', $now - $grace_period );
 
@@ -722,10 +722,24 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 				// Get GUID from sentdetails report which are in queue
 				$campaign_hash = ig_es_get_request_data( 'campaign_hash' );
 
+				// Check if admin has forcefully triggered the email sending.
+				$triggered_by_admin = ig_es_get_request_data( 'self', 0 );
+
 				$notification      = ES_DB_Mailing_Queue::get_notification_to_be_sent( $campaign_hash );
 				$notification_guid = isset( $notification['hash'] ) ? $notification['hash'] : null;
 				$message_id        = isset( $notification['id'] ) ? $notification['id'] : 0;
 				$campaign_id       = isset( $notification['campaign_id'] ) ? $notification['campaign_id'] : 0;
+				if ( ! $triggered_by_admin ) {
+				
+					$notification_meta = maybe_unserialize( $notification['meta'] );
+					$batch_count       = isset( $notification_meta['batch_count'] ) ? $notification_meta['batch_count'] : 0;
+					
+					if ( $batch_count < 2 ) {
+						$batch_size     = $es_c_croncount * 0.10;
+						$batch_size     = ceil( $batch_size );
+						$es_c_croncount = apply_filters( 'ig_es_batch_size', $batch_size );
+					}
+				}
 
 				if ( ! is_null( $notification_guid ) ) {
 
@@ -734,9 +748,6 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 					$cron_job_data = array(
 						'campaign_id' => $campaign_id,
 					);
-
-					// Check if admin has forcefully triggered the email sending.
-					$triggered_by_admin = ig_es_get_request_data( 'self', 0 );
 
 					// If admin has forcefully triggered the email sending, then unlock the cron job.
 					$force_unlock = '1' === $triggered_by_admin ? true : false;
@@ -818,6 +829,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 
 								
 								$sending_failed = ! empty( $send_result['status'] ) && 'ERROR' === $send_result['status'];
+								$sending_success = ! empty( $send_result['status'] ) && 'SUCCESS' === $send_result['status'];
 								if ( $sending_failed ) {
 									$pending_statuses = array( 
 										IG_ES_SENDING_QUEUE_STATUS_QUEUED,
@@ -859,6 +871,10 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 										$notification_data['status'] = IG_ES_MAILING_QUEUE_STATUS_SENDING;
 										ES_DB_Mailing_Queue::update_mailing_queue( $message_id, $notification_data );
 									}
+								}elseif ( $sending_success ){
+									
+									ES_DB_Mailing_Queue::update_batch_count($notification);
+
 								}
 
 								// TODO: Implement better solution

@@ -17,7 +17,7 @@ function render_kpi( $value, $kpi_percentage, $label, $allowed_html_tags) {
 		<div class="inline-block es-new-subscriber-growth-percentage es-tooltip relative align-middle cursor-pointer text-left">
 			<?php if (0 !== $kpi_percentage) { ?>
 				<span class="text-sm mr-0.5 <?php echo esc_attr($text_color_class); ?>">
-					<?php echo esc_html(number_format_i18n($kpi_percentage, 2)); ?>%
+					<?php echo esc_html(number_format_i18n((float) $kpi_percentage, 2)); ?>%
 					<?php echo wp_kses($arrow_html, $allowed_html_tags); ?>
 				</span>
 			<?php } ?>
@@ -39,7 +39,7 @@ render_kpi($dashboard_kpi['total_subscribed'] ?? 0, $subscribed_contact_growth_p
 render_kpi($dashboard_kpi['total_unsubscribed'] ?? 0, $dashboard_kpi['unsubscribe_percentage_growth'] ?? 0, 'Unsubscribed', $allowed_html_tags);
 render_kpi( $dashboard_kpi['total_active_contact'] ?? 0, $total_active_contact_growth_percentage ?? 0, 'Total Active', $allowed_html_tags);
 render_kpi($dashboard_kpi['total_message_sent'] ?? 0, $dashboard_kpi['sent_percentage_growth'] ?? 0, 'Email Sent', $allowed_html_tags);
-render_kpi(( $dashboard_kpi['avg_open_rate'] ?? 0 ) . '%', $dashboard_kpi['open_percentage_growth'] ?? 0, 'Opened', $allowed_html_tags);
-render_kpi(( $dashboard_kpi['avg_click_rate'] ?? 0 ) . '%', $dashboard_kpi['click_percentage_growth'] ?? 0, 'Clicked', $allowed_html_tags);
+render_kpi($dashboard_kpi['avg_open_rate'] ?? 0, $dashboard_kpi['open_percentage_growth'] ?? 0, 'Opened', $allowed_html_tags);
+render_kpi($dashboard_kpi['avg_click_rate'] ?? 0, $dashboard_kpi['click_percentage_growth'] ?? 0, 'Clicked', $allowed_html_tags);
 ?>
 </section>
