@@ -1188,7 +1188,7 @@ class Email_Subscribers_Admin {
 					IG_CAMPAIGN_TYPE_NEWSLETTER
 					);
 					if ( in_array( $campaign_type, $supported_campaign_types, true ) ) {
-						$campaign_meta   = maybe_unserialize( $campaign['meta'] );
+						$campaign_meta = ! empty( $campaign['meta'] ) ? maybe_unserialize( $campaign['meta'] ) : array();
 						$ig_es_track_utm = ! empty( $campaign_meta['enable_utm_tracking'] ) ? $campaign_meta['enable_utm_tracking'] : $ig_es_track_utm;
 					}
 				}

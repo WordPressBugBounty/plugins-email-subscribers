@@ -112,8 +112,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 
 				$campaigns_to_process[] = $campaign_id;
 
-				$meta = maybe_unserialize( $campaign['meta'] );
-
+				$meta = ! empty( $campaign['meta'] ) ? maybe_unserialize( $campaign['meta'] ) : array();
 				$rules = ! empty( $meta['rules'] ) ? $meta['rules'] : array();
 
 				if ( ! empty( $rules ) ) {
@@ -348,7 +347,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 						'status'		=> 'subscribed',
 						'subscriber_status'		=> array( 'verified' ),
 					);
-					$grace_period = apply_filters('ig_es_sequence_grace_period', $grace_period,$delay_unit,$delay_amount);
+					$grace_period = apply_filters('ig_es_sequence_grace_period', $grace_period, $delay_unit, $delay_amount);
 					if ( $grace_period && 'after_subscription' === $send_when ) {
 						$start_time = gmdate( 'Y-m-d H:i:s', $now - $grace_period );
 
@@ -731,7 +730,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 				$campaign_id       = isset( $notification['campaign_id'] ) ? $notification['campaign_id'] : 0;
 				if ( ! $triggered_by_admin ) {
 				
-					$notification_meta = maybe_unserialize( $notification['meta'] );
+					$notification_meta = ! empty( $notification['meta'] ) ? maybe_unserialize( $notification['meta'] ) : array();
 					$batch_count       = isset( $notification_meta['batch_count'] ) ? $notification_meta['batch_count'] : 0;
 					
 					if ( $batch_count < 2 ) {
@@ -871,7 +870,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 										$notification_data['status'] = IG_ES_MAILING_QUEUE_STATUS_SENDING;
 										ES_DB_Mailing_Queue::update_mailing_queue( $message_id, $notification_data );
 									}
-								}elseif ( $sending_success ){
+								} elseif ( $sending_success ) {
 									
 									ES_DB_Mailing_Queue::update_batch_count($notification);
 

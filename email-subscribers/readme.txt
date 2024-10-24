@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, newsletters, autoresponders, email aut
 Requires at least: 3.9
 Tested up to: 6.6
 Requires PHP: 7.0
-Stable tag: 5.7.36
+Stable tag: 5.7.37
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -438,12 +438,19 @@ Refer [here](https://www.icegram.com/docs/category/icegram-express/faq/?utm_sour
 
 == Upgrade Notice ==
 
-= 5.7.36 =
+= 5.7.37 =
 
-* Enhancement: Reduce batch size for first two batches when sending campaigns
-* Fix: Fatal error on dashboard page
+* New: Added readymade form designs
+* Fix: PHP warning undefined array key "meta"
+* Fix: Email sending issue in Sendgrid when recipient email is invalid [MAX]
 
 == Changelog ==
+
+**5.7.37 (24.10.2024)**
+
+* New: Added readymade form designs
+* Fix: PHP warning undefined array key "meta"
+* Fix: Email sending issue in Sendgrid when recipient email is invalid [MAX]
 
 **5.7.36 (10.10.2024)**
 

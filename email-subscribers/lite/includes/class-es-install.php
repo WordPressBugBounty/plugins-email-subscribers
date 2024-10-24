@@ -338,6 +338,10 @@ if ( ! class_exists( 'ES_Install' ) ) {
 				'ig_es_schedule_trial_expires_reminder_cron',
 				'ig_es_update_5728_db_version',
 			),
+			'5.7.37' => array(
+				'ig_es_add_premium_forms_templates',
+				'ig_es_update_5737_db_version',
+			),
 		);
 
 		/**

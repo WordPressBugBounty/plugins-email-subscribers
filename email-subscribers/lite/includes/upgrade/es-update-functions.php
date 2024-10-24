@@ -2347,3 +2347,36 @@ function ig_es_update_5728_db_version() {
 }
 // phpcs:enable
 /* --------------------- ES 5.7.28(End)--------------------------- */
+
+/* --------------------- ES 5.7.37(Start)--------------------------- */
+
+/**
+ * Premium Form templates for existing users
+ */
+
+function ig_es_add_premium_forms_templates() {
+
+	$forms_gallery = apply_filters( 'ig_es_forms_gallery', array() );
+
+	$forms_gallery = array_filter($forms_gallery, function( $form) {
+		return $form['name'] !== 'First form';
+	});
+
+$forms_gallery = array_values($forms_gallery);
+	
+	foreach ( $forms_gallery as $form_gallery_data ) {
+		   $form_id = ES()->forms_db->add_form( $form_gallery_data );
+	}
+}
+
+
+ /**
+ * Update DB version
+ *
+ * @since 5.7.37
+ */
+function ig_es_update_5737_db_version() {
+	ES_Install::update_db_version( '5.7.37' );
+}
+// phpcs:enable
+/* --------------------- ES 5.7.37(End)--------------------------- */
