@@ -126,10 +126,25 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 			$form_data_array = [];
 	
 			$forms_data_array = array( 
-								'subscription_gdpr_form' => array( 'name' => 'Subscription form with GDPR consent', 'body' => $subscription_gdpr_form_body, 'settings' => $subscription_gdpr_form_settings),
-								'subscription_logo_form' => array( 'name' => 'Subscription form with logo', 'body' => $subscription_logo_form_body, 'settings' => $subscription_logo_form_settings ),
-								'first_form' => array( 'name' => 'First form', 'body' => $first_form_body, 'settings' => $first_form_settings ),
-								);
+								'subscription_gdpr_form' => array( 
+									'name' => 'Subscription form with GDPR consent', 
+									'body' => $subscription_gdpr_form_body, 
+									'settings' => $subscription_gdpr_form_settings,
+									'preview_image' => 'subscription_gdpr_form_lite.png',
+								),
+								'subscription_logo_form' => array( 
+									'name' => 'Subscription form with logo', 
+									'body' => $subscription_logo_form_body, 
+									'settings' => $subscription_logo_form_settings,
+									'preview_image' => 'subscription_form_with_logo_lite.png',
+								),
+								'first_form' => array( 
+									'name' => 'First form', 
+									'body' => $first_form_body, 
+									'settings' => $first_form_settings,
+									'preview_image' => 'subscription_form_with_logo_lite.png'
+								),
+							);
 
 			foreach ( $forms_data_array as $forms_data ) {
 				$form_data = [];
@@ -138,6 +153,7 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 				$form_data['body']       = maybe_serialize( $forms_data['body'] );
 				$form_data['settings']   = maybe_serialize( $forms_data['settings'] );
 				$form_data['styles']     = '';
+				$form_data['preview_image'] = $forms_data['preview_image'];
 				$form_data['created_at'] = ig_get_current_date_time();
 				$form_data['updated_at'] = null;
 				$form_data['deleted_at'] = null;

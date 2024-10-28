@@ -81,7 +81,7 @@ class ES_Forms_Table extends ES_List_Table {
 	 * @since 4.0
 	 */
 	public function render() {
-
+		
 		$action = ig_es_get_request_data( 'action' );
 		?>
 		<div class="font-sans">
@@ -860,6 +860,14 @@ class ES_Forms_Table extends ES_List_Table {
 			case 'total_active_subscribers':
 				$total_active_subscribers = ES()->contacts_db->get_total_contacts_by_form_id( $item['id'] );
 				return number_format( $total_active_subscribers );
+			case 'preview':
+				if(!empty($item['preview_image'])) {
+					$img = '<img src="'.esc_url( ES_PLUGIN_URL . 'lite/admin/images/form_templates/'.$item['preview_image'] ).'">';
+				} else {
+					$img = '-';
+				}
+				return $img;
+			break;
 			default:
 				return '';
 		}
@@ -921,6 +929,7 @@ class ES_Forms_Table extends ES_List_Table {
 		'shortcode'                => sprintf( __( 'Shortcode %s', 'email-subscribers' ), $shortcode_tooltip_text ),
 		/* translators: %s Shortcode tooltip text */
 		'total_active_subscribers' => sprintf( __( 'Subscribers %s', 'email-subscribers' ), $subscribers_tooltip_text ),
+		'preview'				   => __( 'Preview', 'email-subscribers' ),
 		'created_at'               => __( 'Created', 'email-subscribers' ),
 	);
 	

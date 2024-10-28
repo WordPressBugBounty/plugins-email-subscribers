@@ -918,6 +918,7 @@ class Email_Subscribers_Admin {
 				'show_new_keyword_notice',
 				'show_membership_integration_notice',
 				'show_email_sending_failed_notice',
+				'show_ess_fallback_removal_notice',
 				'show_ess_promotion_notice',
 				'ig_es_show_feature_survey',
 				'ig_es_show_trial_optin_reminder_notice',
@@ -1766,7 +1767,6 @@ class Email_Subscribers_Admin {
 			delete_option( 'ig_es_campaign_error' );
 		}
 	}
-	
 
 	/**
 	 * Method to send email for authentication headers test

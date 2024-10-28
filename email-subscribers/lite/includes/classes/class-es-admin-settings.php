@@ -125,6 +125,8 @@ class ES_Admin_Settings {
 					'ig_es_from_email',
 				);
 
+				do_action( 'ig_es_before_settings_save', $options );
+
 				foreach ( $options as $key => $value ) {
 					if ( substr( $key, 0, 6 ) === 'ig_es_' ) {
 

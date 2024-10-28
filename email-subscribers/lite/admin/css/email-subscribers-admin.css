@@ -3069,6 +3069,22 @@ body.icegram-express_page_es_forms #wpcontent {
     bottom: 52px;
 }
 
+.icegram-express_page_es_forms table.forms th#preview {
+	width: 12rem;
+}
+
+.icegram-express_page_es_forms table.forms td.preview {
+	float: left;
+}
+
+.icegram-express_page_es_forms table.forms td.preview img {
+	width: 80%;
+}
+
+.icegram-express_page_es_forms table.forms th#total_active_subscribers {
+	width: 8rem;
+}
+
 /* Reports export pro & max button icon */
 .icegram-express_page_es_reports .es_export_report_link .premium-icon {
 	position: absolute;

@@ -569,16 +569,25 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 		 */
 		public function send( $subject, $content, $emails = array(), $merge_tags = array(), $nl2br = false ) {
 
+			$response = array();
+			
 			ignore_user_abort( true );
 
 			$this->time_start = time();
 
 			if ( ES_Service_Email_Sending::using_icegram_mailer() ) {
 				$remaining_limit = ES_Service_Email_Sending::get_remaining_limit();
+				
 				if ( $remaining_limit > 0 ) {
 					$this->mailer->remaining_limit = $remaining_limit;
 				} else {
-					$this->switch_to_default_mailer();
+					if ( $this->can_switch_to_default_mailer() ) {
+						$this->switch_to_default_mailer();
+					} else {
+						$response['status']  = 'ERROR';
+						$response['message'] = 'Email sending limit reached';
+						return $response;
+					}
 				}
 			}
 			$message_id       = ! empty( $merge_tags['message_id'] ) ? $merge_tags['message_id'] : 0;
@@ -636,8 +645,6 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 			$subject = $this->prepare_subject( $subject );
 
 			$content = $this->prepare_content( $content, $merge_tags, $nl2br );
-
-			$response = array();
 
 			if ( ! is_array( $emails ) ) {
 				$emails = array( $emails );
@@ -1941,6 +1948,21 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 				$mailer_obj = new ES_Icegram_Mailer();
 			}
 			$this->mailer =$mailer_obj;
+		}
+
+		public function can_switch_to_default_mailer() {
+			$current_time              = time();
+			$ess_fallback_removal_time = strtotime( '2024-11-04 00:00:00' );
+			if ( $current_time < $ess_fallback_removal_time ) {
+				return true;
+			} elseif ( $this->is_using_site_mailer()  ) {
+				return true;
+			}
+			return false;
+		}
+
+		public function is_using_site_mailer() {
+			return 'wp_mail' === $this->default_mailer->slug|| 'php_mail' === $this->default_mailer->slug;
 		}
 
 		public function switch_to_default_mailer() {

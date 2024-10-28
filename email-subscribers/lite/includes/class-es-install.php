@@ -342,6 +342,10 @@ if ( ! class_exists( 'ES_Install' ) ) {
 				'ig_es_add_premium_forms_templates',
 				'ig_es_update_5737_db_version',
 			),
+			'5.7.38' => array(
+				'ig_es_add_preview_forms_column',
+				'ig_es_update_5738_db_version',
+			),
 		);
 
 		/**
@@ -1170,6 +1174,7 @@ if ( ! class_exists( 'ES_Install' ) ) {
 				`body` longtext,
 				`settings` longtext,
 				`styles` longtext,
+				`preview_image` mediumtext DEFAULT NULL,
 				`created_at` datetime DEFAULT NULL,
 				`updated_at` datetime DEFAULT NULL,
 				`deleted_at` datetime DEFAULT NULL,

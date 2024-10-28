@@ -127,6 +127,10 @@ class ES_Service_Email_Sending extends ES_Services {
 		// This will be helpful in avoiding temporary failure errors due to network calls/site load on ESS end.
 		add_action( 'ig_es_campaign_failed', array( $this, 'update_sending_service_status' ) );
 		add_action( 'admin_notices', array( $this, 'show_ess_promotion_notice' ) );
+
+		add_action( 'admin_notices', array( $this, 'show_ess_fallback_removal_notice' ) );
+		add_action( 'wp_ajax_ig_es_dismiss_ess_fallback_removal_notice', array( $this, 'dismiss_ess_fallback_removal_notice' ) );
+		add_action( 'ig_es_before_settings_save', array( $this, 'maybe_update_ess_status' ) );
 	}
 
 	public static function get_instance() {
@@ -206,6 +210,7 @@ class ES_Service_Email_Sending extends ES_Services {
 		$home_url   = home_url();
 		$parsed_url = parse_url( $home_url );
 		$domain     = ! empty( $parsed_url['host'] ) ? $parsed_url['host'] : '';
+
 		if ( empty( $domain ) ) {
 			$response['message'] = __( 'Site url is not valid. Please check your site url.', 'email-subscribers' );
 			return $response;
@@ -781,6 +786,7 @@ class ES_Service_Email_Sending extends ES_Services {
 		$options = array(
 			'method'  => 'POST',
 			'body'    => json_encode($data),
+			'timeout' => 15,
 			'headers' => array(
 				'Content-Type'  => 'application/json',
 				'Authorization' => 'Bearer ' . $api_key,// Keep it like bearer when we send email
@@ -907,6 +913,7 @@ class ES_Service_Email_Sending extends ES_Services {
 		$is_ess_promotion_disabled = 'yes' === get_option( 'ig_es_promotion_disabled', 'no' );
 		return $is_ess_promotion_disabled;
 	}
+
 	public static function get_ess_promotion_message_html() {
 		ob_start();
 		$optin_url      = admin_url( '?page=es_dashboard&ess_optin=yes' );
@@ -1106,7 +1113,161 @@ class ES_Service_Email_Sending extends ES_Services {
 		update_option( 'ig_es_ess_promotion_mailer_notice', 'yes', false );
 	}
 	
-	
+	public function show_ess_fallback_removal_notice() {
+
+		if ( ! ES()->is_es_admin_screen() ) {
+			return;
+		}
+
+		$can_access_settings = ES_Common::ig_es_can_access( 'settings' );
+		if ( ! $can_access_settings ) {
+			return 0;
+		}
+
+		$current_page = ig_es_get_request_data( 'page' );
+
+		if ( 'es_dashboard' === $current_page ) {
+			return;
+		}
+
+		if ( ! self::opted_for_sending_service() || ES()->mailer->is_using_site_mailer() ) {
+			return;
+		}
+
+		$ess_data = get_option( 'ig_es_ess_data', array() );
+		$allocated_limit = ! empty( $ess_data['allocated_limit'] ) ? (int) $ess_data['allocated_limit'] : 0;
+
+		$fallback_notice_dismissed = 'yes' === get_option( 'ig_es_ess_fallback_removal_notice_dismissed', 'no' );
+		if ( ! $fallback_notice_dismissed ) {
+			$ess_pricing_url = 'https://www.icegram.com/email-sending-service/?utm_source=in_app&utm_medium=ess_setting&utm_campaign=ess_fallback_removal_notice';
+			$ess_setting_url = admin_url( 'admin.php?page=es_settings&section=ess#tabs-email_sending' );
+			?>
+			<div id="ig_es_ess_fallback_removal_notice" class="notice notice-error is-dismissible">
+				<div id="" class="text-gray-700 not-italic">
+					<p>
+						<strong>[<?php echo esc_html__( 'Important Notice', 'email-subscribers' ); ?>]:</strong>
+						<?php
+							/* translators: 1. Starting strong tag 2. Closing strong tag */
+							echo sprintf( esc_html__( 'Change in %1$sIcegram Email Sending Service%2$s', 'email-subscribers' ), '<strong>', '</strong>' );
+						?>
+					</p>
+					<p class="mb-2">
+						<?php
+						/* translators: 1. Starting strong tag 2. Closing strong tag */
+						echo sprintf( esc_html__( 'Starting %1$sNovember 4%2$s, 2024, once your Icegram email sending service\'s monthly limit is reached, %3$semail sending will be paused until the limit resets%4$s.'), '<strong>', '</strong>', '<strong>', '</strong>' );
+						if ( $allocated_limit < 30000 ) {
+							echo ' ' . esc_html__( 'You can upgrade to higher limit to avoid interruptions.', 'email-subscribers' );
+						}
+						echo ' ' . esc_html__( 'Alternatively disable our service to switch to your configured provider, though email delivery may be affected.', 'email-subscribers' ); 
+						?>
+					</p>
+					<p>
+						<?php
+						if ( $allocated_limit < 30000 ) {
+							?>
+						<a href="<?php echo esc_url( $ess_pricing_url ); ?>" target="_blank" id="ig-es-ess-optin-promo">
+							<button class="primary"><?php echo esc_html__('Upgrade', 'email-subscribers'); ?></button>
+						</a>
+						<?php
+						}
+						?>
+						<a href="<?php echo esc_url( $ess_setting_url ); ?>" target="_blank" id="ig-es-ess-optin-promo">
+							<button href="#" class="secondary"><?php echo esc_html__('Check your limit', 'email-subscribers'); ?></button>
+						</a>
+					</p>
+				</div>
+			</div>
+			<script>
+				jQuery(document).ready(function($) {
+					$('#ig_es_ess_fallback_removal_notice').on('click', '.notice-dismiss', function() {
+						$.ajax({
+							method: 'POST',
+							url: ajaxurl,
+							dataType: 'json',
+							data: {
+								action: 'ig_es_dismiss_ess_fallback_removal_notice',
+								security: ig_es_js_data.security
+							}
+						}).done(function(response){
+							console.log( 'response: ', response );
+						});
+					});
+				});
+
+			</script>
+			<?php
+		}
+	}
+
+	public function dismiss_ess_fallback_removal_notice() {
+		$response = array(
+			'status' => 'success',
+		);
+
+		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$can_access_settings = ES_Common::ig_es_can_access( 'settings' );
+		if ( ! $can_access_settings ) {
+			return 0;
+		}
+
+		update_option( 'ig_es_ess_fallback_removal_notice_dismissed', 'yes', false );
+
+		wp_send_json( $response );
+	}
+
+	public function maybe_update_ess_status( $options ) {
+		if ( ! empty( $options['ig_es_ess_opted_for_sending_service'] ) ) {
+			$new_status = $options['ig_es_ess_opted_for_sending_service'];
+			$old_status = get_option( 'ig_es_ess_opted_for_sending_service', 'no' );
+			if ( $new_status !== $old_status ) {
+				$ess_status = 'yes' === $new_status ? 'active' : 'paused';
+				$this->update_ess_status( $ess_status );
+			}
+		}
+	}
+
+	public function update_ess_status( $ess_status ) {
+		$response = array(
+			'status' => 'error',
+		);
+
+		$ess_option_exists = get_option( 'ig_es_ess_opted_for_sending_service', '' ) !== '';
+		if ( ! $ess_option_exists ) {
+			return false;
+		}
+
+		$ess_data = get_option( 'ig_es_ess_data', array() );
+		$api_key  = $ess_data['api_key'];
+
+		$data = array(
+			'status'   => $ess_status,
+		);
+
+		$options = array(
+			'timeout' => 50,
+			'method'  => 'POST',
+			'body'    => json_encode($data),
+			'headers' => array(
+				'Authorization' => 'Bearer ' . $api_key,// Keep it like bearer when we send email
+				'Content-Type'  => 'application/json',
+			),
+		);
+
+		$api_url = 'https://api.igeml.com/accounts/update/';
+
+		$response = wp_remote_post( $api_url, $options );
+		
+		if ( ! is_wp_error( $response ) ) {
+			$response_body = wp_remote_retrieve_body( $response );
+			$response_data = ( array ) json_decode( $response_body );
+			if ( 'success' === $response_data['status'] ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
 
 new ES_Service_Email_Sending();

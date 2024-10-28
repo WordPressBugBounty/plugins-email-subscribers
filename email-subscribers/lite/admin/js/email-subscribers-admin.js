@@ -1362,6 +1362,11 @@
 				}, 2000);
 			});
 
+			if(window.location.href.indexOf('page=es_settings&section=ess#tabs-email_sending') !== -1){
+				jQuery('html, body').animate({
+					scrollTop: jQuery("#ig_es_test_send_email-field-row").offset().top
+				}, 2000);
+			}
 			if(window.location.href.indexOf('page=es_settings&btn=check_auth_header#tabs-email_sending') !== -1){
 				jQuery('html, body').animate({
 					scrollTop: jQuery("#ig-es-settings-authentication-table").offset().top

@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, newsletters, autoresponders, email aut
 Requires at least: 3.9
 Tested up to: 6.6
 Requires PHP: 7.0
-Stable tag: 5.7.37
+Stable tag: 5.7.38
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -438,13 +438,15 @@ Refer [here](https://www.icegram.com/docs/category/icegram-express/faq/?utm_sour
 
 == Upgrade Notice ==
 
-= 5.7.37 =
+= 5.7.38 =
 
-* New: Added readymade form designs
-* Fix: PHP warning undefined array key "meta"
-* Fix: Email sending issue in Sendgrid when recipient email is invalid [MAX]
+* Improvements: Small UI improvements
 
 == Changelog ==
+
+**5.7.38 (28.10.2024)**
+
+* Improvements: Small UI improvements
 
 **5.7.37 (24.10.2024)**
 
