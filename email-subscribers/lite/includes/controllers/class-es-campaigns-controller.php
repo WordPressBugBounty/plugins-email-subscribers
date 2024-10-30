@@ -151,7 +151,7 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 		 * @since 4.6.3
 		 */
 		public static function duplicate_campaign( $campaign_id = 0 ) {
-
+			
 			if ( empty( $campaign_id ) ) {
 				return false;
 			}

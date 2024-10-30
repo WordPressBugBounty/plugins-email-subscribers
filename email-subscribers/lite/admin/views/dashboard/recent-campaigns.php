@@ -27,11 +27,17 @@ if ( ! empty( $campaigns ) && count( $campaigns ) > 0 ) { ?>
 									$img_name = 'sequences';
 								} elseif ( IG_CAMPAIGN_TYPE_POST_NOTIFICATION === $campaign['type'] ) {
 									$img_name = 'notification';
+								} elseif( IG_CAMPAIGN_TYPE_POST_DIGEST === $campaign['type'] ) {
+									$img_name = 'notification';
 								}
-								?>
-								<div class='dash-avatar'>
-									<img src="<?php echo esc_html__(WP_PLUGIN_URL, 'email-subscribers'); ?>/email-subscribers/lite/admin/images/new/<?php echo esc_attr( $img_name ); ?>.svg" alt="">
-								</div>
+
+								if( !empty($img_name) ) {
+									?>
+									<div class='dash-avatar'>
+										<img src="<?php echo esc_html__(WP_PLUGIN_URL, 'email-subscribers'); ?>/email-subscribers/lite/admin/images/new/<?php echo esc_attr( $img_name ); ?>.svg" alt="">
+									</div>
+									<?php
+								} ?>
 							</div>
 							<div class="font-medium">
 								<?php echo "<a class='dash-recent-p es-ellipsis-text' href='admin.php?page=es_campaigns#!/campaign/edit/" . esc_html( $campaign['id'] ) . "' target='_blank'>" . esc_html( $campaign['name'] ) . '</a>'; ?>

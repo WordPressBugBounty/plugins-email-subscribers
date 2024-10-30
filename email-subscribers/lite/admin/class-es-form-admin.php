@@ -56,7 +56,7 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 
 		public static function get_forms_gallery_items() { 
 			$default_list = ES()->lists_db->get_list_by_name( IG_MAIN_LIST );
-			$list_id      = $default_list['id'];
+			$list_id      = !empty( $default_list['id'] ) ? $default_list['id'] : null;
 
 			$add_gdpr_consent = ig_es_get_request_data( 'add_gdpr_consent', '' );
 
@@ -74,9 +74,7 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 					'captcha'         => 'no',
 					'popup_headline'  => ''
 				);			
-			}
-
-			if ( 'no' === $add_gdpr_consent ) {
+			} else {
 				$first_form_body = '<div class="es-form-field-container"><div class="gjs-row"><div class="gjs-cell"><label for="esfpx_name_e93fb7b28432b" class="es-field-label">Name</label><input type="text" name="esfpx_name" autocomplete="off" placeholder="Enter your name" class="es-name" id="esfpx_name_e93fb7b28432b" required/></div></div><div class="gjs-row"><div class="gjs-cell"><label for="esfpx_email_e93fb7b28432b" class="es-field-label">Email</label><input type="email" required class="es-email" name="esfpx_email" autocomplete="off" placeholder="Enter your email" id="esfpx_email_e93fb7b28432b"/></div></div><div class="gjs-row"><div class="gjs-cell"><input type="submit" name="submit" value="Subscribe" required/></div></div></div>';
 
 				$first_form_settings = array
@@ -142,7 +140,7 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 									'name' => 'First form', 
 									'body' => $first_form_body, 
 									'settings' => $first_form_settings,
-									'preview_image' => 'subscription_form_with_logo_lite.png'
+									'preview_image' => ''
 								),
 							);
 
