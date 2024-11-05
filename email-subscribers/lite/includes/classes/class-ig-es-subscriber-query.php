@@ -175,12 +175,12 @@ class IG_ES_Subscribers_Query {
 			$joins[] = $join;
 		}
 
-		if ( $this->args['conditions'] ) {
+		if ( is_array( $this->args['conditions'] ) && ! empty( $this->args['conditions'] ) ) {
 			$cond = array();
 
 			foreach ( $this->args['conditions'] as $i => $and_conditions ) {
 
-				if ( ! empty( $and_conditions ) ) {
+				if ( is_array( $and_conditions ) && ! empty( $and_conditions ) ) {
 					foreach ( $and_conditions as $j => $condition ) {
 
 						$field    = isset( $condition['field'] ) ? $condition['field'] : ( isset( $condition[0] ) ? $condition[0] : null );
@@ -201,12 +201,12 @@ class IG_ES_Subscribers_Query {
 			}
 		}
 
-		if ( ! empty( $this->args['conditions'] ) ) {
+		if ( is_array( $this->args['conditions'] ) && ! empty( $this->args['conditions'] ) ) {
 			foreach ( $this->args['conditions'] as $i => $and_conditions ) {
 
 				$sub_cond = array();
 
-				if ( ! empty( $and_conditions ) ) {
+				if ( is_array( $and_conditions ) && ! empty( $and_conditions ) ) {
 					foreach ( $and_conditions as $j => $condition ) {
 
 						$field    = isset( $condition['field'] ) ? $condition['field'] : ( isset( $condition[0] ) ? $condition[0] : null );

@@ -2362,10 +2362,13 @@ function ig_es_add_premium_forms_templates() {
 		return $form['name'] !== 'First form';
 	});
 
-$forms_gallery = array_values($forms_gallery);
+	$forms_gallery = array_values($forms_gallery);
 	
 	foreach ( $forms_gallery as $form_gallery_data ) {
-		   $form_id = ES()->forms_db->add_form( $form_gallery_data );
+		if ( isset( $form_gallery_data['preview_image'] ) ) {
+			unset( $form_gallery_data['preview_image'] );
+		}
+		$form_id = ES()->forms_db->add_form( $form_gallery_data );
 	}
 }
 

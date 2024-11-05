@@ -44,6 +44,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 			add_action( 'ig_es_message_failed', array( &$this, 'set_failed_status' ), 10, 3 );
 			add_action( 'ig_es_contact_unsubscribe', array( &$this, 'delete_contact_queued_emails' ), 10, 4 );
 			add_action( 'ig_es_admin_contact_unsubscribe', array( &$this, 'delete_contact_queued_emails' ), 10, 4 );
+			add_action( 'ig_es_contacts_deleted', array( $this, 'delete_contact_queued_emails' ) );
 
 			// Ajax handler for running action scheduler task.
 			add_action( 'wp_ajax_ig_es_run_action_scheduler_task', array( 'IG_ES_Background_Process_Helper', 'run_action_scheduler_task' ) );
@@ -829,7 +830,8 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 								
 								$sending_failed = ! empty( $send_result['status'] ) && 'ERROR' === $send_result['status'];
 								$sending_success = ! empty( $send_result['status'] ) && 'SUCCESS' === $send_result['status'];
-								if ( $sending_failed ) {
+								// Check if sending failed and no messages were sent
+								if ( $sending_failed && did_action( 'ig_es_message_sent' ) === 0 ) {
 									$pending_statuses = array( 
 										IG_ES_SENDING_QUEUE_STATUS_QUEUED,
 										IG_ES_SENDING_QUEUE_STATUS_SENDING 

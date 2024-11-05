@@ -291,9 +291,7 @@ class ES_Forms_Table extends ES_List_Table {
 			$form_data = array();
 
 			$data = ES()->forms_db->get_by_conditions( $wpdb->prepare( ' id = %d', $id ) );
-
-			if ( count( $data ) > 0 ) {
-
+	      if ( count( $data ) > 0 ) {			
 				$submitted = ig_es_get_request_data( 'submitted' );
 
 				if ( 'submitted' === $submitted ) {

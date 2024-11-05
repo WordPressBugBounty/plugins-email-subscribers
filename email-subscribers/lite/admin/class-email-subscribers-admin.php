@@ -111,6 +111,7 @@ class Email_Subscribers_Admin {
 		add_action( 'admin_init', array( $this, 'maybe_apply_bulk_actions_on_all_contacts' ) );
 
 		add_action( 'wp_ajax_ig_es_get_subscribers_stats', array( 'ES_Dashboard', 'get_subscribers_stats' ) );
+		add_action( 'wp_ajax_ig_es_add_list', array( $this, 'add_list_callback' ) );
 	}
 
 	/**
@@ -1828,5 +1829,45 @@ class Email_Subscribers_Admin {
 		}
 		wp_send_json( $response );
 	}
+
+	public function add_list_callback() {
+		check_ajax_referer('ig-es-admin-ajax-nonce', 'security');
+	
+		if ( !ES_Common::ig_es_can_access( 'audience' ) ) {
+			return 0;
+		}
+	
+		$this->db = new ES_Lists_Table();
+	
+		$action     = ig_es_get_request_data('action');
+		$list_name  = ig_es_get_request_data('es_list_name');
+		$list_desc  = ig_es_get_request_data('es_list_desc');
+		
+		$validate_data = array(
+			'nonce'     => wp_create_nonce( 'es_list' ),
+			'list_name' => sanitize_text_field($list_name),
+			'list_desc' => sanitize_textarea_field($list_desc),
+		);
+	
+		$response = $this->db->validate_data($validate_data);
+		if ('error' === $response['status']) {
+			wp_send_json_error($response['message']);
+			return;
+		}
+	
+		$data = array(
+			'list_name' => $list_name,
+			'list_desc' => $list_desc,
+		);
+		
+		$save = $this->db->save_list(null, $data);
+		if ($save) {
+			wp_send_json_success(__('List added successfully.', 'email-subscribers'));
+		} else {
+			wp_send_json_error(__('Failed to add list.', 'email-subscribers'));
+		}
+	}
+	
+	
 
 }

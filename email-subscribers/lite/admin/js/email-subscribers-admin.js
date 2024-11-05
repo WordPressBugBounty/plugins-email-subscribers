@@ -3451,19 +3451,18 @@
 				});
 			});
 
-			$('#es-edit-form-container form').on('submit',function(e){
-
-				let list_required = ! $('.es-form-lists').hasClass('hidden');
-				if ( list_required ) {
-					let selected_lists_count = $('.es-form-lists input[name="form_data[settings][lists][]"]:checked').length;
-					if ( selected_lists_count === 0 ) {
-						alert( ig_es_form_editor_data.i18n.no_list_selected_message );
+			$('#es-edit-form-container form').on('submit', function(e) {
+				let list_required = !$('.es-form-lists').hasClass('hidden');
+				if (list_required) {
+					let selected_lists_count = $('#ig-es-multiselect-lists').val() ? $('#ig-es-multiselect-lists').val().length : 0;
+					if (selected_lists_count === 0) {
+						alert(ig_es_form_editor_data.i18n.no_list_selected_message);
 						e.preventDefault();
 						return false;
 					}
 				}
-
 			});
+			
 			/* DND form builder code end */
 
 		jQuery('body')
@@ -4243,3 +4242,71 @@ jQuery(document).ready(function(){
 		});
 	});
 });
+
+// Add new list popup functionality
+jQuery(document).on('click', '#ig-es-open-add-list-modal', function (e) {
+    e.preventDefault();
+    jQuery('#add-list-modal').removeClass('hidden');
+});
+
+jQuery(document).on('click', '#ig-es-list-close-modal, #ig-es-list-cancel-modal', function (e) {
+    e.preventDefault();
+    jQuery('#add-list-modal').addClass('hidden');
+	jQuery('#list-message').html(''); 
+});
+
+jQuery(document).on('click', '#es-add-list', function (e) {
+    e.preventDefault();
+
+    var list_name   = jQuery('#add-list-form #es-list-name').val();
+    var list_desc   = jQuery('#add-list-form #es-list-desc').val();
+
+    if (list_name) {
+        var params = {
+            es_list_name: list_name,
+            es_list_desc: list_desc,
+            action: 'ig_es_add_list',
+            security: ig_es_js_data.security 
+        };
+
+        // Show the spinner and disable the button
+        jQuery('#spinner-image').show();
+        jQuery('#es-add-list').prop('disabled', true); 
+        jQuery.ajax({
+            method: 'POST',
+            url: ajaxurl,
+            data: params,
+            dataType: 'json',
+            success: function (response) {
+                // Hide the spinner and enable the button
+                jQuery('#spinner-image').hide();
+                jQuery('#es-add-list').prop('disabled', false); 
+
+                // Handle success response
+                if (response.success) {
+                    let successMessageHTML = '<span style="color:green">' + response.data + '</span>';
+                    jQuery('#ig-es-list-message').html(successMessageHTML);
+                    // Clear the input fields
+                    jQuery('#es-list-name').val('');
+                    jQuery('#es-list-desc').val('');
+                } else {
+                    let errorMessageHTML = '<span style="color:#e66060"><strong>' + ig_es_js_data.i18n_data.sending_error_text + '</strong>: ' + response.data + '</span>';
+                    jQuery('#ig-es-list-message').html(errorMessageHTML);
+                }
+            },
+            error: function (err) {
+                // Hide the spinner and enable the button
+                jQuery('#spinner-image').hide();
+                jQuery('#es-add-list').prop('disabled', false); 
+                let errorMessageHTML = '<span style="color:#e66060"><strong>Error:</strong> ' + err.statusText + '</span>';
+                jQuery('#ig-es-list-message').html(errorMessageHTML);
+            }
+        });
+    } else {
+        alert( __( 'Please enter a list name','email-subscribers' ) ); 
+    }
+});
+
+
+
+

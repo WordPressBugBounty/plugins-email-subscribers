@@ -359,7 +359,7 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 																<?php
 																$allowedtags = ig_es_allowed_html_tags_in_esc();
 																if ( count( $lists ) > 0 ) {
-																	$lists_checkboxes = ES_Shortcode::prepare_lists_checkboxes( $lists, array_keys( $lists ), 3, (array) $form_data['lists'] );
+																	$lists_checkboxes = ES_Shortcode::prepare_lists_multi_select( $lists, array_keys( $lists ), 3, (array) $form_data['lists'] );
 																	echo wp_kses( $lists_checkboxes, $allowedtags );
 
 																} else {
@@ -494,7 +494,11 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 
 			$nonce = wp_create_nonce( 'es_form' );
 			?>
-
+            <style>
+			.select2-container{
+				width: 100%!important;
+			}
+			</style>
 			<div id="es-edit-form-container" data-editor-type="<?php echo esc_attr( $editor_type ); ?>" class="<?php echo esc_attr( $editor_type ); ?> font-sans pt-1.5 wrap">
 				<?php
 				if ( ! empty( $message_data ) ) {
@@ -741,13 +745,17 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 																echo esc_html__( 'Lists ', 'email-subscribers' ) . wp_kses( $lists_tooltip_text, $allowedtags ); 
 																?>
 															</span>
+															<?php if ( empty($lists) ) { ?>
+															<a href="#" id="ig-es-open-add-list-modal" class="button primary" ><?php esc_html_e( 'Add List', 'email-subscribers' ); ?></a>
+															<?php } ?>
+
 														</label>
 												</div>
 												<div class="w-8/12">
 													<?php
 													if ( count( $lists ) > 0 ) {
 														$form_lists       = ! empty( $form_data['settings']['lists'] ) ? $form_data['settings']['lists'] : array();
-														$lists_checkboxes = ES_Shortcode::prepare_lists_checkboxes( $lists, array_keys( $lists ), 3, (array) $form_lists, '', '', 'form_data[settings][lists][]' );
+														$lists_checkboxes = ES_Shortcode::prepare_lists_multi_select( $lists, array_keys( $lists ), 3, (array) $form_lists, '', '', 'form_data[settings][lists][]' );
 														echo wp_kses( $lists_checkboxes, $allowedtags );
 													} else {
 														$create_list_link = admin_url( 'admin.php?page=es_lists&action=new' );
@@ -759,6 +767,15 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 															?>
 														</b></span>
 													<?php } ?>
+													<script>
+													jQuery(document).ready(function() {
+														const selectId = 'ig-es-multiselect-lists';
+														jQuery('#' + selectId).select2({
+															placeholder: "Select options",
+															closeOnSelect: false
+														});
+													});
+												</script>
 												</div>
 											</div>
 										</div>
@@ -784,6 +801,41 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 
 					</fieldset>
 				</form>
+				
+				<!-- Add new list modal popup -->
+	<div id="add-list-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+			<div class="bg-white rounded-lg p-6 container">
+				<h2 class="text-lg font-semibold mb-4"> <?php echo esc_html__('Add New List', 'email-subscribers'); ?></h2>
+				<div class="ig-es-popup-close-container close-container">
+					<button
+						id="ig-es-list-close-modal"
+						class="text-gray-600 hover:text-gray-900"
+>
+						<span class="icon-close">&times;</span>
+					</button>
+				</div>
+				<form id="add-list-form">
+					<input type="hidden" name="_wpnonce" value="<?php echo esc_attr(wp_create_nonce('es_list')); ?>" />
+					<div class="mb-4">
+						<label for="es-list-name" class="block text-sm font-medium text-gray-700"> <?php echo esc_html__('List Name', 'email-subscribers'); ?></label>
+						<input type="text" name="es-list-name" id="es-list-name" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" placeholder="" required />
+					</div>
+					<div class="mb-4">
+						<label for="es-list-desc" class="block text-sm font-medium text-gray-700"> <?php echo esc_html__('Description', 'email-subscribers'); ?></label>
+						<textarea name="es-list-desc" id="es-list-desc" class="h-24 mt-1 block w-full border border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500" rows="2" placeholder=""></textarea>
+					</div>
+					<div class="flex justify-end mt-4">
+						<button type="button" class="bg-gray-300 text-gray-700 rounded-md px-4 py-2 mr-2 hover:bg-gray-400" id="ig-es-list-cancel-modal"><?php echo esc_html__('Cancel', 'email-subscribers'); ?></button>
+						<button type="button" id="es-add-list" class="bg-indigo-600 text-white rounded-md px-4 py-2 hover:bg-indigo-700"><?php echo esc_html__('Save', 'email-subscribers'); ?></button>
+					</div>
+				</form>
+				<span class="es_spinner_image_admin inline-block align-middle -mt-1 mr-1" id="spinner-image" style="display:none">
+					<img src="<?php echo esc_url(ES_PLUGIN_URL . 'lite/public/images/spinner.gif'); ?>" alt="<?php echo esc_attr__('Loading...', 'email-subscribers'); ?>"/>
+				</span>
+				<div id="ig-es-list-message"></div>
+			</div>
+		</div>
+
 			</div>
 			<?php
 		}
@@ -855,7 +907,7 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 			$form_styles = array(
 				array(
 					'id'   => 'theme-styling',
-					'name' => __( 'Theme styling', 'email-subscribers' ),
+					'name' => __( 'Inherit from theme', 'email-subscribers' ),
 					'css'  => file_get_contents( $form_styles_path . 'theme-styling.css' ),
 				),
 			);

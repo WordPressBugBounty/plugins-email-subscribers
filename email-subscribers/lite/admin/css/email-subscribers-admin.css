@@ -3215,3 +3215,28 @@ body.icegram-express_page_es_forms #wpcontent {
 	letter-spacing: 1px
 }
 /* End */
+
+/* Add new list popup */
+#add-list-modal .container {
+	width:450px;
+	position: relative;
+}
+	
+	
+#add-list-modal .close-container {
+	position: absolute;
+	top: 10px;
+	right: 10px;
+}
+	
+#add-list-modal #ig-es-list-close-modal{
+    border:none;
+	background:none;
+    cursor:pointer;
+}
+#add-list-modal #ig-es-list-close-modal span {
+   font-size:24px;
+}
+#ig-es-open-add-list-modal {
+  padding-top: 3px;
+}
