@@ -47,8 +47,7 @@ class ES_Service_Email_Sending extends ES_Services {
 	private static $all_onboarding_tasks = array(
 		'configuration_tasks' => array(
 			'create_ess_account',
-			'set_sending_service_consent',
-			'schedule_ess_cron',			
+			'set_sending_service_consent',		
 		),
 		'email_delivery_check_tasks' => array(
 			'dispatch_emails_from_server',
@@ -121,14 +120,14 @@ class ES_Service_Email_Sending extends ES_Services {
 	public function init() {
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 		add_action( 'wp_ajax_ig_es_setup_email_sending_service', array( $this, 'setup_email_sending_service' ) );
-		add_action( 'ig_es_ess_update_account', array( $this, 'send_plan_data_to_ess') );
+		add_filter( 'ig_es_mailers', array( $this, 'register_icegram_mailer' ) );
+		add_filter( 'ig_es_registered_settings', array( $this, 'register_icegram_mailer_settings_fields' ), 10, 2 );
 		add_action( 'ig_es_message_sent', array( $this, 'update_sending_service_status' ) );
 		// We are marking sending service status as failed only when we can't send a campaign after trying 3 times.
 		// This will be helpful in avoiding temporary failure errors due to network calls/site load on ESS end.
 		add_action( 'ig_es_campaign_failed', array( $this, 'update_sending_service_status' ) );
 		add_action( 'admin_notices', array( $this, 'show_ess_promotion_notice' ) );
 
-		add_action( 'admin_notices', array( $this, 'show_ess_fallback_removal_notice' ) );
 		add_action( 'wp_ajax_ig_es_dismiss_ess_fallback_removal_notice', array( $this, 'dismiss_ess_fallback_removal_notice' ) );
 		add_action( 'ig_es_before_settings_save', array( $this, 'maybe_update_ess_status' ) );
 	}
@@ -192,6 +191,54 @@ class ES_Service_Email_Sending extends ES_Services {
 		wp_send_json( $response );
 	}
 
+	public function register_icegram_mailer( $mailers ) {
+		
+		$ess_option_exists = get_option( 'ig_es_ess_opted_for_sending_service', '' ) !== '';
+		if ( $ess_option_exists && is_array( $mailers ) ) {
+			$icegram_mailer = array(
+				'icegram' => array(
+					'name' => 'Icegram ESS',
+					'logo' => ES_PLUGIN_URL . 'lite/admin/images/icegram-mailer.png'
+				)
+			);
+
+			$mailers = array_merge( $icegram_mailer, $mailers );
+		}
+		
+		return $mailers;
+	}
+
+	public function register_icegram_mailer_settings_fields( $fields ) {
+		$ess_option_exists = get_option( 'ig_es_ess_opted_for_sending_service', '' ) !== '';
+		if ( $ess_option_exists ) {
+			$mailer_settings = get_option( 'ig_es_mailer_settings', array() );
+			$ess_email       = ! empty( $mailer_settings['icegram']['email'] ) ? $mailer_settings['icegram']['email'] : ES_Common::get_admin_email();
+			$ess_fields      = array(
+				'ig_es_ess_email' => array(
+					'type'         => 'email',
+					'placeholder'  => __( 'Registered email', 'email-subscribers' ),
+					'supplemental' => '',
+					'default'      => '',
+					'id'           => 'ig_es_mailer_settings[icegram][email]',
+					'name'         => __( 'Registered email', 'email-subscribers' ),
+					'desc'         => __( 'Email registered with us', 'email-subscribers' ),
+					'class'        => 'icegram',
+					'disabled'     => '',
+					'value'        => $ess_email,
+				),
+
+				'ig_es_ess_plan_info' => array(
+					'type' => 'html',
+					'html' => $this->get_plan_info_block(),
+					'id'   => 'ig_es_plan_info_block',
+					'name' => '',
+				),
+			);
+			$fields['email_sending']['ig_es_mailer_settings']['sub_fields'] = array_merge( $fields['email_sending']['ig_es_mailer_settings']['sub_fields'], $ess_fields );
+		}
+		return $fields;
+	}
+
 	public function create_ess_account() {
 
 		global $ig_es_tracker;
@@ -205,7 +252,7 @@ class ES_Service_Email_Sending extends ES_Services {
 			return $response;
 		}
 
-		$plan = $this->get_plan();
+		$plan       = $this->get_plan();
 		$from_email = get_option( 'ig_es_from_email' );
 		$home_url   = home_url();
 		$parsed_url = parse_url( $home_url );
@@ -255,9 +302,16 @@ class ES_Service_Email_Sending extends ES_Services {
 			);
 
 			update_option( 'ig_es_ess_data', $ess_data );
+
+			$mailer_settings           = get_option( 'ig_es_mailer_settings', array() );
+			$mailer_settings['mailer'] = 'icegram';
+
+			$mailer_settings['icegram']['email'] = $email;
+			update_option( 'ig_es_mailer_settings', $mailer_settings );
+
 			$response['status'] = 'success';
 		} else {
-			$response['message'] = ! empty( $request_response->get_error_message() ) ? $request_response->get_error_message() : __( 'An error has occured while creating your account. Please try again later', 'email-subscribers' );
+			$response['message'] = is_wp_error( $request_response ) && ! empty( $request_response->get_error_message() ) ? $request_response->get_error_message() : __( 'An error has occurred while creating your account. Please try again later', 'email-subscribers' );
 		}
 
 		return $response;
@@ -268,7 +322,6 @@ class ES_Service_Email_Sending extends ES_Services {
 		$response = array(
 			'status' => 'error',
 		);
-
 		update_option( 'ig_es_ess_opted_for_sending_service', 'yes', 'no' );
 		update_option( 'ig_es_ess_status', 'success' );
 
@@ -606,9 +659,6 @@ class ES_Service_Email_Sending extends ES_Services {
 			'set_sending_service_consent' => array(
 				'create_ess_account',
 			),
-			'schedule_ess_cron' => array(
-				'create_ess_account',
-			),
 			'dispatch_emails_from_server' => array(
 				'set_sending_service_consent',
 			),
@@ -688,69 +738,8 @@ class ES_Service_Email_Sending extends ES_Services {
 		return $response;
 	}
 
-	public function schedule_ess_cron() {
-		$response = array(
-			'status' => 'error',
-		);
-
-		if ( ! wp_next_scheduled( 'ig_es_ess_update_account') ) {
-			wp_schedule_event( time(), 'daily', 'ig_es_ess_update_account' );
-		}
-
-		$response['status'] = 'success';
-		return $response;
-	}
-
-	public function clear_ess_cron() {
-		wp_clear_scheduled_hook('ig_es_ess_update_account');
-	}
-
-	public function send_plan_data_to_ess() {
-
-		$response = array(
-			'status' => 'error',
-		);
-
-		if ( !$this->opted_for_sending_service() ) {
-			$this -> clear_ess_cron();
-			return;
-		}
-
-		$ess_data = get_option( 'ig_es_ess_data', array() );
-		$api_key  = $ess_data['api_key'];
-		$current_plan = $this -> get_plan();
-		
-		// Update account if plan is not registered or it has changed
-		if ( !empty( $ess_data['plan'] ) && $ess_data['plan'] == $current_plan ) {
-			return;
-		}
-
-		$data = array(
-			'plan'   => $current_plan,
-		);
-
-		$options = array(
-			'timeout' => 50,
-			'method'  => 'POST',
-			'body'    => json_encode($data),
-			'headers' => array(
-				'Authorization' => 'Bearer ' . $api_key,// Keep it like bearer when we send email
-				'Content-Type'  => 'application/json',
-			),
-		);
-
-		$api_url = 'https://api.igeml.com/accounts/update/';
-
-		$response = wp_remote_post( $api_url, $options );
-
-		if ( ! is_wp_error( $response ) ) {
-			$response_body = wp_remote_retrieve_body( $response );
-			$response_data = ( array ) json_decode( $response_body );
-			if ( 'success' === $response_data['status'] ) {
-				$ess_data['plan'] = $this->get_plan();
-				update_option( 'ig_es_ess_data', $ess_data );
-			}
-		}
+	public function get_ess_data() {
+		return get_option( 'ig_es_ess_data', array() );
 	}
 
 	public static function update_used_limit( $sent_count = 0 ) {
@@ -776,14 +765,20 @@ class ES_Service_Email_Sending extends ES_Services {
 		return $remaining_limit;
 	}
 
+	public static function get_ess_email() {
+		$mailer_settings = get_option( 'ig_es_mailer_settings', array() );
+		$ess_email       = ! empty( $mailer_settings['icegram']['email'] ) ? $mailer_settings['icegram']['email'] : ES_Common::get_admin_email();
+		return $ess_email;
+	}
+
 	public static function fetch_and_update_ess_limit() {
-		$admin_email = ES_Common::get_admin_email();
-		$data = array(
+		$admin_email = self::get_ess_email();
+		$data        = array(
 			'admin_email'   => $admin_email,
 		);
-		$ess_data = get_option( 'ig_es_ess_data', array() );
-		$api_key  = $ess_data['api_key'];
-		$options = array(
+		$ess_data    = get_option( 'ig_es_ess_data', array() );
+		$api_key     = $ess_data['api_key'];
+		$options     = array(
 			'method'  => 'POST',
 			'body'    => json_encode($data),
 			'timeout' => 15,
@@ -793,32 +788,25 @@ class ES_Service_Email_Sending extends ES_Services {
 			),
 		);
 
-		$api_url = 'https://api.igeml.com/limit/check/';
+		$request_url = 'https://api.igeml.com/limit/check/';
 
-		$response = wp_remote_post( $api_url, $options );
+		$response = wp_remote_post( $request_url, $options );
 
 		if ( ! is_wp_error( $response ) ) {
 			$response_body = wp_remote_retrieve_body( $response );
 			$response_data = ( array ) json_decode( $response_body );
 			if ( 'success' === $response_data['status'] ) {
 				if ( ! empty( $response_data['account'] ) ) {
-					$current_month               = ig_es_get_current_month();
-					$account                     = (array) $response_data['account'];
-					$ess_data                    = get_option( 'ig_es_ess_data', array() );
-					$ess_data['allocated_limit'] = $account['allocated_limit'];
-					$ess_data['used_limit'][$current_month]      = $account['used_limit'];
+					$current_month                          = ig_es_get_current_month();
+					$account                                = (array) $response_data['account'];
+					$ess_data                               = get_option( 'ig_es_ess_data', array() );
+					$ess_data['allocated_limit']            = $account['allocated_limit'];
+					$ess_data['next_reset']                 = $account['next_reset'];
+					$ess_data['used_limit'][$current_month] = $account['used_limit'];
 					update_option( 'ig_es_ess_data', $ess_data );
 				}
 			}
 		}
-	}
-
-	public static function use_icegram_mailer() {
-		$use_icegram_mailer = false;
-		if ( self::opted_for_sending_service() ) {
-			$use_icegram_mailer = true;
-		}
-		return $use_icegram_mailer;
 	}
 
 	public static function opted_for_sending_service() {
@@ -944,61 +932,14 @@ class ES_Service_Email_Sending extends ES_Services {
 		return $message_html;
 	}
 
-	public function send_used_limit_data_to_ess() {
-		$response = array(
-			'status' => 'error',
-		);
-
-		$ess_option_exists = get_option( 'ig_es_ess_opted_for_sending_service', '' ) !== '';
-		if ( ! $ess_option_exists ) {
-			return;
-		}
-
-		$ess_data = get_option( 'ig_es_ess_data', array() );
-		$current_month = ig_es_get_current_month();
-		$allocated_limit = ! empty( $ess_data['allocated_limit'] ) ? (int) $ess_data['allocated_limit'] : 0;
-		if ( $allocated_limit !== 3000 ) {
-			return;
-		}
-		$used_limit      = ! empty( $ess_data['used_limit'][$current_month] ) ? $ess_data['used_limit'][$current_month] : 0;
-		$api_key  = $ess_data['api_key'];
-
-		$data = array(
-			'used_limit'   => (int) $used_limit,
-		);
-
-		$options = array(
-			'timeout' => 50,
-			'method'  => 'POST',
-			'body'    => json_encode($data),
-			'headers' => array(
-				'Authorization' => 'Bearer ' . $api_key,// Keep it like bearer when we send email
-				'Content-Type'  => 'application/json',
-			),
-		);
-
-		$api_url = 'https://api.igeml.com/accounts/update/';
-
-		$response = wp_remote_post( $api_url, $options );
-
-		if ( ! is_wp_error( $response ) ) {
-			$response_body = wp_remote_retrieve_body( $response );
-			$response_data = ( array ) json_decode( $response_body );
-			if ( 'success' === $response_data['status'] ) {
-				$ess_data['plan'] = $this->get_plan();
-				update_option( 'ig_es_ess_data', $ess_data );
-			}
-		}
-	}
-
 	// ESS promotion notice for WP/PHP mailer
 	public static function get_ess_promotion_message_mailer_html( $time_message, $total_contacts) {
 		ob_start();
 		$optin_url      = admin_url('?page=es_dashboard&ess_optin=yes#sending-service-onboarding-tasks-list');
 		$learn_more_url = 'https://www.icegram.com/email-sending-service/?utm_source=in_app&utm_medium=ess_wp_php_mailer_notice&utm_campaign=ess_upsell';
 	
-		$heading = esc_html__('Increase Your Email Campaign Efficiency with Our Email Sending Service!', 'email-subscribers');
-		$allowedtags     = ig_es_allowed_html_tags_in_esc();
+		$heading      = esc_html__('Increase Your Email Campaign Efficiency with Our Email Sending Service!', 'email-subscribers');
+		$allowedtags  = ig_es_allowed_html_tags_in_esc();
 		$tooltip_text = sprintf(
 			'Calculation based on your sending speed of %s and %s subscribers.',
 			esc_html($time_message),
@@ -1089,7 +1030,7 @@ class ES_Service_Email_Sending extends ES_Services {
 		}
 
 		if ( $total_contacts < 3000 ) {
-			$total_contacts=3000;
+			$total_contacts =3000;
 		}
 
 		$time_interval          = ES()->cron->get_cron_interval();
@@ -1112,92 +1053,6 @@ class ES_Service_Email_Sending extends ES_Services {
 		<?php
 		update_option( 'ig_es_ess_promotion_mailer_notice', 'yes', false );
 	}
-	
-	public function show_ess_fallback_removal_notice() {
-
-		if ( ! ES()->is_es_admin_screen() ) {
-			return;
-		}
-
-		$can_access_settings = ES_Common::ig_es_can_access( 'settings' );
-		if ( ! $can_access_settings ) {
-			return 0;
-		}
-
-		$current_page = ig_es_get_request_data( 'page' );
-
-		if ( 'es_dashboard' === $current_page ) {
-			return;
-		}
-
-		if ( ! self::opted_for_sending_service() || ES()->mailer->is_using_site_mailer() ) {
-			return;
-		}
-
-		$ess_data = get_option( 'ig_es_ess_data', array() );
-		$allocated_limit = ! empty( $ess_data['allocated_limit'] ) ? (int) $ess_data['allocated_limit'] : 0;
-
-		$fallback_notice_dismissed = 'yes' === get_option( 'ig_es_ess_fallback_removal_notice_dismissed', 'no' );
-		if ( ! $fallback_notice_dismissed ) {
-			$ess_pricing_url = 'https://www.icegram.com/email-sending-service/?utm_source=in_app&utm_medium=ess_setting&utm_campaign=ess_fallback_removal_notice';
-			$ess_setting_url = admin_url( 'admin.php?page=es_settings&section=ess#tabs-email_sending' );
-			?>
-			<div id="ig_es_ess_fallback_removal_notice" class="notice notice-error is-dismissible">
-				<div id="" class="text-gray-700 not-italic">
-					<p>
-						<strong>[<?php echo esc_html__( 'Important Notice', 'email-subscribers' ); ?>]:</strong>
-						<?php
-							/* translators: 1. Starting strong tag 2. Closing strong tag */
-							echo sprintf( esc_html__( 'Change in %1$sIcegram Email Sending Service%2$s', 'email-subscribers' ), '<strong>', '</strong>' );
-						?>
-					</p>
-					<p class="mb-2">
-						<?php
-						/* translators: 1. Starting strong tag 2. Closing strong tag */
-						echo sprintf( esc_html__( 'Starting %1$sNovember 4%2$s, 2024, once your Icegram email sending service\'s monthly limit is reached, %3$semail sending will be paused until the limit resets%4$s.'), '<strong>', '</strong>', '<strong>', '</strong>' );
-						if ( $allocated_limit < 30000 ) {
-							echo ' ' . esc_html__( 'You can upgrade to higher limit to avoid interruptions.', 'email-subscribers' );
-						}
-						echo ' ' . esc_html__( 'Alternatively disable our service to switch to your configured provider, though email delivery may be affected.', 'email-subscribers' ); 
-						?>
-					</p>
-					<p>
-						<?php
-						if ( $allocated_limit < 30000 ) {
-							?>
-						<a href="<?php echo esc_url( $ess_pricing_url ); ?>" target="_blank" id="ig-es-ess-optin-promo">
-							<button class="primary"><?php echo esc_html__('Upgrade', 'email-subscribers'); ?></button>
-						</a>
-						<?php
-						}
-						?>
-						<a href="<?php echo esc_url( $ess_setting_url ); ?>" target="_blank" id="ig-es-ess-optin-promo">
-							<button href="#" class="secondary"><?php echo esc_html__('Check your limit', 'email-subscribers'); ?></button>
-						</a>
-					</p>
-				</div>
-			</div>
-			<script>
-				jQuery(document).ready(function($) {
-					$('#ig_es_ess_fallback_removal_notice').on('click', '.notice-dismiss', function() {
-						$.ajax({
-							method: 'POST',
-							url: ajaxurl,
-							dataType: 'json',
-							data: {
-								action: 'ig_es_dismiss_ess_fallback_removal_notice',
-								security: ig_es_js_data.security
-							}
-						}).done(function(response){
-							console.log( 'response: ', response );
-						});
-					});
-				});
-
-			</script>
-			<?php
-		}
-	}
 
 	public function dismiss_ess_fallback_removal_notice() {
 		$response = array(
@@ -1217,25 +1072,26 @@ class ES_Service_Email_Sending extends ES_Services {
 	}
 
 	public function maybe_update_ess_status( $options ) {
-		if ( ! empty( $options['ig_es_ess_opted_for_sending_service'] ) ) {
-			$new_status = $options['ig_es_ess_opted_for_sending_service'];
-			$old_status = get_option( 'ig_es_ess_opted_for_sending_service', 'no' );
-			if ( $new_status !== $old_status ) {
-				$ess_status = 'yes' === $new_status ? 'active' : 'paused';
+		if ( ! empty( $options['ig_es_mailer_settings']['mailer'] ) ) {
+			$new_mailer          = $options['ig_es_mailer_settings']['mailer'];
+			$old_mailer_settings = get_option( 'ig_es_mailer_settings', array() );
+			$old_mailer          = ! empty( $old_mailer_settings['mailer'] ) ? $old_mailer_settings['mailer'] : '';
+			if ( $new_mailer !== $old_mailer && ( 'icegram' === $old_mailer || 'icegram' === $new_mailer ) ) {
+				$ess_status = 'icegram' === $new_mailer ? 'active' : 'paused';
 				$this->update_ess_status( $ess_status );
 			}
 		}
 	}
 
+
 	public function update_ess_status( $ess_status ) {
+
+		$opted_for_ess = 'active' === $ess_status ? 'yes' : 'no';
+		update_option( 'ig_es_ess_opted_for_sending_service', $opted_for_ess  );
+
 		$response = array(
 			'status' => 'error',
 		);
-
-		$ess_option_exists = get_option( 'ig_es_ess_opted_for_sending_service', '' ) !== '';
-		if ( ! $ess_option_exists ) {
-			return false;
-		}
 
 		$ess_data = get_option( 'ig_es_ess_data', array() );
 		$api_key  = $ess_data['api_key'];
@@ -1254,19 +1110,154 @@ class ES_Service_Email_Sending extends ES_Services {
 			),
 		);
 
-		$api_url = 'https://api.igeml.com/accounts/update/';
+		$request_url = 'https://api.igeml.com/accounts/update/';
 
-		$response = wp_remote_post( $api_url, $options );
+		$response = wp_remote_post( $request_url, $options );
 		
 		if ( ! is_wp_error( $response ) ) {
 			$response_body = wp_remote_retrieve_body( $response );
 			$response_data = ( array ) json_decode( $response_body );
-			if ( 'success' === $response_data['status'] ) {
+			if ( ! empty( $response_data['status'] ) && 'success' === $response_data['status'] ) {
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * Prepare Icegram Mailer Setting
+	 *
+	 * @return string
+	 */
+	public function get_plan_info_block() {
+		$html            = '';
+		$es_ess_data     = get_option( 'ig_es_ess_data', '' );
+		$current_month   = ig_es_get_current_month();
+		$interval        = isset( $es_ess_data['interval'] ) ? $es_ess_data['interval']: '';
+		$next_reset      = isset( $es_ess_data['next_reset'] ) ? $es_ess_data['next_reset']: '';
+		$allocated_limit = isset( $es_ess_data['allocated_limit'] ) ? $es_ess_data['allocated_limit']: 0;
+		$used_limit      = isset( $es_ess_data['used_limit'][$current_month] ) ? $es_ess_data['used_limit'][$current_month] : 0;
+		$remaining_limit = $allocated_limit - $used_limit;
+		if ( $allocated_limit > 0 ) {
+			$remaining_limit_percentage = number_format_i18n( ( ( $remaining_limit * 100 ) / $allocated_limit ), 2 );
+		} else {
+			$remaining_limit_percentage = 0;
+		}
+		$remaining_percentage_limit = 10;   //Set email remaining percentage limit, so upsell notice box will visible.
+		$plan                       = self::get_plan();
+		$premium_plans              = array( 'pro', 'max' );
+		$is_premium_plan            = in_array( $plan, $premium_plans, true );
+		$is_ess_branding_enabled    = self::is_ess_branding_enabled();
+		if ( ! empty( $next_reset ) ) {
+			$next_reset = ig_es_format_date_time( $next_reset );
+		}
+		ob_start();
+		?>
+		<section id="ig-es-ess-sending-service-info">
+			<div class="es_sub_headline icegram pt-4" style=""><strong><?php echo esc_html__( 'Plan info', 'email-subscribers' ); ?></strong></div>
+			<table id="ig-ess-plan-info-table" class="icegram field-desciption">
+				<tbody class="bg-blue-50">
+					<tr class="border-b border-gray-200 text-xs leading-4 font-medium">
+						<td>
+							<?php echo esc_html__( 'Allocated limit', 'email-subscribers' ); ?> 
+						</td>
+						<td>
+						<b><?php echo esc_html( $allocated_limit ); ?> / <?php echo esc_html( $interval ); ?></b>
+						</td>
+					</tr>
+					<tr class="border-b border-gray-200 text-xs leading-4 font-medium pt-1">
+						<td><?php echo esc_html__( 'Used limit', 'email-subscribers' ); ?></td>
+						<td>
+						<b><?php echo esc_html( $used_limit ) . ' (' . esc_html( number_format_i18n( ( ( $used_limit * 100 ) / $allocated_limit ), 2 ) ) . '%)'; ?></b>
+						</td>
+					</tr>
+					<tr class="border-b border-gray-200 text-xs leading-4 font-medium">
+						<td>
+							<?php echo esc_html__( 'Remaining limit', 'email-subscribers' ); ?>
+						</td>
+						<td>
+							<b style="<?php echo ( $remaining_limit_percentage <= $remaining_percentage_limit ) ? 'color:orange' : ''; ?>"><?php echo esc_html( $remaining_limit ) . ' (' . esc_html( $remaining_limit_percentage ) . '%)'; ?></b>
+						</td>
+					</tr>
+					<?php
+					if ( ! empty( $next_reset ) ) {
+						?>
+						<tr>
+							<td>
+								<?php echo esc_html__( 'Next reset date', 'email-subscribers' ); ?>
+							</td>
+							<td>
+								<b><?php echo esc_html( $next_reset ); ?></b>
+							</td>
+						</tr>
+						<?php
+					}
+					?>
+				</tbody>
+			</table>
+			<?php
+			if ( $remaining_limit_percentage <= $remaining_percentage_limit && $allocated_limit != 30000 ) {
+				?>
+				<div class="icegram field-desciption ess-upsell-sec mt-3">
+					<div class="main-upsell-sec">
+						<div class="flex">
+							<div class="flex-shrink-0">
+								<svg class='h-5 w-5 text-teal-400' fill='currentColor' viewBox='0 0 20 20'>
+									<path fill-rule='evenodd'
+										d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
+										clip-rule='evenodd'/>
+								</svg>
+							</div>
+							<div class="ess-upsell-msg my-1 ml-2 mb-2">
+								<h3>
+									<?php 
+									if ( $remaining_limit > 0 ) {
+										echo esc_html__( 'You are about to exhaust your monthly email sending limit.', 'email-subscribers' );
+									} else {
+										echo esc_html__( 'Your monthly sending limit has exhausted.', 'email-subscribers' );
+									}
+									?>
+									<?php 
+										echo esc_html__( ' Upgrade now to continue sending emails through our Icegram email sending service.', 'email-subscribers' );
+									?>
+								</h3>
+							</div>
+						</div>
+						<div class="upsell-btn-sec">
+							<a href="https://www.icegram.com/email-sending-service/?utm_source=in_app&utm_medium=ess_setting&utm_campaign=ess_upsell" target="_blank">
+								<button class="primary" type="button">
+									<?php esc_html_e( 'Upgrade', 'email-subscribers'); ?>
+								</button>
+							</a>
+						</div>
+					</div>
+				</div>
+				<?php
+			}
+			
+			if ( $is_premium_plan ) { 
+				?>
+			<div class="es_sub_headline icegram pt-4 mb-2" style=""><strong><?php echo esc_html__( 'Show "Sent by Icegram"', 'email-subscribers' ); ?></strong></div>
+			<div class="icegram field-desciption">
+				<label for="ig_es_ess_branding_enabled">
+					<span class="relative inline-block">
+						<input id="ig_es_ess_branding_enabled" type="checkbox" name="ig_es_ess_branding_enabled" value="yes" <?php echo $is_ess_branding_enabled ? esc_attr( 'checked="checked"') : ''; ?> class="sr-only peer absolute w-0 h-0 mt-6 opacity-0 es-check-toggle">
+						<div class="w-11 h-6 bg-gray-200 rounded-full peer  dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+					</span>
+					<p class="field-desciption helper icegram inline-block">
+					<?php
+						/* translators: %s Break tag */
+						echo sprintf( esc_html__( 'Include "Sent by Icegram" link in the footer of your emails.', 'email-subscribers' ), '<br/>' );
+					?>
+					</p>
+				</label>
+			</div>
+			<?php } ?>
+		</section>
+		<?php
+		$html = ob_get_clean();
+		return $html;
 	}
 }
 

@@ -1393,7 +1393,7 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 					'send_test_email',
 				),
 				'complete_ess_onboarding' => array(
-					'confirm_email_delivery',
+					'create_ess_account',
 				),
 
 				'check_test_email_on_server' => array(

@@ -1032,18 +1032,6 @@
 			});
 			jQuery('.es_mailer').trigger('change');
 
-			jQuery('#ig_es_ess_opted_for_sending_service').on('change', function() {
-				if ( jQuery(this).is(':checked') ) {
-					jQuery('#sending_service_info').removeClass('hidden');
-					let fallback_mailer_html_text = `<span class="inline-block pt-5 text-xs italic font-normal leading-snug text-gray-500">${ig_es_js_data.i18n_data.ess_fallback_text}</span>`;
-					jQuery('#ig_es_mailer_settings-field-row td p:first').html(fallback_mailer_html_text);
-				} else {
-					jQuery('#sending_service_info').addClass('hidden');
-					jQuery('#ig_es_mailer_settings-field-row td p:first').html('');
-				}
-			});
-			jQuery('#ig_es_ess_opted_for_sending_service').trigger('change');
-
 			//preview broadcast
 			// ig_es_preview_broadcast
 			jQuery(document).on('click', '#ig_es_preview_broadcast', function (e) {
@@ -4246,27 +4234,27 @@ jQuery(document).ready(function(){
 // Add new list popup functionality
 jQuery(document).on('click', '#ig-es-open-add-list-modal', function (e) {
     e.preventDefault();
-    jQuery('#add-list-modal').removeClass('hidden');
+    jQuery('#ig-es-add-list-modal').removeClass('inactive');
 });
 
 jQuery(document).on('click', '#ig-es-list-close-modal, #ig-es-list-cancel-modal', function (e) {
     e.preventDefault();
-    jQuery('#add-list-modal').addClass('hidden');
+    jQuery('#ig-es-add-list-modal').addClass('inactive');
 	jQuery('#list-message').html(''); 
 });
 
 jQuery(document).on('click', '#es-add-list', function (e) {
     e.preventDefault();
 
-    var list_name   = jQuery('#add-list-form #es-list-name').val();
-    var list_desc   = jQuery('#add-list-form #es-list-desc').val();
+    var listName   = jQuery('#add-list-form #es-list-name').val();
+    var listDesc   = jQuery('#add-list-form #es-list-desc').val();
 
-    if (list_name) {
+    if (listName) {
         var params = {
-            es_list_name: list_name,
-            es_list_desc: list_desc,
-            action: 'ig_es_add_list',
-            security: ig_es_js_data.security 
+            es_list_name: listName,
+            es_list_desc: listDesc,
+            action      : 'ig_es_add_list',
+            security    : ig_es_js_data.security 
         };
 
         // Show the spinner and disable the button
@@ -4284,11 +4272,28 @@ jQuery(document).on('click', '#es-add-list', function (e) {
 
                 // Handle success response
                 if (response.success) {
-                    let successMessageHTML = '<span style="color:green">' + response.data + '</span>';
+                    let successMessageHTML = '<span style="color:green">' + response.data.message + '</span>';
                     jQuery('#ig-es-list-message').html(successMessageHTML);
                     // Clear the input fields
                     jQuery('#es-list-name').val('');
                     jQuery('#es-list-desc').val('');
+
+					 // If the multi-select does not exist, create it dynamically
+					 if (!jQuery('#ig-es-multiselect-lists').length) {
+						let selectHTML = `
+							<div class="max-w-sm mx-auto bg-white shadow-md rounded-lg p-6 pt-0.5">
+								<label for="form multi-select" class="block text-gray-700 text-sm font-bold mb-2">Select list(s)*</label>
+								<select id="ig-es-multiselect-lists" name="form_data[settings][lists][]" multiple class="block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300">
+								</select>
+							</div>`;
+						jQuery('.ig-es-multiselect-container').html(selectHTML);
+					}
+
+					let listId    = response.data.list_id;  
+					let newOption = new Option(listName, listId, true, true);
+					jQuery('#ig-es-multiselect-lists').append(newOption).trigger('change');
+					jQuery('#ig-es-multiselect-lists').select2();
+                    
                 } else {
                     let errorMessageHTML = '<span style="color:#e66060"><strong>' + ig_es_js_data.i18n_data.sending_error_text + '</strong>: ' + response.data + '</span>';
                     jQuery('#ig-es-list-message').html(errorMessageHTML);

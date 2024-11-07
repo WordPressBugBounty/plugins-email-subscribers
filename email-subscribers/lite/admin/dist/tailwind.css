@@ -4063,7 +4063,6 @@ table td
 /* Setting tab content CSS */
 #es-menu-tab-content {
   width: 80%;
-  /* End */
 
   /* All tab content table CSS*/
 }
@@ -4131,7 +4130,6 @@ table td
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
   padding-left: 1.25rem;
-          /* End */
 
           /* Upsell section CSS */
 }
@@ -4333,14 +4331,14 @@ table td
 }
 /* End */
 /* Cron info & authentication table CSS */
-#es-menu-tab-content #tabs-general table tr td table.cron-info, #es-menu-tab-content #tabs-email_sending table tr td table.cron-info, #es-menu-tab-content #tabs-security_settings table tr td table.cron-info, #es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info, #es-menu-tab-content #tabs-user_roles table tr td table.cron-info, #es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table, #es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table, #es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table, #es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table, #es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table, #es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table, #es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table, #es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table, #es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table, #es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table {
+#es-menu-tab-content #tabs-general table tr td table.cron-info, #es-menu-tab-content #tabs-email_sending table tr td table.cron-info, #es-menu-tab-content #tabs-security_settings table tr td table.cron-info, #es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info, #es-menu-tab-content #tabs-user_roles table tr td table.cron-info, #es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table, #es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table, #es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table, #es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table, #es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table, #es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table, #es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table, #es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table, #es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table, #es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table, #es-menu-tab-content #tabs-general table tr td #ig-ess-plan-info-table, #es-menu-tab-content #tabs-email_sending table tr td #ig-ess-plan-info-table, #es-menu-tab-content #tabs-security_settings table tr td #ig-ess-plan-info-table, #es-menu-tab-content #tabs-rest_api_settings table tr td #ig-ess-plan-info-table, #es-menu-tab-content #tabs-user_roles table tr td #ig-ess-plan-info-table {
   margin-left: 0;
   min-width: -webkit-fit-content;
   min-width: -moz-fit-content;
   min-width: fit-content;
   border-radius: 0.5rem;
 }
-:is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table) thead tr {
+:is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-general table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-email_sending table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-security_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-user_roles table tr td #ig-ess-plan-info-table) thead tr {
   --tw-bg-opacity: 1;
   background-color: rgb(235 245 255 / var(--tw-bg-opacity));
   font-size: 0.75rem;
@@ -4351,26 +4349,26 @@ table td
   --tw-text-opacity: 1;
   color: rgb(107 114 128 / var(--tw-text-opacity));
 }
-:is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table) thead tr th {
+:is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-general table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-email_sending table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-security_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-user_roles table tr td #ig-ess-plan-info-table) thead tr th {
   display: table-cell;
   padding-left: 1.25rem;
   padding-right: 1.25rem;
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
-:is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table) tbody tr {
+:is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-general table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-email_sending table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-security_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-user_roles table tr td #ig-ess-plan-info-table) tbody tr {
   border-bottom-width: 1px;
   --tw-border-opacity: 1;
   border-color: rgb(229 231 235 / var(--tw-border-opacity));
 }
-:is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table) tbody tr td {
+:is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-general table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-email_sending table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-security_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-user_roles table tr td #ig-ess-plan-info-table) tbody tr td {
   width: 25%;
   border-radius: 0px;
   --tw-bg-opacity: 1;
   background-color: rgb(235 245 255 / var(--tw-bg-opacity));
   text-align: left;
 }
-:is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table) tbody tr td span#ig-es-verify-auth-message {
+:is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-general table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-email_sending table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-security_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-user_roles table tr td #ig-ess-plan-info-table) tbody tr td span#ig-es-verify-auth-message {
   font-size: 0.75rem;
   line-height: 1rem;
   font-weight: 700;
@@ -4508,6 +4506,7 @@ table td
 #es-menu-tab-content #tabs-general table tr td table.user-roles-table tbody tr td, #es-menu-tab-content #tabs-email_sending table tr td table.user-roles-table tbody tr td, #es-menu-tab-content #tabs-security_settings table tr td table.user-roles-table tbody tr td, #es-menu-tab-content #tabs-rest_api_settings table tr td table.user-roles-table tbody tr td, #es-menu-tab-content #tabs-user_roles table tr td table.user-roles-table tbody tr td {
   padding-left: 2.5rem;
 }
+/* End */
 #es-menu-tab-content #tabs-general table tr:last-of-type, #es-menu-tab-content #tabs-email_sending table tr:last-of-type, #es-menu-tab-content #tabs-security_settings table tr:last-of-type, #es-menu-tab-content #tabs-rest_api_settings table tr:last-of-type, #es-menu-tab-content #tabs-user_roles table tr:last-of-type {
   border-width: 0px;
 }
@@ -4515,6 +4514,17 @@ table td
       border-width: 0px;
   }
 /* End */
+/* End */
+/*** ESS plan info  CSS START***/
+#ig-es-ess-sending-service-info p {
+  vertical-align: bottom;
+  display: inline-block;
+}
+#ig-es-ess-sending-service-info table#ig-ess-plan-info-table tr td {
+  padding-top: .75rem;
+  padding-bottom: .75rem;
+}
+/*** ESS plan info CSS END***/
 .toplevel_page_es_dashboard .sticky {
   top: 32px; /* Adjust for standard admin bar height */
 }
@@ -5081,12 +5091,6 @@ table td
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
-.reports-statistic .statistic-info .stat-sec .stat-grid-sec {
-
-        /* .email_sent, .email_unsubscribed {
-          @apply mt-1 font-medium leading-6 text-gray-500";
-        } */
-      }
 .reports-statistic .statistic-info .stat-sec .stat-grid-sec .email_viewed_count {
   font-size: 1.5rem;
   line-height: 2rem;
@@ -5141,6 +5145,9 @@ table td
   --tw-text-opacity: 1;
   color: rgb(88 80 236 / var(--tw-text-opacity));
 }
+/* .email_sent, .email_unsubscribed {
+          @apply mt-1 font-medium leading-6 text-gray-500";
+        } */
 .reports-statistic .empty_country_data {
   padding-left: 1.5rem;
   padding-right: 1.5rem;

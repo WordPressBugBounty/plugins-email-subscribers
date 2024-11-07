@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, newsletters, autoresponders, email aut
 Requires at least: 3.9
 Tested up to: 6.6
 Requires PHP: 7.0
-Stable tag: 5.7.40
+Stable tag: 5.7.41
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -438,12 +438,15 @@ Refer [here](https://www.icegram.com/docs/category/icegram-express/faq/?utm_sour
 
 == Upgrade Notice ==
 
-= 5.7.40 =
+= 5.7.41 =
 
-* Improvements: Form UI improvements
-* Fix: PHP warning "Invalid argument supplied for foreach()" while creating campaigns
+* New: Added option to create new list on form page
 
 == Changelog ==
+
+**5.7.41 (07.11.2024)**
+
+* New: Added option to create new list on form page
 
 **5.7.40 (05.11.2024)**
 

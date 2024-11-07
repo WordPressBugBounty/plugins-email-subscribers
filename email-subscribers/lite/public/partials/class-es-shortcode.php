@@ -561,7 +561,7 @@ class ES_Shortcode {
 
 	public static function prepare_lists_multi_select( $lists, $list_ids = array(), $columns = 3, $selected_lists = array(), $list_label = '', $contact_id = 0, $name = 'lists[]', $lists_id_hash_map = array() ) {
 		$list_label = ! empty( $list_label ) ? $list_label : __( 'Select list(s)', 'email-subscribers' );
-		$lists_html = '<div class="max-w-sm mx-auto bg-white shadow-md rounded-lg p-6">';
+		$lists_html = '<div class="max-w-sm mx-auto bg-white shadow-md rounded-lg p-6 pt-0.5">';
 		$lists_html .= '<label for="form multi-select" class="block text-gray-700 text-sm font-bold mb-2">' . $list_label . '*</label>';
 		$lists_html .= '<select id="ig-es-multiselect-lists" name="' . $name . '" multiple class="block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300">';
 		$lists = apply_filters( 'ig_es_lists', $lists );

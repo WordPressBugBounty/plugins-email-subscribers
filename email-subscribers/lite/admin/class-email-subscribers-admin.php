@@ -1860,11 +1860,14 @@ class Email_Subscribers_Admin {
 			'list_desc' => $list_desc,
 		);
 		
-		$save = $this->db->save_list(null, $data);
+		$save = $this->db->save_list(null, $data);		
 		if ($save) {
-			wp_send_json_success(__('List added successfully.', 'email-subscribers'));
+			wp_send_json_success(array(
+				'message' => __('List added successfully.', 'email-subscribers'),
+				'list_id' => $save,
+			));
 		} else {
-			wp_send_json_error(__('Failed to add list.', 'email-subscribers'));
+			wp_send_json_error( __('Failed to add list.', 'email-subscribers') );
 		}
 	}
 	

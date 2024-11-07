@@ -217,7 +217,7 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 			<div class="flex-auto min-w-0 es-w-35 pr-3 ess-block">
 				<?php
 				if ( ES_Service_Email_Sending::is_onboarding_completed() ) {
-					$current_month        = ig_es_get_current_month();
+					$current_month       = ig_es_get_current_month();
 					$service_status      = ES_Service_Email_Sending::get_sending_service_status();
 					$ess_data            = get_option( 'ig_es_ess_data', array() );
 					$used_limit          = isset( $ess_data['used_limit'][$current_month] ) ? $ess_data['used_limit'][$current_month]: 0;

@@ -576,23 +576,20 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 			$this->time_start = time();
 
 			if ( ES_Service_Email_Sending::using_icegram_mailer() ) {
-				$remaining_limit = ES_Service_Email_Sending::get_remaining_limit();
-				
+				$remaining_limit = ES_Service_Email_Sending::get_remaining_limit();				
 				if ( $remaining_limit > 0 ) {
 					$this->mailer->remaining_limit = $remaining_limit;
 				} else {
-					if ( $this->can_switch_to_default_mailer() ) {
-						$this->switch_to_default_mailer();
-					} else {
-						$response['status']  = 'ERROR';
-						$response['message'] = 'Email sending limit reached';
-						return $response;
-					}
+					$response['status']  = 'ERROR';
+					$response['message'] = __(  'Email sending limit reached.', 'email-subscribers' );
+					return $response;
 				}
 			}
-			$message_id       = ! empty( $merge_tags['message_id'] ) ? $merge_tags['message_id'] : 0;
-			$campaign_id      = ! empty( $merge_tags['campaign_id'] ) ? $merge_tags['campaign_id'] : 0;
-			$attachments      = ! empty( $merge_tags['attachments'] ) ? $merge_tags['attachments'] : array();
+			
+			$message_id  = ! empty( $merge_tags['message_id'] ) ? $merge_tags['message_id'] : 0;
+			$campaign_id = ! empty( $merge_tags['campaign_id'] ) ? $merge_tags['campaign_id'] : 0;
+			$attachments = ! empty( $merge_tags['attachments'] ) ? $merge_tags['attachments'] : array();
+
 			
 			$sender_data   = array();
 			$campaign_type = '';
@@ -1916,6 +1913,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 		public function get_current_mailer_slug() {
 			$mailer_settings     = get_option( 'ig_es_mailer_settings', '');
 			$current_mailer_slug = ( !empty( $mailer_settings['mailer'] ) ) ? $mailer_settings['mailer'] : 'wpmail';
+
 			return $current_mailer_slug;
 		}
 
@@ -1949,12 +1947,8 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 		 */
 		public function set_mailer() {
 			$mailer_class = $this->get_current_mailer_class();
-			 $mailer_obj = new $mailer_class();
-			if (ES_Service_Email_Sending::use_icegram_mailer()) {
-				$this->default_mailer = $mailer_obj;
-				$mailer_obj = new ES_Icegram_Mailer();
-			}
-			$this->mailer =$mailer_obj;
+			$mailer_obj   = new $mailer_class();
+			$this->mailer = $mailer_obj;
 		}
 
 		public function can_switch_to_default_mailer() {

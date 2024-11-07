@@ -825,7 +825,7 @@ table td
           /* End */
 
           /* Cron info & authentication table CSS */
-          table.cron-info, table#ig-es-settings-authentication-table, #ig-es-rest-api-section table {
+          table.cron-info, table#ig-es-settings-authentication-table, #ig-es-rest-api-section table, #ig-ess-plan-info-table {
             @apply min-w-fit rounded-lg ml-0;
 
             thead {
@@ -936,6 +936,20 @@ table td
   /* End */
 }
 /* End */
+
+
+
+/*** ESS plan info  CSS START***/
+#ig-es-ess-sending-service-info p {
+  vertical-align: bottom;
+  display: inline-block;
+}
+
+#ig-es-ess-sending-service-info table#ig-ess-plan-info-table tr td {
+  padding-top: .75rem;
+  padding-bottom: .75rem;
+}
+/*** ESS plan info CSS END***/
 
 .toplevel_page_es_dashboard .sticky {
   top: 32px; /* Adjust for standard admin bar height */

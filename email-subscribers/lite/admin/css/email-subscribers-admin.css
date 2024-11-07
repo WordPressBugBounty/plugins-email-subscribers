@@ -3217,26 +3217,135 @@ body.icegram-express_page_es_forms #wpcontent {
 /* End */
 
 /* Add new list popup */
-#add-list-modal .container {
-	width:450px;
-	position: relative;
+
+/* Modal Overlay */
+#ig-es-add-list-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.5);
 }
-	
-	
-#add-list-modal .close-container {
-	position: absolute;
-	top: 10px;
-	right: 10px;
+
+/* Modal Content */
+#ig-es-add-list-modal .modal-content {
+    background-color: white;
+    padding: 20px;
+    width: 500px;
+    border-radius: 4px;
+    position: relative;
+    z-index: 99;
 }
-	
-#add-list-modal #ig-es-list-close-modal{
-    border:none;
-	background:none;
-    cursor:pointer;
+
+/* Modal Title */
+#ig-es-add-list-modal .modal-title {
+    font-size: 18px;
+    font-weight: bold;
+    margin-bottom: 16px;
 }
-#add-list-modal #ig-es-list-close-modal span {
-   font-size:24px;
+
+/* Close Button */
+#ig-es-add-list-modal .modal-close {
+    position: absolute;
+    top: 10px;
+    right: 10px;
 }
-#ig-es-open-add-list-modal {
-  padding-top: 3px;
+
+#ig-es-add-list-modal .close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #666;
+}
+
+/* Form Group */
+#ig-es-add-list-modal .form-group {
+    margin-bottom: 16px;
+}
+
+/* Form Labels */
+#ig-es-add-list-modal .form-label {
+    display: block;
+    font-size: 14px;
+    color: #333;
+}
+
+/* Form Inputs */
+#ig-es-add-list-modal .form-input,
+#ig-es-add-list-modal .form-textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 14px;
+    box-shadow: none;
+}
+
+#ig-es-add-list-modal .form-input:focus,
+#ig-es-add-list-modal .form-textarea:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+/* Buttons */
+#ig-es-add-list-modal .button-cancel {
+    background-color: f9f6ff;
+    color: #4a5568;
+    margin-right: 10px;
+    cursor: pointer;
+	width: 68px;
+    height: 36px;
+    border-radius: 7px;
+	font-weight: bold;
+}
+
+#ig-es-add-list-modal .button-cancel:hover {
+    background-color: #f8f8f8;
+	border: 1px solid #5e19cf;
+}
+
+#ig-es-add-list-modal .button-save {
+    background-color: #5e19cf;
+    color: white;
+    padding: 8px 16px;
+    cursor: pointer;
+	width: 68px;
+    height: 36px;
+    border-radius: 7px;
+	font-weight: bold;
+}
+
+#ig-es-add-list-modal .button-save:hover {
+    background-color: #7230DF;
+}
+
+/* Spinner Container */
+#ig-es-add-list-modal .spinner-container {
+    display: none;
+    margin-top: 16px;
+    text-align: center;
+}
+
+#ig-es-add-list-modal .spinner-container img {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+#ig-es-add-list-modal.inactive {
+    display: none; 
+}
+
+#ig-es-add-list-modal .form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+#ig-es-add-list-modal #ig-es-list-message {
+    margin-left: 10px;
+	max-width:290px; 
 }
