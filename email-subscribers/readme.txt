@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, newsletters, autoresponders, email aut
 Requires at least: 3.9
 Tested up to: 6.6
 Requires PHP: 7.0
-Stable tag: 5.7.41
+Stable tag: 5.7.42
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -438,11 +438,15 @@ Refer [here](https://www.icegram.com/docs/category/icegram-express/faq/?utm_sour
 
 == Upgrade Notice ==
 
-= 5.7.41 =
+= 5.7.42 =
 
-* New: Added option to create new list on form page
+* Fix: PHP fatal error "Division by zero" when accessing Settings page
 
 == Changelog ==
+
+**5.7.42 (11.11.2024)**
+
+* Fix: PHP fatal error "Division by zero" when accessing Settings page
 
 **5.7.41 (07.11.2024)**
 

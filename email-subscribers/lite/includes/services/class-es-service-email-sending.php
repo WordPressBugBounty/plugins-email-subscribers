@@ -1169,7 +1169,14 @@ class ES_Service_Email_Sending extends ES_Services {
 					<tr class="border-b border-gray-200 text-xs leading-4 font-medium pt-1">
 						<td><?php echo esc_html__( 'Used limit', 'email-subscribers' ); ?></td>
 						<td>
-						<b><?php echo esc_html( $used_limit ) . ' (' . esc_html( number_format_i18n( ( ( $used_limit * 100 ) / $allocated_limit ), 2 ) ) . '%)'; ?></b>
+							<b>
+							<?php 
+								echo esc_html( $used_limit ); 
+								if ( $allocated_limit > 0 ) { 
+									echo ' (' . esc_html( number_format_i18n( ( ( $used_limit * 100 ) / $allocated_limit ), 2 ) ) . '%)';
+								}
+							?>
+							</b>
 						</td>
 					</tr>
 					<tr class="border-b border-gray-200 text-xs leading-4 font-medium">
