@@ -539,17 +539,21 @@ class ES_DB_Campaigns extends ES_DB {
 
 	public function get_posts_by_type( $post_types ) {
 
-	global $wpbd;
-	$posts_type_count       = count( $post_types['postsType'] );
-	$post_type_placeholders = array_fill( 0, $posts_type_count, '%s' );
-	// phpcs:disable
-	$query                  = $wpbd->prepare(
-		"SELECT ID, post_title, post_content FROM {$wpbd->posts} WHERE post_type IN (" . implode( ',', $post_type_placeholders ) . ')',
-		$post_types['postsType']
-	);
-	// phpcs:enable
-	$posts                  = $wpbd->get_results( $query, ARRAY_A );
-	return $posts;
+		global $wpbd;
+		if ( empty( $post_types['postsType'] ) ) {
+			return array();
+		}
+		
+		$posts_type_count       = count( $post_types['postsType'] );
+		$post_type_placeholders = array_fill( 0, $posts_type_count, '%s' );
+		// phpcs:disable
+		$query                  = $wpbd->prepare(
+			"SELECT ID, post_title, post_content FROM {$wpbd->posts} WHERE post_type IN (" . implode( ',', $post_type_placeholders ) . ') AND post_status = "publish"',
+			$post_types['postsType']
+		);
+		// phpcs:enable
+		$posts                  = $wpbd->get_results( $query, ARRAY_A );
+		return $posts;
 	}
 
 	

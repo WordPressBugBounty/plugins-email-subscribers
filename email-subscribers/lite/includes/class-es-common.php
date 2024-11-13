@@ -780,8 +780,8 @@ class ES_Common {
 		// remove attachment from the list
 		unset( $default_post_types['attachment'] );
 
-		// remove attachment from the list
-		unset( $default_post_types['post'] );
+		// remove post from the list
+		//unset( $default_post_types['post'] );
 
 		return $default_post_types;
 	}

@@ -1,12 +1,12 @@
-===  Email Subscribers by Icegram Express - Email Marketing, Newsletters, Automation for WordPress & WooCommerce ===
+===  Email Subscribers by Icegram Express – Affordable, Powerful Email Marketing for WordPress & WooCommerce ===
 Contributors: icegram, niravmehta, sandhyam, storeapps, malayladu, Mansi Shah, kishanranawat, asmipatel, shubhanshukandani
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BMFRMVXQ87JWA&source=url
 Author URI: https://www.icegram.com/
-Tags: email marketing, email subscribers, newsletters, autoresponders, email automation
+Tags: email marketing, email subscribers, email newsletters, autoresponders, email automation, newsletters
 Requires at least: 3.9
 Tested up to: 6.6
 Requires PHP: 7.0
-Stable tag: 5.7.42
+Stable tag: 5.7.43
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -15,7 +15,7 @@ Add subscription forms on the website and send newsletters & automatically send 
 
 == Description ==
 
-### Grow email subscribers, build & segment lists, automate new post notifications, send newsletters & broadcasts, set up autoresponders & convert subscribers to customers.
+### Your all-in-one WordPress email marketing solution to grow email subscribers, segment lists, setup email automations, email newsletters, send broadcasts & autoresponders and a lot more.
 
 [Icegram Express](https://www.icegram.com/express/?utm_source=ig_express_wp_readme&utm_medium=ig_express_anchor_text&utm_campaign=ig_express_wp_readme_traffic), is the simplest, pocket-friendly, most reliable WordPress email marketing, email subscribers and newsletters plugin. Perfect for list building, list engagement, sending newsletters and targeted emails, and converting leads into customers.
 
@@ -23,15 +23,14 @@ It’s a fully-featured, automated email marketing plugin with seamless integrat
 
 That’s why over 162,000 users trust Email Subscribers by Icegram Express for their WooCommerce and WordPress email marketing needs.
 
-**Best suited for**
+**Perfect For:**
 
--   Beginners or Freelancers with little or no money
--   Bloggers and Internet marketers
--   Small businesses
--   WooCommere stores
--   Micro and small influencers
--   Easy Digital Downloads (EDD) users
--   Non-profit websites
+-  Freelancers and small businesses on a budget
+-  Bloggers and digital marketers
+-  WooCommerce store owners
+-  Micro-influencers and non-profits
+-  Easy Digital Downloads (EDD) users
+
 
 **What will Icegram Express help you achieve?**
 
@@ -39,24 +38,18 @@ Email Subscribers by Icegram Express helps you **achieve multiple email marketin
 
 **Complete WordPress email marketing and newsletter plugin**
 
--   Collect leads via subscription forms and lead magnets.
--   Send **blog post notifications, autoresponders, post digests and broadcasts.** 
--   Send welcome & confirmation emails, drip campaigns.
--   Drag and drop blocks to **build responsive newsletters and emails without code.**
--   **Readymade email templates** for different needs - holiday sales & offers
--   Compose and send unlimited sequentially triggered emails.
--   Run cart recovery emails in WooCommerce with coupons.
--   Automate email workflow with triggers
--   **List cleanup and rule-based segmentation** for better targeting.
--   **Unlimited contacts, forms, lists and emails**
--   Build email sequences and schedule campaigns
--   **Spam check, captcha, bounce handling, auto-list cleaning** to improve email deliverability. Track and monitor crucial KPIs - open rates, click rates, unsubscribe rates, demographics…for data-driven email -   marketing decisions.
--   **Resources, guidance and training materials** to improve your email marketing results.
--   **GDPR compliant**
--   Solve email delivery problems - **use your own SMTP, Icegram Email Sending Service, or third-party services to send - emails;** Amazon SES, WP Mail, Pepipost…
--   Friendly and knowledgeable **human support team**
--   Integration with top WordPress forms plugins
--   Integration with top Memberships and other WooCommerce plugins
+1. **Comprehensive Email Marketing:** Capture leads, segment your audience, and send newsletters, all from within WordPress.
+2. **List Building & Lead Management:** Use customizable subscription forms and lead magnets to grow your audience.
+3. **Email Automation:** Set up welcome sequences, post notifications, drip campaigns, and more with ease.
+4. **Drag-and-Drop Email Builder:** Create beautiful, responsive emails with a WYSIWYG editor—no coding required.
+5. **Ready-to-Use Templates:** Choose from pre-made templates for special events, sales, and other key moments.
+6. **WooCommerce Integration:** Recover abandoned carts, offer personalized deals, and drive sales directly to your store subscribers.
+7. **Advanced Email and Security features:** Spam check, captcha, bounce handling, auto-list cleaning to improve email deliverability.
+8. **In-depth Email Reports:** Track and monitor crucial KPIs – open rates, click rates, unsubscribe rates, demographics…for data-driven email – marketing decisions.
+9. **Reliable Deliverability:** Solve email delivery problems – use your own SMTP, Icegram Email Sending Service, or third-party services to send – emails; Amazon SES, WP Mail, Pepipost…
+10. **Easy Third Party Integrations:** Easily integrates with top WordPress form plugins, top Membership plugins and other WooCommerce plugins.
+11. **GDPR compliant**
+12. **Useful Resources:** Get guidance and training materials to improve your email marketing results.
 
 Do all these straight from your WordPress dashboard, easily and quickly. Use the time you save to build your brand and better relationships with your readers.
 
@@ -67,6 +60,8 @@ Do all these straight from your WordPress dashboard, easily and quickly. Use the
 > **Cheaper & More Feature-Rich Alternative to Mailchimp** 
 > I was a long-time Mailchimp user, but when their prices went up, I switched to Icegram. Icegram has more features than Mailchimp and is a fraction of the cost. I can email my members directly from my site and the plugin authors are great at support. I'm so glad I made the switch!
 > -  [brianharper](https://wordpress.org/support/topic/so-far-so-good-1088/)
+
+###Getting Started with Email Subscribers is Simple & Quick
 
 Icegram Express will help you **achieve more subscribers, more engagements and more loyal customers.**
 
@@ -187,7 +182,7 @@ High on performance and scalability with enterprise-grade security.
 > I’ve been using the free version for several years and recently upgraded to the Max version to get some more features. Instant, precise answers from support transformed my experience.Thrilled with the upgrade and top-notch assistance.
 > - [chaffeeb](https://wordpress.org/support/topic/a-helpful-plug-in/)
 
-###Get more advanced email marketing features with Premium versions
+###Advanced Functionality – Free and Premium Options Available
 Email subscribers by Icegram Express offer advanced options for premium users in addition to its robust free features – Icegram Express Pro and Icegram Express Max.
 
 -   Unlimited autoresponder sequences 
@@ -294,103 +289,103 @@ Option 2:
 
 = 1. How to install and activate Icegram Express on multisite installation? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/install-activate-plugin-single-multisite/?utm_source=ig_express_wp_readme&utm_medium=faq1here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/install-activate-plugin-single-multisite/?utm_source=ig_express_wp_readme&utm_medium=faq1here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 2. How to add a subscription box to your website? =
 
-Refer [here](https://www.icegram.com/documentation/es-how-to-add-subscription-box-to-website/?utm_source=ig_express_wp_readme&utm_medium=faq2here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/documentation/es-how-to-add-subscription-box-to-website/?utm_source=ig_express_wp_readme&utm_medium=faq2here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 3. How to modify the existing emails like Confirmation, Welcome, Admin emails and Cron Settings and Assign User Roles? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/plugin-settings/?utm_source=ig_express_wp_readme&utm_medium=faq3here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/plugin-settings/?utm_source=ig_express_wp_readme&utm_medium=faq3here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 4. How does Sync work? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/how-does-sync-work/?utm_source=ig_express_wp_readme&utm_medium=faq4here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/how-does-sync-work/?utm_source=ig_express_wp_readme&utm_medium=faq4here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 5. How to Import and export email address? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/import-export-email-addresses/?utm_source=ig_express_wp_readme&utm_medium=faq5here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/import-export-email-addresses/?utm_source=ig_express_wp_readme&utm_medium=faq5here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 6. How to change/update/translate any strings from the plugin? =
 
-Refer steps from [here](https://www.icegram.com/docs/category/icegram-express/change-update-transate-texts/?utm_source=ig_express_wp_readme&utm_medium=faq6here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/change-update-transate-texts/?utm_source=ig_express_wp_readme&utm_medium=faq6here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 7. How to add unsubscribe link in emails? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/add-unsubscribe-link-in-emails/?utm_source=ig_express_wp_readme&utm_medium=faq7here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/add-unsubscribe-link-in-emails/?utm_source=ig_express_wp_readme&utm_medium=faq7here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 8. How to Create and Send Newsletter Emails? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/create-send-newsletter-emails/?utm_source=ig_express_wp_readme&utm_medium=faq8here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/create-send-newsletter-emails/?utm_source=ig_express_wp_readme&utm_medium=faq8here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 9. What are the available keywords in the Newsletters? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/available-merge-tags-keywords-in-broadcasts/?utm_source=ig_express_wp_readme&utm_medium=faq9here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/available-merge-tags-keywords-in-broadcasts/?utm_source=ig_express_wp_readme&utm_medium=faq9here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 10. How to Create and Send Post Notification Emails when new posts are published? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/create-send-post-notification-emails-when-new-posts-are-published/?utm_source=ig_express_wp_readme&utm_medium=faq10here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/create-send-post-notification-emails-when-new-posts-are-published/?utm_source=ig_express_wp_readme&utm_medium=faq10here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 11. What are the available keywords in the Post Notifications? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/available-merge-tags-keywords-in-post-notifications/?utm_source=ig_express_wp_readme&utm_medium=faq11here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/available-merge-tags-keywords-in-post-notifications/?utm_source=ig_express_wp_readme&utm_medium=faq11here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 12. How to send a sample new post notification email to test group/me? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/send-sample-new-post-notification-email/?utm_source=ig_express_wp_readme&utm_medium=faq12here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/send-sample-new-post-notification-email/?utm_source=ig_express_wp_readme&utm_medium=faq12here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 13. How to check sent emails reports? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/check-sent-emails/?utm_source=ig_express_wp_readme&utm_medium=faq13here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/check-sent-emails/?utm_source=ig_express_wp_readme&utm_medium=faq13here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 14. How to Add/Update Existing Subscribers Group & Status? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/audience-subscription-lists-statuses/?utm_source=ig_express_wp_readme&utm_medium=faq14here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/audience-subscription-lists-statuses/?utm_source=ig_express_wp_readme&utm_medium=faq14here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 15. Subscribers are not receiving Emails? =
 
-Check steps from [here](https://www.icegram.com/docs/category/icegram-express/subscribers-not-receiving-emails/?utm_source=ig_express_wp_readme&utm_medium=faq15here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/subscribers-not-receiving-emails/?utm_source=ig_express_wp_readme&utm_medium=faq15here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 16. How to show subscribe form inside a popup? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/show-subscribe-form-inside-popup/?utm_source=ig_express_wp_readme&utm_medium=faq16here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/show-subscribe-form-inside-popup/?utm_source=ig_express_wp_readme&utm_medium=faq16here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 17. How to use Rainmaker’s form in Icegram Express  =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/use-icegram-collect-forms/?utm_source=ig_express_wp_readme&utm_medium=faq17here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/use-icegram-collect-forms/?utm_source=ig_express_wp_readme&utm_medium=faq17here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 18. How to Redirect Subscribers to a new page/URL after successful sign up? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/redirect-subscribers-to-new-page-after-signup/?utm_source=ig_express_wp_readme&utm_medium=faq18here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/redirect-subscribers-to-new-page-after-signup/?utm_source=ig_express_wp_readme&utm_medium=faq18here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 19. How to add captcha in Subscribe form of Icegram Express  =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/enable-captcha/?utm_source=ig_express_wp_readme&utm_medium=faq19here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/enable-captcha/?utm_source=ig_express_wp_readme&utm_medium=faq19here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 20. How to Schedule Cron Emails/auto emails? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/schedule-cron-emails/?utm_source=ig_express_wp_readme&utm_medium=faq20here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/schedule-cron-emails/?utm_source=ig_express_wp_readme&utm_medium=faq20here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 21. How to Schedule Cron Emails in cPanel? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/schedule-cron-emails-cpanel/?utm_source=ig_express_wp_readme&utm_medium=faq21here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/schedule-cron-emails-cpanel/?utm_source=ig_express_wp_readme&utm_medium=faq21here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 22. How to Schedule Cron Emails in Parallels Plesk? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/schedule-cron-emails-in-parallels-plesk/?utm_source=ig_express_wp_readme&utm_medium=faq22here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/schedule-cron-emails-in-parallels-plesk/?utm_source=ig_express_wp_readme&utm_medium=faq22here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 23. What to do if Hosting doesn’t support Cron Jobs? =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/hosting-does-not-support-cron-jobs/?utm_source=ig_express_wp_readme&utm_medium=faq23here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/hosting-does-not-support-cron-jobs/?utm_source=ig_express_wp_readme&utm_medium=faq23here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 24. CSS Help =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/css-help/?utm_source=ig_express_wp_readme&utm_medium=faq24here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/css-help/?utm_source=ig_express_wp_readme&utm_medium=faq24here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 25. Icegram Express FAQ =
 
-Refer [here](https://www.icegram.com/docs/category/icegram-express/faq/?utm_source=ig_express_wp_readme&utm_medium=faq25here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
+[Refer here](https://www.icegram.com/docs/category/icegram-express/faq/?utm_source=ig_express_wp_readme&utm_medium=faq25here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 == Screenshots ==
 
@@ -438,11 +433,17 @@ Refer [here](https://www.icegram.com/docs/category/icegram-express/faq/?utm_sour
 
 == Upgrade Notice ==
 
-= 5.7.42 =
+= 5.7.43 =
 
-* Fix: PHP fatal error "Division by zero" when accessing Settings page
+* Fix: "Add Posts" block not showing WordPress default posts in DND campaign editor [PRO]
+* Fix: Bounce stats were not getting properly updated on audience dashboard [MAX]
 
 == Changelog ==
+
+**5.7.43 (13.11.2024)**
+
+* Fix: "Add Posts" block not showing WordPress default posts in DND campaign editor [PRO]
+* Fix: Bounce stats were not getting properly updated on audience dashboard [MAX]
 
 **5.7.42 (11.11.2024)**
 

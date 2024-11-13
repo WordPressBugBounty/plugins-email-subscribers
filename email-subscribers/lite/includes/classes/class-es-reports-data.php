@@ -293,7 +293,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			);
 			
 
-			$include_average_campaigns_stats = 'es_dashboard' === $page || 'es_campaigns' === $page;
+			$include_average_campaigns_stats = 'es_dashboard' === $page || 'es_campaigns' === $page || 'es_subscribers' === $page;
 			if ( $include_average_campaigns_stats ) {
 				$comp_args         = $args;
 				$comp_args['days'] = $args['days'] * 2;

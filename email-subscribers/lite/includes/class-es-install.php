@@ -342,7 +342,7 @@ if ( ! class_exists( 'ES_Install' ) ) {
 				'ig_es_add_preview_forms_column',
 				'ig_es_update_5738_db_version',
 			),
-			'5.7.40' => array(
+			'5.7.39' => array(
 				'ig_es_migrate_ess_data_to_mailer_settings',
 				'ig_es_update_5739_db_version',
 			),

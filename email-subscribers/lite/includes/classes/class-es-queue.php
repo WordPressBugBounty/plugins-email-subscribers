@@ -734,7 +734,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 					$notification_meta = ! empty( $notification['meta'] ) ? maybe_unserialize( $notification['meta'] ) : array();
 					$batch_count       = isset( $notification_meta['batch_count'] ) ? $notification_meta['batch_count'] : 0;
 					
-					if ( $batch_count < 2 ) {
+					if ( $batch_count < 2 && $es_c_croncount > 200 ) {
 						$batch_size     = $es_c_croncount * 0.10;
 						$batch_size     = ceil( $batch_size );
 						$es_c_croncount = apply_filters( 'ig_es_batch_size', $batch_size );

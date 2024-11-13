@@ -2428,12 +2428,25 @@ function ig_es_update_5738_db_version() {
 
 function ig_es_migrate_ess_data_to_mailer_settings() {
 
-	if ( ES_Service_Email_Sending::opted_for_sending_service() ) {
-		$mailer_settings = get_option( 'ig_es_mailer_settings', array() );
-		$mailer_settings['mailer'] = 'icegram';
-		$mailer_settings['icegram']['email'] = ES_Common::get_admin_email();
-		update_option( 'ig_es_mailer_settings', $mailer_settings );
+	if ( ! ES_Service_Email_Sending::opted_for_sending_service() ) {
+		return;
 	}
+	
+	$ess_data = get_option( 'ig_es_ess_data', array() );
+	if ( empty( $ess_data ) ) {
+		return;
+	} else {
+		$allocated_limit = ! empty( $ess_data['allocated_limit'] ) ? $ess_data['allocated_limit'] : 0;
+		$allocated_limit = (int) $allocated_limit;
+		$api_key         = ! empty( $ess_data['api_key'] ) ? $ess_data['api_key'] : '';
+		if ( '' === $api_key || 0 === $allocated_limit ) {
+			return;
+		}
+	}
+	$mailer_settings                     = get_option( 'ig_es_mailer_settings', array() );
+	$mailer_settings['mailer']           = 'icegram';
+	$mailer_settings['icegram']['email'] = ES_Common::get_admin_email();
+	update_option( 'ig_es_mailer_settings', $mailer_settings );
 	
 }
 
