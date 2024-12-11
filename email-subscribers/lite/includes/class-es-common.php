@@ -3223,4 +3223,13 @@ class ES_Common {
 		return '';
 	}
 
+	public static function strip_js_code( $html ) {
+
+		$html = preg_replace( '/<\/?(script)[^>]*>/i', '', $html );
+		
+		// Remove inline JS event handlers
+		$html = preg_replace('/\s*(on[a-z]+|javascript|style)\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $html );
+		return $html;
+	}
+
 }
