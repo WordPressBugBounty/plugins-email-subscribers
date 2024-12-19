@@ -118,22 +118,24 @@ class ES_Workflow_Admin_Edit {
 		if ( ! $can_access_workflows ) {
 			return;
 		}
+		$allowedtags = ig_es_allowed_html_tags_in_esc();
 
+        $content  = ig_es_get_request_data( 'content', '', false );
+		$content  = wp_kses( $content, $allowedtags );
+		
 		$response = array();
-		$trigger  = ig_es_get_request_data( 'trigger' );
-		$content  = ig_es_get_request_data( 'content', '', false );
-		$subject  = ig_es_get_request_data( 'subject', '' );
-		$template = ig_es_get_request_data( 'template', '' );
-		$heading  = ig_es_get_request_data( 'heading', '' );
 
-		$content = ES_Common::strip_js_code( $content );
+		$trigger  = sanitize_text_field( ig_es_get_request_data( 'trigger' ) );
+		$subject  = sanitize_text_field( ig_es_get_request_data( 'subject' ) );
+		$template = sanitize_text_field( ig_es_get_request_data( 'template' ) );
+		$heading  = sanitize_text_field( ig_es_get_request_data( 'heading' ) );
 
 		$response['preview_html'] = ES_Workflow_Action_Preview::get_preview( $trigger, array(
 			'action_name'                => 'ig_es_send_email',
 			'ig-es-send-to'              => '',
-			'ig-es-email-subject'        => $subject,
-			'ig-es-email-template'       => $template,
-			'ig-es-email-heading'        => $heading,
+			'ig-es-email-subject'        => esc_html( $subject ),
+			'ig-es-email-template'       => esc_html( $template ),
+			'ig-es-email-heading'        => esc_html( $heading ),
 			'ig-es-email-content'        => $content,
 			'ig-es-tracking-campaign-id' => ''
 		) );

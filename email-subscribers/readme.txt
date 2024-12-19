@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.44
+Stable tag: 5.7.45
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -433,16 +433,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.44 =
+= 5.7.45 =
 
-* Update: Tested up to WordPress 6.7.1
-* Enhancement: Subscription form responsiveness issue
-* Fix: XSS and SQL injection vulnerabilities [Thanks to Cleantalk team]
-* Fix: Subscribe link not working in User Unsubscribed workflow email
-* Fix: Name field was not syncing properly in Gravity form workflow [PRO]
-* Fix: Custom URL fields were not getting imported properly in some cases [MAX]
+* Fix: XSS vulnerabilities in Forms and Workflows [Thanks to WPScan team]
 
 == Changelog ==
+
+**5.7.45 (19.12.2024)**
+
+* Fix: XSS vulnerabilities in Forms and Workflows [Thanks to WPScan team]
 
 **5.7.44 (11.12.2024)**
 

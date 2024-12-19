@@ -387,46 +387,37 @@ class ES_Forms_Table extends ES_List_Table {
 
 	public static function sanitize_data( $form_data ) {
 
-
 		if ( isset( $form_data['settings']['dnd_editor_css'] ) ) {
-
-			$form_data['settings']['dnd_editor_css'] = preg_replace( '/<\/?(script|style|img)[^>]*>/i', '', $form_data['settings']['dnd_editor_css'] );
-		}
-		if ( isset( $form_data['body'] ) ) {
-			
-			$allowedtags       = ig_es_allowed_html_tags_in_esc();
-			$form_data['body'] = wp_kses( $form_data['body'], $allowedtags );
-			
-			// Remove inline event handlers and potentially unsafe attributes
-			$form_data['body'] = preg_replace('/\s*(on[a-z]+|javascript|style)\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $form_data['body'] );
-		}
-
-		if ( ! empty( $form_data['settings']['success_message'] ) ) {
-			$form_data['settings']['success_message'] = ES_Common::strip_js_code( $form_data['settings']['success_message'] );
-		}
-		
-		$dnd_editor_data = isset( $form_data['settings']['dnd_editor_data'] ) ? json_decode( $form_data['settings']['dnd_editor_data'], true ) : null;
-
-		if ( ! is_array( $dnd_editor_data ) ) {
-			$dnd_editor_data = [];
+			$form_data['settings']['dnd_editor_css'] = wp_strip_all_tags( $form_data['settings']['dnd_editor_css'] );
 		}
 	
-		array_walk_recursive( $dnd_editor_data, function ( &$value, $key ) {
-			if ( is_string( $value ) ) {
-				if ( $key === 'id' || $key === 'name' || $key === 'for' ) {
-					$value = preg_replace( '/[^a-zA-Z0-9-_:.]/', '', $value );
-				} elseif ( $key === 'style' ) {
-					$value = htmlspecialchars( $value, ENT_QUOTES, 'UTF-8' );
-				} else {
-					$value = sanitize_text_field( $value );
+		$allowedtags = ig_es_allowed_html_tags_in_esc();
+	
+		if ( isset( $form_data['body'] ) ) {
+			$form_data['body'] = wp_kses( $form_data['body'], $allowedtags );
+		}
+	
+		if ( ! empty( $form_data['settings']['success_message'] ) ) {
+			$form_data['settings']['success_message'] = wp_kses( $form_data['settings']['success_message'], $allowedtags );
+		}
+	
+		$dnd_editor_data = isset( $form_data['settings']['dnd_editor_data'] ) 
+			? json_decode( $form_data['settings']['dnd_editor_data'], true ) 
+			: [];
+	
+		if ( is_array( $dnd_editor_data ) ) {
+			array_walk_recursive( $dnd_editor_data, function ( &$value ) use ( $allowedtags ) {
+				if ( is_string( $value ) ) {
+					$value = wp_kses( $value, $allowedtags );
 				}
-			}
-		});
-
+			});
+		}
+	
 		$form_data['settings']['dnd_editor_data'] = wp_json_encode( $dnd_editor_data );
-
-		return $form_data ; 
+	
+		return $form_data;
 	}
+	
 
 	/**
 	 * Show additional form setting for es form
