@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.45
+Stable tag: 5.7.46
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -433,11 +433,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.45 =
+= 5.7.46 =
 
-* Fix: XSS vulnerabilities in Forms and Workflows [Thanks to WPScan team]
+* Fix: XSS vulnerabilities in Forms Popup [Thanks to WPScan team]
 
 == Changelog ==
+
+**5.7.46 (26.12.2024)**
+
+* Fix: XSS vulnerabilities in Forms Popup [Thanks to WPScan team]
 
 **5.7.45 (19.12.2024)**
 
