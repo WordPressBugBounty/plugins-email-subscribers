@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.46
+Stable tag: 5.7.47
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -433,11 +433,17 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.46 =
+= 5.7.47 =
 
-* Fix: XSS vulnerabilities in Forms Popup [Thanks to WPScan team]
+* Fix: Contact email getting trimmed in the Audience dashboard
+* Fix: Keyword fallback replacement issue with Sendgrid [MAX]
 
 == Changelog ==
+
+**5.7.47 (02.01.2025)**
+
+* Fix: Contact email getting trimmed in the Audience dashboard
+* Fix: Keyword fallback replacement issue with Sendgrid [MAX]
 
 **5.7.46 (26.12.2024)**
 
