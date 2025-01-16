@@ -98,6 +98,30 @@ class ES_DB_Sending_Queue {
 		return $queued_emails;
 	}
 
+	/**
+	 * Get contact queued emails
+	 *
+	 * @param int $contact_id
+	 *
+	 * @return array $queued_emails
+	 *
+	 * @since 4.7.6
+	 */
+	public static function get_sent_emails( $contact_id ) {
+		global $wpdb;
+		// phpcs:disable
+		$queued_emails = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$wpdb->prefix}ig_sending_queue WHERE contact_id = %d AND status = %s",
+				$contact_id,
+				IG_ES_MAILING_QUEUE_STATUS_SENT
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
+		return $queued_emails;
+	}
+
 	public static function update_sent_status( $contact_ids, $message_id = 0, $status = 'Sent' ) {
 		global $wpbd;
 
@@ -134,6 +158,25 @@ class ES_DB_Sending_Queue {
 				);
 			}
 		}
+
+		return $updated;
+
+	}
+
+	public static function update_contact_email( $contact_id, $contact_email, $mailing_queue_ids ) {
+		global $wpbd;
+
+		$ids_count        = count( $mailing_queue_ids );
+		$ids_placeholders = array_fill( 0, $ids_count, '%d' );
+		$query_args       = array( $contact_email, $contact_id );
+		$query_args       = array_merge( $query_args, $mailing_queue_ids );
+
+		$updated = $wpbd->query(
+			$wpbd->prepare(
+				"UPDATE {$wpbd->prefix}ig_sending_queue SET email = %s WHERE contact_id = %d AND mailing_queue_id IN( " . implode( ',', $ids_placeholders ) . ' )',
+				$query_args
+			)
+		);
 
 		return $updated;
 

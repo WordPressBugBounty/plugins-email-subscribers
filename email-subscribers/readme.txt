@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.47
+Stable tag: 5.7.48
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -433,12 +433,17 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.47 =
+= 5.7.48 =
 
-* Fix: Contact email getting trimmed in the Audience dashboard
-* Fix: Keyword fallback replacement issue with Sendgrid [MAX]
+* Update: UI Improvements
+* Fix: Unsubscribe link issue in 'List-Unsubscribe' email header
 
 == Changelog ==
+
+**5.7.48 (16.01.2025)**
+
+* Update: UI Improvements
+* Fix: Unsubscribe link issue in 'List-Unsubscribe' email header
 
 **5.7.47 (02.01.2025)**
 

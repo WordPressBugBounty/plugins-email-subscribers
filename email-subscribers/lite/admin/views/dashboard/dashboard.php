@@ -177,7 +177,7 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 					<div class="flex items-center pr-2 md:justify-between">
 						<p class="text-lg font-medium leading-6 text-gray-400">
 							<?php
-								echo esc_html__( 'Recent Activity', 'email-subscribers' );
+								echo esc_html__( 'Recent Subscribers Activity', 'email-subscribers' );
 							?>
 						</p>
 						

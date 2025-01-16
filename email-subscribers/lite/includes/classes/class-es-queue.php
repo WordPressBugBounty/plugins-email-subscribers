@@ -45,6 +45,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 			add_action( 'ig_es_contact_unsubscribe', array( &$this, 'delete_contact_queued_emails' ), 10, 4 );
 			add_action( 'ig_es_admin_contact_unsubscribe', array( &$this, 'delete_contact_queued_emails' ), 10, 4 );
 			add_action( 'ig_es_contacts_deleted', array( $this, 'delete_contact_queued_emails' ) );
+			add_action( 'ig_es_contacts_deleted', array( $this, 'masks_contact_send_emails' ) );
 
 			// Ajax handler for running action scheduler task.
 			add_action( 'wp_ajax_ig_es_run_action_scheduler_task', array( 'IG_ES_Background_Process_Helper', 'run_action_scheduler_task' ) );
@@ -1003,6 +1004,52 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 									ES()->queue_db->delete_from_queue( $campaign_id, $contact_id );
 								}
 							}
+						}
+					}
+				}
+			}
+
+		}
+		
+		/**
+		 * Mask contact sent emails for GDPR
+		 * 
+		 * Ticket: https://wordpress.org/support/topic/gdpr-questions-about-data-storage-period-and-deletion-anonymisation/
+		 *
+		 * @param int   $contact_id
+		 * @param int   $message_id
+		 * @param int   $campaign_id
+		 * @param array $list_ids
+		 *
+		 * @since 4.7.6
+		 */
+		public function masks_contact_send_emails( $contact_ids, $message_id = 0, $campaign_id = 0, $list_ids = array() ) {
+
+			// Convert to array of contact ids if not already.
+			if ( ! is_array( $contact_ids ) ) {
+				$contact_ids = array( $contact_ids );
+			}
+
+			if ( ! empty( $contact_ids ) ) {
+				foreach ( $contact_ids as $contact_id ) {
+
+					// Queued emails from sending_queue table.
+					$sent_emails = ES_DB_Sending_Queue::get_sent_emails( $contact_id );
+
+					if ( ! empty( $sent_emails ) ) {
+						$mailing_queue_ids = [];
+						$contact_email     = '';
+						foreach ( $sent_emails as $sent_email ) {
+							$contact_email = $sent_email['email'];
+							// If mailing_queue_id exists then email is from the sending queue table.
+							if ( ! empty( $sent_email['mailing_queue_id'] ) ) {
+								$mailing_queue_ids[] = $sent_email['mailing_queue_id'];
+							}
+						}
+						if ( ! empty( $mailing_queue_ids ) ) {
+							$masked_email = ES_Common::mask_email( $contact_email );
+							// Delete the contact from the sending queue and update the subscribers count in the mailing queue.
+							ES_DB_Sending_Queue::update_contact_email( $contact_id, $masked_email, $mailing_queue_ids );
 						}
 					}
 				}
