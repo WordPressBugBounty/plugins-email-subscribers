@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.48
+Stable tag: 5.7.49
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -433,12 +433,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.48 =
+= 5.7.49 =
 
-* Update: UI Improvements
-* Fix: Unsubscribe link issue in 'List-Unsubscribe' email header
+* Fix: Self XSS vulnerability in campaign page [Thanks to Cleantalk team]
 
 == Changelog ==
+
+**5.7.49 (23.01.2025)**
+
+* Fix: Self XSS vulnerability in campaign page [Thanks to Cleantalk team]
 
 **5.7.48 (16.01.2025)**
 
