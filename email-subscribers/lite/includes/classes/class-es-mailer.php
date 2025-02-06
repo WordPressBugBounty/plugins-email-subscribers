@@ -355,7 +355,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 		 * @since 4.3.2
 		 */
 		public function get_cron_admin_email_subject() {
-			return get_option( 'ig_es_cron_admin_email_subject', __( 'Campaign Sent!', 'email-subscribers' ) );
+			return get_option( 'ig_es_cron_admin_email_subject', __( 'Campaign sent from {{SITENAME}}', 'email-subscribers' ) );
 		}
 
 		/**

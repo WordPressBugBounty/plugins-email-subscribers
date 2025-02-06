@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.49
+Stable tag: 5.7.50
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -433,11 +433,23 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.49 =
+= 5.7.50 =
 
-* Fix: Self XSS vulnerability in campaign page [Thanks to Cleantalk team]
+* Enhancement: Improved default emails and messages content for subscription
+* Fix: Invalid CSS property 'container-background-color' in forms
+* Fix: Browser freezing issue when making changes in Drag-n-Drop editor in some cases
+* Fix: Fatal error while approving WooCommerce product reviews
+* Fix: PHP Warning "Array to string conversion"
 
 == Changelog ==
+
+**5.7.50 (06.02.2025)**
+
+* Enhancement: Improved default emails and messages content for subscription
+* Fix: Invalid CSS property 'container-background-color' in forms
+* Fix: Browser freezing issue when making changes in Drag-n-Drop editor in some cases
+* Fix: Fatal error while approving WooCommerce product reviews
+* Fix: PHP Warning "Array to string conversion"
 
 **5.7.49 (23.01.2025)**
 
