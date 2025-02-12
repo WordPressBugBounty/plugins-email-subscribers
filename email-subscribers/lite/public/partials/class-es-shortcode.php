@@ -486,7 +486,7 @@ class ES_Shortcode {
 					var message = '<h3 style=\"text-align: center;\"><?php echo esc_js( $es_popup_headline ); ?></h3>';
 					
 					es_pre_data.ajax_url = '<?php echo esc_url(admin_url( 'admin-ajax.php' )); ?>';
-					es_pre_data.messages[0].form_html = `<?php echo wp_kses(html_entity_decode($form),$allowedtags); ?>`;
+					es_pre_data.messages[0].form_html = `<?php  echo wp_kses($form, $allowedtags);  ?>`;
 					es_pre_data.messages[0].id = es_pre_data.messages[0].campaign_id = es_message_id;
 					es_pre_data.messages[0].label = <?php echo json_encode($button_label); ?>;
 					es_pre_data.messages[0].message = message;

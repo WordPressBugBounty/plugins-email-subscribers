@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.50
+Stable tag: 5.7.51
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -389,59 +389,37 @@ Option 2:
 
 == Screenshots ==
 
-1. Admin Dashboard
+1. Grow your audience - forms, lists, opt-ins
 
-2. Audience Dashboard
+2. Drag & Drop email design - all basic elements + dynamic blocks
 
-3. Add New Contact Form
+3. Campaigns - newsletters, new post notifications, autoresponders, triggered workflows
 
-4. Campaigns
+4. Lots of responsive email design templates
 
-5. Broadcasts Content
+5. Email designs even for sales and promotions
 
-6. Broadcast Summary
+6. Audience insights - engagement score, list cleanup, locations and much more
 
-7. New Post Notification
+7. Start quickly and easily - import from other platforms, WordPress and WooCommerce
 
-8. Forms
+8. Comprehensive analytics - track links, clicks, deliveries and activity
 
-9. Create a New Form
+9. Bring your own SMTP or use Icegram's Mailer - and get complete control
 
-10. Workflows
-
-11. Reports of all Newsletter & Post Notification emails sent
-
-12. General Settings
-
-13. Notifications Settings
-
-14. Email Sending Settings
-
-15. Security Settings
-
-16. Access Control Settings
-
-17. Subscribe Form
-
-18. Subscribe Form - Allow subscriber to choose list
-
-19. Import Contacts
-
-20. Export Contacts
-
-21. Campaign Analytics [MAX]
+10. Easy to use, fast and powerful - full featured email marketing automation
 
 == Upgrade Notice ==
 
-= 5.7.50 =
+= 5.7.51 =
 
-* Enhancement: Improved default emails and messages content for subscription
-* Fix: Invalid CSS property 'container-background-color' in forms
-* Fix: Browser freezing issue when making changes in Drag-n-Drop editor in some cases
-* Fix: Fatal error while approving WooCommerce product reviews
-* Fix: PHP Warning "Array to string conversion"
+* Fix: XSS vulnerability when subscription form shown in popup [Thanks to WPScan team]
 
 == Changelog ==
+
+**5.7.51 (12.02.2025)**
+
+* Fix: XSS vulnerability when subscription form shown in popup [Thanks to WPScan team]
 
 **5.7.50 (06.02.2025)**
 
