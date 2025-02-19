@@ -3275,10 +3275,12 @@ class ES_Common {
 	
 	public static function strip_js_code( $html ) {
 
-		$html = preg_replace( '/<\/?(script)[^>]*>/i', '', $html );
+		$html = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $html);
 		
 		// Remove inline JS event handlers
 		$html = preg_replace('/\s*(on[a-z]+|javascript|style)\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $html );
+		
+		$html = preg_replace('/javascript\s*:\s*/i', '', $html);
 		return $html;
 	}
 
