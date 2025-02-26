@@ -62,6 +62,14 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 		public $email_id_map = array();
 
 		/**
+		 * Mapping of contact_id => sending_queue_id(id in the ig_sending_queue table)
+		 *
+		 * @since 5.7.53
+		 * @var array
+		 */
+		public $sending_queue_id_map = array();
+
+		/**
 		 * Need to add unsubscribe link ?
 		 *
 		 * @since 4.3.2
@@ -659,7 +667,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 					$this->email_id_map = ES()->contacts_db->get_email_id_map( $emails );
 				} else {
 					// If the campaign isn't a sequence message, then we can fetch contact-email mapping data from sending_queue table
-					$this->email_id_map = ES_DB_Sending_Queue::get_emails_id_map_by_campaign( $campaign_id, $message_id, $emails );
+					list( $this->email_id_map, $this->sending_queue_id_map ) = ES_DB_Sending_Queue::get_emails_id_map_by_campaign( $campaign_id, $message_id, $emails );
 				}
 			}
 
@@ -771,6 +779,8 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 					$this->mailer->set_email_data( $email_data );
 				}
 			}
+
+			$sending_queue_ids = array();
 			
 			foreach ( $emails as $email_counter => $email ) {
 				
@@ -785,7 +795,12 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 				$response['status'] = 'SUCCESS';
 
 				// Don't find contact_id?
-				$contact_id = ! empty( $this->email_id_map[ $email ] ) ? $this->email_id_map[ $email ] : 0;
+				$contact_id       = ! empty( $this->email_id_map[ $email ] ) ? $this->email_id_map[ $email ] : 0;
+				$sending_queue_id = ! empty( $this->sending_queue_id_map[ $contact_id ] ) ? $this->sending_queue_id_map[ $contact_id ] : 0;
+
+				if ( ! empty( $sending_queue_id ) ) {
+					$sending_queue_ids[] = $sending_queue_id;
+				}
 
 				$merge_tags['contact_id'] = $contact_id;
 				$updated_merge_tags = $this->get_contact_merge_tags( $contact_id,$merge_tags ) ;
@@ -812,7 +827,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 					if ( ( $email_counter + 1 ) >= $total_recipients || $this->mailer->is_batch_limit_reached() ) {
 						$contact_ids = array_column( $this->mailer->batch_data, 'contact_id' );
 						if ( ! empty( $contact_ids ) ) {
-							do_action( 'ig_es_before_message_send', $contact_ids, $campaign_id, $message_id );
+							do_action( 'ig_es_before_message_send', $contact_ids, $campaign_id, $message_id, $sending_queue_ids );
 						}
 						if ( 'multiple' === $this->mailer->batch_sending_mode ) {
 							if ( ! empty( $sender_data['attachments'] ) ) {
@@ -825,12 +840,13 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 						$send_status = ! is_wp_error( $send_response ) ? 'sent' : 'failed';
 						
 						if ( ! empty( $contact_ids ) ) {
-							do_action( 'ig_es_message_' . $send_status, $contact_ids, $campaign_id, $message_id );
+							do_action( 'ig_es_message_' . $send_status, $contact_ids, $campaign_id, $message_id, $sending_queue_ids );
 						}
 
 						$this->email_limit -= $this->mailer->current_batch_size;
 						$this->mailer->clear_batch();
 						$this->mailer->handle_throttling();
+						$sending_queue_ids = []; // Reset sending queue array
 
 						// Error Sending Email?
 						if ( 'failed' === $send_status ) {
@@ -840,7 +856,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 						}
 					}
 				} else {
-					do_action( 'ig_es_before_message_send', $contact_id, $campaign_id, $message_id );
+					do_action( 'ig_es_before_message_send', $contact_id, $campaign_id, $message_id, $sending_queue_id );
 
 					$message = $this->build_message( $subject, $content, $email, $updated_merge_tags, $nl2br, $sender_data );
 
@@ -848,7 +864,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 					$send_response = $this->mailer->send( $message );
 					$send_status   = ! is_wp_error( $send_response ) ? 'sent' : 'failed';
 
-					do_action( 'ig_es_message_' . $send_status, $contact_id, $campaign_id, $message_id );
+					do_action( 'ig_es_message_' . $send_status, $contact_id, $campaign_id, $message_id, $sending_queue_id );
 
 					// Error Sending Email?
 					if ( is_wp_error( $send_response ) ) {
@@ -874,13 +890,14 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 						$send_status   = ! is_wp_error( $send_response ) ? 'sent' : 'failed';
 						
 						if ( ! empty( $contact_ids ) ) {
-							do_action( 'ig_es_message_' . $send_status, $contact_ids, $campaign_id, $message_id );
+							do_action( 'ig_es_message_' . $send_status, $contact_ids, $campaign_id, $message_id, $sending_queue_ids );
 						}
 
 						$this->email_limit -= $this->mailer->current_batch_size;
 						$this->mailer->clear_batch();
 						$this->mailer->handle_throttling();
-
+						$sending_queue_ids = [];
+						
 						// Error Sending Email?
 						if ( is_wp_error( $send_response ) ) {
 							$response['status']  = 'ERROR';

@@ -261,6 +261,9 @@ class Email_Subscribers_Admin {
 
 				'add_attachment_text'             => __( 'Add Attachment', 'email-subscribers' ),
 				'sending_error_text'              => __( 'Sending error', 'email-subscribers' ),
+				/* translators: 1. Anchor start tag 2. Anchor end tag */
+				'bulk_contact_select_text'              => __( sprintf( 'Only contacts from the current page have been selected. %1$sClick here%2$s to select all matching contacts across pages.', '<a id="ig-es-select-all-contacts" class="hover:underline text-sm font-medium text-indigo-600" href="#">', '</a>' ), 'email-subscribers' ),
+				'all_page_contact_selected_text'              => __( 'All contacts matching the selected filters across all pages have been selected.', 'email-subscribers' ),
 			),
 			'is_pro'     => ES()->is_pro() ? true : false,
 			'is_premium' => ES()->is_premium(),

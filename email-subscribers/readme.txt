@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.52
+Stable tag: 5.7.53
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -486,11 +486,19 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.52 =
+= 5.7.53 =
 
-* Fix: XSS vulnerability when subscription form shown in popup [Thanks to WPScan team]
+* Enhancement: Improved contact selection UI for bulk actions
+* Update: Optimized SQL query for updating contact status during email sending
+* Fix: Hide the subscription form security field  which was being shown
 
 == Changelog ==
+
+**5.7.53 (26.02.2025)**
+
+* Enhancement: Improved contact selection UI for bulk actions
+* Update: Optimized SQL query for updating contact status during email sending
+* Fix: Hide the subscription form security field  which was being shown
 
 **5.7.52 (19.02.2025)**
 
