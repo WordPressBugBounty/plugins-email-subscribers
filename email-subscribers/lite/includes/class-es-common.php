@@ -3278,7 +3278,7 @@ class ES_Common {
 		$html = preg_replace('/<script\b[^>]*>(.*?)<\/script>/is', '', $html);
 		
 		// Remove inline JS event handlers
-		$html = preg_replace('/\s*(on[a-z]+|javascript|style)\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $html );
+		$html = preg_replace('/\s*(on[a-z]+|javascript)\s*=\s*("[^"]*"|\'[^\']*\'|[^\s>]+)/i', '', $html );
 		
 		$html = preg_replace('/javascript\s*:\s*/i', '', $html);
 		return $html;
