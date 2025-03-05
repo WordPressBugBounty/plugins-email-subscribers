@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.53.1
+Stable tag: 5.7.54
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -486,15 +486,19 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.53.1 =
+= 5.7.54 =
 
-* Fix: Hide the subscription form security field  which was being shown
+* Enhancement: Blocked spam submissions in Gravity Forms workflow trigger [PRO]
 
 == Changelog ==
 
+**5.7.54 (05.03.2025)**
+
+* Enhancement: Blocked spam submissions in Gravity Forms workflow trigger [PRO]
+
 **5.7.53.1 (27.02.2025)**
 
-Fix: Hide the subscription form security field  which was being shown
+* Fix: Hide the subscription form security field  which was being shown
 
 **5.7.53 (26.02.2025)**
 
