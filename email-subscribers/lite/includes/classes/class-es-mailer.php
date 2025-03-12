@@ -117,7 +117,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 		 * @since 4.3.2
 		 */
 		public function __construct() {
-			$this->set_mailer();
+			add_action( 'plugins_loaded', array( $this, 'set_mailer' ) );
 		}
 
 		/**
@@ -189,6 +189,8 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 		 * @return bool
 		 *
 		 * @since 4.3.2
+		 * 
+		 * @deprecated
 		 */
 		public function send_add_new_contact_notification_to_admins( $data ) {
 
@@ -1946,11 +1948,13 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 		public function get_current_mailer_class() {
 			$malier_slug          = $this->get_current_mailer_slug();
 			$current_mailer_class = 'ES_' . ucfirst( $malier_slug ) . '_Mailer';
+			
 			// If we don't found mailer class, fallback to WP Mail.
 			if ( ! class_exists( $current_mailer_class ) ) {
 				$current_mailer_class = 'ES_Wpmail_Mailer';
 			}
-			return $current_mailer_class;
+
+			return apply_filters( 'ig_es_current_mailer_class', $current_mailer_class );
 		}
 
 		/**

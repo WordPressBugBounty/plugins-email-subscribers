@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.54
+Stable tag: 5.7.55
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -486,11 +486,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.54 =
+= 5.7.55 =
 
-* Enhancement: Blocked spam submissions in Gravity Forms workflow trigger [PRO]
+* Enhancement: Improved invalid email checks when sending via Icegram sending service
 
 == Changelog ==
+
+**5.7.55 (12.03.2025)**
+
+* Enhancement: Improved invalid email checks when sending via Icegram sending service
 
 **5.7.54 (05.03.2025)**
 

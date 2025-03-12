@@ -22,9 +22,9 @@ class ES_Info {
 		add_submenu_page( 'es_dashboard', $help_title, $help_title, 'edit_posts', 'es_general_information', array( $this, 'es_information_callback' ) );
 
 		$pro_title = $update_text . ' <span class="premium-icon-rocket"></span>';
-		// if ( ! ES()->is_pro() ) {
+		if ( ! ES()->is_pro() ) {
 			add_submenu_page( 'es_dashboard', $pro_title, $pro_title, 'edit_posts', 'es_pricing', array( $this, 'es_pricing_callback' ) );
-		// }
+		}
 		// End-IG-Code.
 	}
 

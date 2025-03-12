@@ -3360,3 +3360,10 @@ body.icegram-express_page_es_forms #wpcontent {
 	display: inline-block;
 	font-weight: 700;
 }
+
+#icegram_messages_container .ig_data .ig_message .ig_qh_container{
+    padding: 0 !important; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
