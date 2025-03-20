@@ -1857,7 +1857,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 				if ( ! empty( $message_id ) ) {
 					$mail_to_body .= ",Message-ID:$message_id";
 				}
-				$mail_to_body     .= ',Unsubscribe-Link:' . rawurlencode( $unsubscribe_link );
+				$mail_to_body     .= ',Unsubscribe-Link:' . str_replace( '&', '%26', $unsubscribe_link );
 				$list_unsub_header = sprintf(
 					/* translators: 1. Unsubscribe link 2. Blog admin email */
 					'<%1$s>,<mailto:%2$s?subject=%3$s&body=%4$s>',
