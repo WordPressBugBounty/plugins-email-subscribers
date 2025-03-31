@@ -129,7 +129,10 @@ class ES_Service_Email_Sending extends ES_Services {
 		// This will be helpful in avoiding temporary failure errors due to network calls/site load on ESS end.
 		add_action( 'ig_es_campaign_failed', array( $this, 'update_sending_service_status' ) );
 		add_action( 'admin_notices', array( $this, 'show_ess_promotion_notice' ) );
-
+		
+		add_action( 'admin_notices', array( $this, 'show_ess_free_limit_decrease_notice' ) );
+		add_action( 'wp_ajax_ig_es_dismiss_ess_free_limit_decrease_notice', array( $this, 'dismiss_ess_free_limit_decrease_notice' ) );
+		
 		add_action( 'wp_ajax_ig_es_dismiss_ess_fallback_removal_notice', array( $this, 'dismiss_ess_fallback_removal_notice' ) );
 		add_action( 'ig_es_before_settings_save', array( $this, 'maybe_update_ess_status' ) );
 	}
@@ -1252,6 +1255,38 @@ class ES_Service_Email_Sending extends ES_Services {
 					</div>
 				</div>
 				<?php
+			} elseif ( 3000 === $allocated_limit ) {
+				$new_limit = 1000;
+				?>
+				<div class="icegram field-desciption ess-upsell-sec mt-3">
+					<div class="main-upsell-sec">
+						<div class="flex">
+							<div class="flex-shrink-0">
+								<svg class='h-5 w-5 text-teal-400' fill='currentColor' viewBox='0 0 20 20'>
+									<path fill-rule='evenodd'
+										d='M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z'
+										clip-rule='evenodd'/>
+								</svg>
+							</div>
+							<div class="ess-upsell-msg my-1 ml-2 mb-2">
+								<h3>
+									<?php
+									/* translators: 1. New monthly limit*/
+									echo sprintf( esc_html__( 'As a valued user of our plugin, you currently enjoy a 5X email sending limit compared to new signups. Starting with the next reset, the limit will be %1$s emails per month. Upgrade to an ESS paid plan for an even higher limit.', 'email-subscribers' ), esc_html( number_format_i18n( $new_limit ) ) );
+									?>
+								</h3>
+							</div>
+						</div>
+						<div class="upsell-btn-sec">
+							<a href="https://www.icegram.com/email-sending-service/?utm_source=in_app&utm_medium=ess_setting&utm_campaign=ess_limit_decrease_notice_upsell" target="_blank">
+								<button class="secondary" type="button">
+									<?php esc_html_e( 'Upgrade', 'email-subscribers'); ?>
+								</button>
+							</a>
+						</div>
+					</div>
+				</div>
+				<?php
 			}
 			
 			if ( $is_premium_plan ) { 
@@ -1276,6 +1311,100 @@ class ES_Service_Email_Sending extends ES_Services {
 		<?php
 		$html = ob_get_clean();
 		return $html;
+	}
+
+	public function show_ess_free_limit_decrease_notice() {
+
+		if ( ! ES()->is_es_admin_screen() ) {
+			return;
+		}
+
+		$can_access_settings = ES_Common::ig_es_can_access( 'settings' );
+		if ( ! $can_access_settings ) {
+			return 0;
+		}
+
+		$current_page = ig_es_get_request_data( 'page' );
+
+		if ( 'es_reports' !== $current_page ) {
+			return;
+		}
+
+		if ( ! self::using_icegram_mailer() ) {
+			return;
+		}
+
+		$fallback_notice_dismissed = 'yes' === get_option( 'ig_es_ess_free_limit_decrease_notice_dismissed', 'no' );
+		if ( $fallback_notice_dismissed ) {
+			return;
+		}
+
+		$es_ess_data = self::get_ess_data();
+		if ( empty( $es_ess_data ) || empty( $es_ess_data['allocated_limit'] ) ) {
+			return;
+		}
+
+		$allocated_limit  = isset( $es_ess_data['allocated_limit'] ) ? $es_ess_data['allocated_limit']: 0;
+		$new_limit        = 1000;
+		if ( 3000 !== $allocated_limit ) {
+			return;
+		}
+		?>
+		<div id="ig_es_ess_free_limit_decrease_notice" class="notice notice-warning is-dismissible">
+			<p class="text-base">
+				<?php
+				/* translators: 1. New monthly limit*/
+				echo sprintf( esc_html__( 'As a valued user of our plugin, you currently enjoy a 5X email sending limit compared to new signups. Starting with the next reset, the limit will be %1$s emails per month. Upgrade to an ESS paid plan for an even higher limit.', 'email-subscribers' ), esc_html( number_format_i18n( $new_limit ) ) );
+				?>
+				<?php 
+					echo esc_html__( 'Upgrade to ESS paid plans for even more higher limit.', 'email-subscribers' );
+				?>
+				<div class="ig-es-ess-upsell-btn-sec">
+					<a id="ig-es-ess-promo-button" href="https://www.icegram.com/email-sending-service/?utm_source=in_app&utm_medium=es_reports&utm_campaign=ess_limit_decrease_notice_upsell" target="_blank">
+						<button class="primary" type="button">
+							<?php esc_html_e( 'Upgrade', 'email-subscribers'); ?>
+						</button>
+					</a>
+				</div>
+			</p>
+		</div>
+		<script>
+			jQuery(document).ready(function($) {
+				$('#ig_es_ess_free_limit_decrease_notice').on('click', '.notice-dismiss, #ig-es-ess-promo-button', function() {
+					$.ajax({
+						method: 'POST',
+						url: ajaxurl,
+						dataType: 'json',
+						data: {
+							action: 'ig_es_dismiss_ess_free_limit_decrease_notice',
+							security: ig_es_js_data.security
+						}
+					}).done(function(response){
+						console.log( 'response: ', response );
+						$('#ig_es_ess_free_limit_decrease_notice').hide();
+					});
+				});
+			});
+
+		</script>
+		<?php
+	}
+
+	public function dismiss_ess_free_limit_decrease_notice() {
+		$response = array(
+			'status' => 'success',
+		);
+
+		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$can_access_settings = ES_Common::ig_es_can_access( 'settings' );
+		if ( ! $can_access_settings ) {
+			return 0;
+		}
+
+		update_option( 'ig_es_ess_free_limit_decrease_notice_dismissed', 'yes', false );
+
+		wp_send_json( $response );
 	}
 }
 

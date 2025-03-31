@@ -936,6 +936,7 @@ class Email_Subscribers_Admin {
 				'ig_es_show_feature_survey',
 				'ig_es_show_trial_optin_reminder_notice',
 				'show_list_cleanup_notice',
+				'show_ess_free_limit_decrease_notice',
 			);
 		}
 

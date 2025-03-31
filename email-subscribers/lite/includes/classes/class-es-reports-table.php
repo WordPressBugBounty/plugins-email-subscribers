@@ -54,7 +54,7 @@ class ES_Reports_Table extends ES_List_Table {
 							<nav aria-label="Global" class="pb-5 w-full pt-2">
 								<div class="brand-logo">
 									<span>
-										<img src="<?php echo ES_PLUGIN_URL . 'lite/admin/images/new/brand-logo/IG LOGO 192X192.svg'; ?>" alt="brand logo" />
+										<img src="<?php echo esc_url( ES_PLUGIN_URL . 'lite/admin/images/new/brand-logo/IG LOGO 192X192.svg' ); ?>" alt="brand logo" />
 										<div class="divide"></div>
 										<h1><?php echo esc_html__( 'Reports', 'email-subscribers' ); ?></h1>
 									</span>
