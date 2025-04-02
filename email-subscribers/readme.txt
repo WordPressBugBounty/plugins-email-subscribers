@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.57.1
+Stable tag: 5.7.58
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -486,11 +486,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.57.1 =
+= 5.7.58 =
 
-* Fix: New release version was not getting reflected 
+* Enhancement: Added bulk export functionality for campaign reports. [MAX]
 
 == Changelog ==
+
+**5.7.58 (02.04.2025)**
+
+* Enhancement: Added bulk export functionality for campaign reports. [MAX]
 
 **5.7.57.1 (31.03.2025)**
 

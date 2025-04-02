@@ -334,7 +334,7 @@ class ES_Reports_Table extends ES_List_Table {
 
 		$title = '<strong>' . $item['subject'] . '</strong>';
 
-		$es_export_report_link = ( ES()->is_pro() ) ? sprintf( '<a href="#" data-report-id="%s" class="es-export-report text-indigo-600">%s</a>', absint( $item['id'] ), __( 'Export', 'email-subscribers' ) ) : '';
+		$es_export_report_link = ( ES()->is_pro() ) ? sprintf( '<a href="#" data-report-id="%s" class="es-export-single-report text-indigo-600">%s</a>', absint( $item['id'] ), __( 'Export', 'email-subscribers' ) ) : '';
 
 		$actions = array(
 			'view'          => sprintf( '<a href="?page=%s&action=%s&list=%s&_wpnonce=%s" class="text-indigo-600">%s</a>', esc_attr( $page ), 'view', $item['hash'], $es_nonce, __( 'View', 'email-subscribers' ) ),

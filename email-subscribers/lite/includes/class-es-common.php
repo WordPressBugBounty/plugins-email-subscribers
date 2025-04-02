@@ -3301,4 +3301,32 @@ class ES_Common {
 		return $masked_email;
 	}
 
+	public static function install_plugin( $plugin_slug ) {
+		include_once ABSPATH . 'wp-admin/includes/plugin-install.php';
+		include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+	
+		$api = plugins_api('plugin_information', array('slug' => $plugin_slug));
+		if (is_wp_error($api)) {
+			return false; // Plugin not found
+		}
+	
+		
+		if ( ! current_user_can( 'install_plugins' ) ) {
+			return false;
+		}
+	
+		$upgrader       = new Plugin_Upgrader(new WP_Ajax_Upgrader_Skin());
+		$install_result = $upgrader->install($api->download_link);
+	
+		if ( $install_result && !is_wp_error($install_result) ) {		
+			return true;
+		} else {
+			return $install_result;
+		}
+	
+		return false;
+	}
+	
+
 }

@@ -269,6 +269,9 @@ class Email_Subscribers_Admin {
 				/* translators: 1. Anchor start tag 2. Anchor end tag */
 				'bulk_contact_select_text'              => __( sprintf( 'Only contacts from the current page have been selected. %1$sClick here%2$s to select all matching contacts across pages.', '<a id="ig-es-select-all-contacts" class="hover:underline text-sm font-medium text-indigo-600" href="#">', '</a>' ), 'email-subscribers' ),
 				'all_page_contact_selected_text'              => __( 'All contacts matching the selected filters across all pages have been selected.', 'email-subscribers' ),
+				/* translators: 1. Anchor start tag 2. Anchor end tag */
+				'bulk_reports_select_text'              => __( sprintf( 'Only reports from the current page have been selected. %1$sClick here%2$s to select all matching reports across pages.', '<a id="ig-es-select-all-reports" class="hover:underline text-sm font-medium text-indigo-600" href="#">', '</a>' ), 'email-subscribers' ),
+				'all_page_reports_selected_text'              => __( 'All reports matching the selected filters across all pages have been selected.', 'email-subscribers' ),
 			),
 			'is_pro'     => ES()->is_pro() ? true : false,
 			'is_premium' => ES()->is_premium(),

@@ -45,16 +45,11 @@ class ES_Service_Email_Sending extends ES_Services {
 	 * @var array
 	 */
 	private static $all_onboarding_tasks = array(
-		'configuration_tasks' => array(
-			'create_ess_account',
-			'set_sending_service_consent',		
+		'installation_tasks' => array(
+			'install_mailer_plugin',	
 		),
-		'email_delivery_check_tasks' => array(
-			'dispatch_emails_from_server',
-			'check_test_email_on_server',
-		),
-		'completion_tasks' => array(
-			'complete_ess_onboarding',
+		'activation_tasks' => array(
+			'activate_mailer_plugin',
 		),
 	);
 
@@ -158,6 +153,7 @@ class ES_Service_Email_Sending extends ES_Services {
 			wp_enqueue_script( 'ig-es-sending-service-js' );
 			$onboarding_data                  = $this->get_onboarding_data();
 			$onboarding_data['next_task']     = $this->get_next_onboarding_task();
+			$onboarding_data['mailer_plugin_url']     = admin_url( 'admin.php?page=icegram_mailer_dashboard' );
 			$onboarding_data['error_message'] = __( 'An error occured. Please try again later.', 'email-subscribers' );
 			wp_localize_script( 'ig-es-sending-service-js', 'ig_es_ess_onboarding_data', $onboarding_data );
 		}
@@ -168,14 +164,13 @@ class ES_Service_Email_Sending extends ES_Services {
 	 *
 	 * @since 4.6.0
 	 */
-	public function ajax_perform_configuration_tasks() {
-
-		$step = 2;
-		$this->update_onboarding_step( $step );
-		return $this->perform_onboarding_tasks( 'configuration_tasks' );
+	public function ajax_perform_installation_tasks() {
+		return $this->perform_onboarding_tasks( 'installation_tasks' );
 	}
 
-	
+	public function ajax_perform_activation_tasks() {
+		return $this->perform_onboarding_tasks( 'activation_tasks' );
+	}
 
 	public function setup_email_sending_service() {
 		$response = array(
@@ -244,7 +239,7 @@ class ES_Service_Email_Sending extends ES_Services {
 		return $fields;
 	}
 
-	public function create_ess_account() {
+	public function install_mailer_plugin() {
 
 		global $ig_es_tracker;
 
@@ -252,71 +247,16 @@ class ES_Service_Email_Sending extends ES_Services {
 			'status' => 'error',
 		);
 
-		if ( $ig_es_tracker::is_dev_environment() ) {
-			$response['message'] = __( 'Email sending service is not supported on local or dev environments.', 'email-subscribers' );
+		if ( $ig_es_tracker::is_plugin_installed( 'icegram-mailer/icegram-mailer.php' ) ) {
+			$response['status'] = 'success';
 			return $response;
 		}
-
-		$plan       = $this->get_plan();
-		$from_email = get_option( 'ig_es_from_email' );
-		$home_url   = home_url();
-		$parsed_url = parse_url( $home_url );
-		$domain     = ! empty( $parsed_url['host'] ) ? $parsed_url['host'] : '';
-
-		if ( empty( $domain ) ) {
-			$response['message'] = __( 'Site url is not valid. Please check your site url.', 'email-subscribers' );
-			return $response;
-		}
-
-		$email = ES_Common::get_admin_email();
-		$limit = 3000;
-
-		$from_name = ES()->mailer->get_from_name();
-
-		$data = array(
-			'limit'      => $limit,
-			'domain'     => $domain,
-			'email'      => $email,
-			'from_email' => $from_email,
-			'from_name'  => $from_name,
-			'plan'		 => $plan,
-		);
-
-		$options = array(
-			'timeout' => 50,
-			'method'  => 'POST',
-			'body'    => $data,
-		);
-
-		$request_response = $this->send_request( $options, 'POST', false );
-		if ( ! is_wp_error( $request_response ) && ! empty( $request_response['account_id'] ) ) {
-			$account_id      = $request_response['account_id'];
-			$api_key         = $request_response['api_key'];
-			$allocated_limit = $request_response['allocated_limit'];
-			$internval       = $request_response['interval'];
-			$from_email      = $request_response['from_email'];
-			$plan			 = $request_response['plan'];
-
-			$ess_data = array(
-				'account_id'      => $account_id,
-				'allocated_limit' => $allocated_limit,
-				'interval'        => 'month',
-				'api_key'         => $api_key,
-				'from_email'      => $from_email,
-				'plan'			  => $plan,
-			);
-
-			self::update_ess_data( $ess_data );
-
-			$mailer_settings           = get_option( 'ig_es_mailer_settings', array() );
-			$mailer_settings['mailer'] = 'icegram';
-
-			$mailer_settings['icegram']['email'] = $email;
-			update_option( 'ig_es_mailer_settings', $mailer_settings );
-
+		
+		$install_result = ES_Common::install_plugin( 'icegram-mailer' );
+		if ( ! is_wp_error( $install_result ) && $install_result ) {
 			$response['status'] = 'success';
 		} else {
-			$response['message'] = is_wp_error( $request_response ) && ! empty( $request_response->get_error_message() ) ? $request_response->get_error_message() : __( 'An error has occurred while creating your account. Please try again later', 'email-subscribers' );
+			$response['message'] = is_wp_error( $install_result ) && ! empty( $install_result->get_error_message() ) ? $install_result->get_error_message() : __( 'An error has occurred while creating your account. Please try again later', 'email-subscribers' );
 		}
 
 		return $response;
@@ -351,7 +291,7 @@ class ES_Service_Email_Sending extends ES_Services {
 		);
 
 		$logger     = get_ig_logger();
-		$task_group = ! empty( $task_group ) ? $task_group : 'configuration_tasks';
+		$task_group = ! empty( $task_group ) ? $task_group : 'installation_tasks';
 
 		$all_onboarding_tasks = self::$all_onboarding_tasks;
 
@@ -415,12 +355,6 @@ class ES_Service_Email_Sending extends ES_Services {
 							$onboarding_tasks_done[ $task_group ]    = $current_tasks_done;
 							$onboarding_tasks_failed[ $task_group ]  = $current_tasks_failed;
 							$onboarding_tasks_skipped[ $task_group ] = $current_tasks_skipped;
-	
-							update_option( self::$onboarding_tasks_done_option, $onboarding_tasks_done );
-							update_option( self::$onboarding_tasks_failed_option, $onboarding_tasks_failed );
-							update_option( self::$onboarding_tasks_skipped_option, $onboarding_tasks_skipped );
-							update_option( self::$onboarding_tasks_data_option, $onboarding_tasks_data );
-							update_option( self::$onboarding_current_task_option, $current_task );
 						} else {
 							$logger->info( 'Missing Task:' . $current_task, self::$logger_context );
 						}
@@ -543,23 +477,6 @@ class ES_Service_Email_Sending extends ES_Services {
 		return false;
 	}
 
-	/**
-	 * Method to check if onboarding is completed
-	 *
-	 * @return string
-	 *
-	 * @since 4.6.0
-	 */
-	public static function ajax_complete_ess_onboarding() {
-		$response       = array();
-		$option_updated = update_option( 'ig_es_ess_onboarding_complete', 'yes', false );
-		if ( $option_updated ) {
-			$response['html']   = self::get_account_overview_html();
-			$response['status'] = 'success';
-		}
-		return $response;
-	}
-
 	public static function get_account_overview_html() {
 		$current_month       = ig_es_get_current_month();
 		$service_status      = self::get_sending_service_status();
@@ -661,15 +578,6 @@ class ES_Service_Email_Sending extends ES_Services {
 		}
 
 		$required_tasks_mapping = array(
-			'set_sending_service_consent' => array(
-				'create_ess_account',
-			),
-			'dispatch_emails_from_server' => array(
-				'set_sending_service_consent',
-			),
-			'check_test_email_on_server' => array(
-				'dispatch_emails_from_server',
-			),
 		);
 
 		$required_tasks = ! empty( $required_tasks_mapping[ $task_name ] ) ? $required_tasks_mapping[ $task_name ] : array();
@@ -701,16 +609,18 @@ class ES_Service_Email_Sending extends ES_Services {
 	 *
 	 * @since 4.6.0
 	 */
-	public function dispatch_emails_from_server() {
+	public function activate_mailer_plugin() {
 
 		$response = array(
 			'status' => 'error',
 		);
 
-		$service = new ES_Send_Test_Email();
-		$result  = $service->send_test_email();
-		if ( ! empty( $result['status'] ) && 'SUCCESS' === $result['status'] ) {
+		include_once ABSPATH . 'wp-admin/includes/class-wp-upgrader.php';
+		$activation_result = activate_plugin( 'icegram-mailer/icegram-mailer.php' );
+		if ( ! is_wp_error( $activation_result ) ) {
 			$response['status'] = 'success';
+		} else {
+			$response['message'] = $activation_result->get_error_message();
 		}
 		
 		return $response;
