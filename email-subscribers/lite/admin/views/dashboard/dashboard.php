@@ -242,7 +242,6 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 					</div>
 					<?php
 				} elseif ( ! is_plugin_active( 'icegram-mailer/icegram-mailer.php' ) && current_user_can( 'install_plugins' ) ) {
-					$ess_onboarding_step = get_option( 'ig_es_ess_onboarding_step', 1 );
 					$ess_optin           = ig_es_get_request_data( 'ess_optin' );
 					?>
 					<div class="flex-auto min-w-0 es-w-35 pr-3 ess-block">
@@ -250,7 +249,6 @@ $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 					ES_Admin::get_view(
 						'dashboard/mailer-plugin-onboarding', 
 						array(
-							'ess_onboarding_step' => (int) $ess_onboarding_step,
 							'ess_optin'           => $ess_optin,
 						)
 					);

@@ -1039,6 +1039,16 @@
 			});
 			jQuery('.es_mailer').trigger('change');
 
+			jQuery('.es-mailer-label[data-mailer="icegram"]').click(function(e){
+				e.preventDefault();
+				jQuery('#ig-es-icegram-mailer-promotion-popup').removeClass('hidden');
+			});
+			
+			jQuery('.ig-es-popup-close-container').click(function(e){
+				e.preventDefault();
+				jQuery('.ig-es-popup-container').addClass('hidden');
+			});
+
 			//preview broadcast
 			// ig_es_preview_broadcast
 			jQuery(document).on('click', '#ig_es_preview_broadcast', function (e) {
@@ -2428,7 +2438,7 @@
 
 				maybe_show_run_option: function() {
 					let trigger_name        = IG_ES_Workflows.$trigger_select.val();
-					let runnable_triggers   = [ 'ig_es_wc_order_created', 'ig_es_wc_order_completed', 'ig_es_wc_order_refunded' ];
+					let runnable_triggers = ['ig_es_wc_order_created', 'ig_es_wc_order_completed', 'ig_es_wc_order_refunded', 'ig_es_wc_order_on_hold','ig_es_wc_order_processing'];
 					let is_trigger_runnable = runnable_triggers.includes( trigger_name );
 					let actions             = $('.ig-es-action:not([data-action-number = ""]) .js-action-select');
 					let has_runnable_action = false;
@@ -3556,6 +3566,17 @@
 		   
 		});
 
+		jQuery(document).ready(function($) {
+			$(document).on('click', '.ig-es-admin-notice.notice[data-notice-id] .notice-dismiss', function(e) {
+				var notice = $(this).closest('.notice');
+				var noticeId = notice.data('notice-id');
+				
+				$.post(ajaxurl, {
+					action: 'dismiss_' + noticeId + '_notice',
+					security: ig_es_js_data.security
+				});
+			});
+		});
 	});
 
 	function ig_es_uc_first(string){

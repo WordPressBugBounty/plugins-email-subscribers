@@ -117,7 +117,7 @@ class Email_Subscribers_Admin {
 
 		add_action( 'wp_ajax_ig_es_get_subscribers_stats', array( 'ES_Dashboard', 'get_subscribers_stats' ) );
 		add_action( 'wp_ajax_ig_es_add_list', array( $this, 'add_list_callback' ) );
-        //Quick help widget
+		//Quick help widget
 		add_filter( 'ig_active_plugins_for_quick_help', array( $this, 'get_active_quick_help_plugins' ), 10, 2 );
 	}
 
@@ -940,6 +940,7 @@ class Email_Subscribers_Admin {
 				'ig_es_show_trial_optin_reminder_notice',
 				'show_list_cleanup_notice',
 				'show_ess_free_limit_decrease_notice',
+				'display_es_plugin_notice',
 			);
 		}
 
@@ -967,7 +968,6 @@ class Email_Subscribers_Admin {
 		if ( ! empty( $wp_filter['admin_notices']->callbacks ) && is_array( $wp_filter['admin_notices']->callbacks ) ) {
 			foreach ( $wp_filter['admin_notices']->callbacks as $priority => $callbacks ) {
 				foreach ( $callbacks as $name => $details ) {
-
 					if ( is_object( $details['function'] ) && $details['function'] instanceof \Closure ) {
 						unset( $wp_filter['admin_notices']->callbacks[ $priority ][ $name ] );
 						continue;
@@ -1868,16 +1868,16 @@ class Email_Subscribers_Admin {
 
 		$engage_plugin_path = 'icegram/icegram.php';
 
-    	if ( is_plugin_active($engage_plugin_path) ) { 
+		if ( is_plugin_active($engage_plugin_path) ) { 
 			return;
 		}
 
-		if( file_exists(WP_PLUGIN_DIR . '/' . $engage_plugin_path) ) {
+		if ( file_exists(WP_PLUGIN_DIR . '/' . $engage_plugin_path) ) {
 			$optin_url = admin_url( 'plugins.php' );
-			$optin_btn_txt = esc_html("Activate Icegram Engage", 'email-subscribers' );
+			$optin_btn_txt = esc_html('Activate Icegram Engage', 'email-subscribers' );
 		} else {
 			$optin_url = admin_url( 'plugin-install.php?s=Icegram%2520Engage%2520%25E2%2580%2593%2520Ultimate%2520WP%2520Popup%2520Builder%252C%2520Lead%2520Generation%252C%2520Optins%252C%2520and%2520CTA&tab=search&type=term' );
-			$optin_btn_txt = esc_html("Get start with engage", 'email-subscribers' );
+			$optin_btn_txt = esc_html('Get start with engage', 'email-subscribers' );
 		}
 		
 

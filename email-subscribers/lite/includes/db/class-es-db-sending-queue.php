@@ -478,11 +478,11 @@ class ES_DB_Sending_Queue {
 		}
 
 		$not_in_sql_query = '';
-		if( !empty($post_mailing_queue_ids) ) {
+		if ( !empty($post_mailing_queue_ids) ) {
 			$excluded_mailing_queue_ids = $post_mailing_queue_ids; 
 			$excluded_mailing_queue_ids_string = implode(',', array_map('intval', $excluded_mailing_queue_ids));
 
-			$not_in_sql_query = "AND id NOT IN ( SELECT contact_id FROM {$wpbd->prefix}ig_sending_queue WHERE mailing_queue_id IN (".$excluded_mailing_queue_ids_string.") )";
+			$not_in_sql_query = "AND id NOT IN ( SELECT contact_id FROM {$wpbd->prefix}ig_sending_queue WHERE mailing_queue_id IN (" . $excluded_mailing_queue_ids_string . ') )';
 		}
 		
 		$query = $wpbd->prepare(
@@ -537,7 +537,7 @@ class ES_DB_Sending_Queue {
 					%s AS `opened_at`,
 			       	{$send_at_query}
 				FROM `{$wpbd->prefix}ig_contacts` AS `ig_contacts` 
-				WHERE id IN ( " . $sql_query . " )  ".$not_in_sql_query.'
+				WHERE id IN ( " . $sql_query . ' )  ' . $not_in_sql_query . '
 				GROUP BY `ig_contacts`.`email`
 				ORDER BY `ig_contacts`.`email`',
 				$query_args

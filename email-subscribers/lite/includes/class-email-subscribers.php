@@ -742,6 +742,7 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 
 				// Admin Notices
 				'lite/includes/notices/class-es-admin-notices.php',
+				'lite/includes/notices/class-es-admin-notice.php',
 
 				// Database class files
 				'lite/includes/db/class-es-db.php',
@@ -2131,6 +2132,6 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 			return $action_types;
 		}
 	
-}
+	}
 
 }

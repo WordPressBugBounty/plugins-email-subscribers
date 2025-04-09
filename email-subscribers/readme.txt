@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.58
+Stable tag: 5.7.59
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -486,15 +486,21 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.58 =
+= 5.7.59 =
 
-* Enhancement: Added bulk export functionality for campaign reports. [MAX]
+* New: Added a workflow trigger for the WP Event Manager Registrations plugin [MAX]
+* New: Added workflow triggers for WooCommerce orders that are on hold and in processing status [MAX]
 
 == Changelog ==
 
+**5.7.59 (09.04.2025)**
+
+* New: Added a workflow trigger for the WP Event Manager Registrations plugin [MAX]
+* New: Added workflow triggers for WooCommerce orders that are on hold and in processing status [MAX]
+
 **5.7.58 (02.04.2025)**
 
-* Enhancement: Added bulk export functionality for campaign reports. [MAX]
+* Enhancement: Added bulk export functionality for campaign reports [MAX]
 
 **5.7.57.1 (31.03.2025)**
 

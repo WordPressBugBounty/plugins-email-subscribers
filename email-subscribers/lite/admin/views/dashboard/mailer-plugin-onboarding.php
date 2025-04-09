@@ -1,7 +1,7 @@
 <div id="sending-service-benefits" class="pr-6 pl-6 w-full">
 	<p class="pb-3 text-lg font-medium leading-6 text-gray-400">
 		<span class="leading-7">
-			<?php echo esc_html__( 'Supercharge your emails with our Icegram Mailer plugin!', 'email-subscribers' ); ?>
+			<?php echo sprintf( esc_html__( 'Supercharge your emails with our %1$sIcegram Mailer%2$s plugin!', 'email-subscribers' ), '<a class="text-indigo-600" target="_blank" href="https://wordpress.org/plugins/icegram-mailer/">', '</a>') ; ?>
 		</span>
 	</p>
 	<div class="step-1  block-description" style="width: calc(100% - 4rem)">
@@ -33,19 +33,6 @@
 		</a>
 	</div>
 </div>
-<?php
-if ( 'yes' === $ess_optin ) {
-	?>
-	<script type="text/javascript">
-		jQuery(document).ready(function(){
-			setTimeout(function(){
-				jQuery('#ig-ess-optin-cta').trigger('click');
-			},1000);
-		});
-	</script>
-	<?php
-}
-?>
 <div id="sending-service-onboarding-tasks-list" class="pr-6 pl-6 w-full hidden">
 	<p class="pb-3 text-lg font-medium leading-6 text-gray-400">
 		<span class="leading-7">
@@ -92,12 +79,21 @@ if ( 'yes' === $ess_optin ) {
 	<a id="ig-es-complete-ess-onboarding" href="#" class="mt-6">
 		<button type="button" class="lighter-gray">
 			<span class="button-text inline-block mr-1">
-			<?php echo esc_html__( 'Processing...', 'email-subscribers' ); ?>
+			<?php echo esc_html__( 'Processing', 'email-subscribers' ); ?>
 			</span>
-			<svg style="display:none" class="es-btn-loader h-4 w-4 text-white-600 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-					<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-			</svg>
 		</button>
 	</a>
 </div>
+<?php
+if ( 'yes' === $ess_optin ) {
+	?>
+	<script type="text/javascript">
+		jQuery(document).ready(function(){
+			setTimeout(function(){
+				jQuery('#ig-ess-optin-cta').trigger('click');
+			},1000);
+		});
+	</script>
+	<?php
+}
+?>
