@@ -3567,8 +3567,8 @@
 		});
 
 		jQuery(document).ready(function($) {
-			$(document).on('click', '.ig-es-admin-notice.notice[data-notice-id] .notice-dismiss', function(e) {
-				var notice = $(this).closest('.notice');
+			$(document).on('click', '.ig-es-admin-notice.notice[data-notice-id] .notice-dismiss, .ig-es-admin-notice.notice[data-notice-id] .ig-es-dismiss-notice', function(e) {
+				var notice   = $(this).closest('.notice');
 				var noticeId = notice.data('notice-id');
 				
 				$.post(ajaxurl, {
@@ -4439,6 +4439,34 @@ jQuery(document).on('click', '#es-add-list', function (e) {
     }
 });
 
+//Gutennerg POC 
+document.addEventListener('DOMContentLoaded', function () {
+	const storedContent = sessionStorage.getItem('ig_es_gutenberg_poc_content');
+	const triggeredByRedirect = sessionStorage.getItem('ig_es_triggered_redirect');
+	const subjectInput = document.querySelector('input[name="subject"]');
 
+	if (storedContent && triggeredByRedirect === 'yes') {
+		// Wait for TinyMCE to be available
+		const interval = setInterval(() => {
+			const editorInstance = window.tinymce?.get('es-campaign-body');
+
+			if (subjectInput && !subjectInput.value.includes('Gutenberg Post Campaign')) {
+				subjectInput.value ='Gutenberg Post Campaign';
+			}
+
+			if (editorInstance && editorInstance.initialized) {
+				editorInstance.setContent(storedContent);
+
+				// Clean up
+				sessionStorage.removeItem('ig_es_gutenberg_poc_content');
+				sessionStorage.removeItem('ig_es_triggered_redirect');
+				clearInterval(interval);
+			}
+		}, 300); 
+
+		// Stop after 10s if not loaded
+		setTimeout(() => clearInterval(interval), 10000);
+	}
+});
 
 

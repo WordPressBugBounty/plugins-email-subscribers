@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.7.1
 Requires PHP: 7.0
-Stable tag: 5.7.59
+Stable tag: 5.8.0
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -486,12 +486,17 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.7.59 =
+= 5.8.0 =
 
-* New: Added a workflow trigger for the WP Event Manager Registrations plugin [MAX]
-* New: Added workflow triggers for WooCommerce orders that are on hold and in processing status [MAX]
+* New: Gutenberg-based email editor [Experimental]
+* Fix: Unsubscribe link encoding issue in Apple Mail
 
 == Changelog ==
+
+**5.8.0 (16.04.2025)**
+
+* New: Gutenberg-based email editor [Experimental]
+* Fix: Unsubscribe link encoding issue in Apple Mail
 
 **5.7.59 (09.04.2025)**
 

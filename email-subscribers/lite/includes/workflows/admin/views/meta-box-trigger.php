@@ -106,7 +106,8 @@ if ( ! ES()->is_pro() ) {
 			<select name="ig_es_workflow_data[trigger_name]" class="ig-es-field js-trigger-select" required>
 				<option value=""><?php esc_html_e( '[Select]', 'email-subscribers' ); ?></option>
 				<?php
-				foreach ( $trigger_list as $trigger_group => $triggers ) : ?>
+				foreach ( $trigger_list as $trigger_group => $triggers ) : 
+					?>
 					<optgroup label="<?php echo esc_attr( $trigger_group ); ?>">
 						<?php
 						foreach ( $triggers as $trigger_name => $_trigger ) :

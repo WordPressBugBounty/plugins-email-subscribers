@@ -13,6 +13,7 @@ class ES_Admin_Notice {
 	private $notice_text;
 	private $notice_type;
 	private $capability;
+	private $allowed_pages;
 
 	/**
 	 * Class constructor
@@ -22,11 +23,12 @@ class ES_Admin_Notice {
 	 * @param string $notice_type  Type of notice (success|error|warning|info)
 	 * @param string $capability   User capability required to see the notice
 	 */
-	public function __construct( $notice_id, $notice_text, $notice_type = 'info', $capability = 'manage_options') {
-		$this->notice_id   = sanitize_key($notice_id);
-		$this->notice_text = $notice_text;
-		$this->notice_type = $notice_type;
-		$this->capability  = $capability;
+	public function __construct( $notice_id, $notice_text, $notice_type = 'info', $capability = 'manage_options', $allowed_pages = array() ) {
+		$this->notice_id     = sanitize_key($notice_id);
+		$this->notice_text   = $notice_text;
+		$this->notice_type   = $notice_type;
+		$this->capability    = $capability;
+		$this->allowed_pages = $allowed_pages;
 
 		$this->init();
 	}
@@ -43,8 +45,9 @@ return;
 		}
 
 		echo '<div class="ig-es-admin-notice notice notice-' . esc_attr($this->notice_type) . ' is-dismissible" data-notice-id="' . esc_attr($this->notice_id) . '">';
-		echo '<p>' . wp_kses_post($this->notice_text) . '</p>';
+		echo '<p>' . wp_kses_post( $this->notice_text ) . '</p>';
 		echo '</div>';
+		do_action( 'ig_es_notice_displayed' );
 	}
 
 	public function enqueue_dismiss_script() {
@@ -69,8 +72,17 @@ return;
 			return false;
 		}
 
-		$page     = ig_es_get_request_data( 'page' );
-		$es_pages = array( 'es_subscribers', 'es_forms', 'es_campaigns', 'es_workflows', 'es_reports', 'es_settings' );
+		if ( did_action( 'ig_es_notice_displayed' ) ) {
+			return false;
+		}
+
+		$page = ig_es_get_request_data( 'page' );
+		if ( ! empty( $this->allowed_pages ) ) {
+			$es_pages = $this->allowed_pages;
+		} else {
+			$es_pages = array( 'es_subscribers', 'es_forms', 'es_campaigns', 'es_workflows', 'es_reports', 'es_settings' );
+		}
+		
 		if ( ! in_array( $page, $es_pages, true ) ) {
 			return;
 		}

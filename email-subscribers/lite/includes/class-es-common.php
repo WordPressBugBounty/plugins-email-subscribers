@@ -1844,6 +1844,7 @@ class ES_Common {
 				'drag_drop_editor',
 				'gallery',
 				'template',
+				'gutenberg_editor'
 			);
 
 			return $sub_menus;
@@ -3326,6 +3327,16 @@ class ES_Common {
 		}
 	
 		return false;
+	}
+
+	public static function get_site_logo_url() {
+		$site_logo_url = '';
+		if ( has_custom_logo() ) {
+			$custom_logo_id = get_theme_mod( 'custom_logo' );
+			list( $site_logo_url, $width, $height ) = wp_get_attachment_image_src( $custom_logo_id, 'full' );
+		}
+
+		return $site_logo_url;
 	}
 	
 
