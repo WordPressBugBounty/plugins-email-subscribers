@@ -1040,7 +1040,6 @@
 			jQuery('.es_mailer').trigger('change');
 
 			jQuery('.es-mailer-label[data-mailer="icegram"]').click(function(e){
-				e.preventDefault();
 				jQuery('#ig-es-icegram-mailer-promotion-popup').removeClass('hidden');
 			});
 			

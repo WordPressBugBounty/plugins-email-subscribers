@@ -311,6 +311,10 @@ if ( ! class_exists( 'ES_Base_Mailer' ) ) {
 		 * @since 4.7.2
 		 */
 		public function send_batch() {
+			
+			if ( empty( $this->batch_data ) ) {
+				return $this->do_response( 'error', __( 'Empty email batch', 'email-subscribers' ) );
+			}
 
 			$response = $this->send_email();
 			return $response;

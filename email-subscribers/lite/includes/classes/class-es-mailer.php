@@ -800,6 +800,16 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 				$contact_id       = ! empty( $this->email_id_map[ $email ] ) ? $this->email_id_map[ $email ] : 0;
 				$sending_queue_id = ! empty( $this->sending_queue_id_map[ $contact_id ] ) ? $this->sending_queue_id_map[ $contact_id ] : 0;
 
+				if ( ! is_email( $email ) ) {
+					if ( ! empty( $contact_id ) ) {
+						do_action( 'ig_es_message_failed', $contact_id, $campaign_id, $message_id, $sending_queue_id );
+					}
+					
+					$response['status']  = 'ERROR';
+					$response['message'] = __(  'Email is invalid.', 'email-subscribers' );
+					continue;
+				}
+
 				if ( ! empty( $sending_queue_id ) ) {
 					$sending_queue_ids[] = $sending_queue_id;
 				}
@@ -848,7 +858,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 						$this->email_limit -= $this->mailer->current_batch_size;
 						$this->mailer->clear_batch();
 						$this->mailer->handle_throttling();
-						$sending_queue_ids = []; // Reset sending queue array
+						$sending_queue_ids = array(); // Clear sending queue ids
 
 						// Error Sending Email?
 						if ( 'failed' === $send_status ) {

@@ -1771,7 +1771,7 @@ class Email_Subscribers_Admin {
 				<?php
 				/* translators: 1: Anchor tag 2. Closing anchor tag */
 				echo sprintf( esc_html__( 'Automatic sending has been paused for this campaign. For more details, view sending logs from %1$shere%2$s.', 'email-subscribers' ),
-						'<a href="' . esc_url( $logs_url ) . '" target="_blank">',
+						'<a href="' . esc_url( $logs_url ) . '" class="text-indigo-600" target="_blank">',
 						'</a>'
 				);
 				?>

@@ -203,7 +203,7 @@ class ES_Service_Email_Sending extends ES_Services {
 			$icegram_mailer = array(
 				'icegram' => array(
 					'name' => 'Icegram Mailer',
-					'logo' => ES_PLUGIN_URL . 'lite/admin/images/icegram-mailer.png'
+					'logo' => ES_PLUGIN_URL . 'lite/admin/images/icegram-mailer.png',
 				)
 			);
 		} else {
@@ -222,7 +222,7 @@ class ES_Service_Email_Sending extends ES_Services {
 	}
 
 	public function register_icegram_mailer_settings_fields( $fields ) {
-		$ess_option_exists = get_option( self::$ess_data_option, '' ) !== '';
+		$ess_option_exists = self::get_ess_data();
 		if ( $ess_option_exists ) {
 			$mailer_settings = get_option( 'ig_es_mailer_settings', array() );
 			$ess_email       = ! empty( $mailer_settings['icegram']['email'] ) ? $mailer_settings['icegram']['email'] : ES_Common::get_admin_email();
@@ -1455,7 +1455,7 @@ class ES_Service_Email_Sending extends ES_Services {
 
 	public function show_icegram_mailer_promotion_notice() {
 		global $ig_es_tracker;
-		if ( $ig_es_tracker::is_plugin_installed( 'icegram-mailer/icegram-mailer1.php' ) ) {
+		if ( $ig_es_tracker::is_plugin_installed( 'icegram-mailer/icegram-mailer.php' ) ) {
 			return;
 		}
 		$notice_html = '';
