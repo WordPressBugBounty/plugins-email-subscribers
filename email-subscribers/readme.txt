@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 5.8.1
+Stable tag: 5.8.2
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -319,12 +319,17 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.8.1 =
+= 5.8.2 =
 
-* Update: Tested up to WordPress 6.8
-* Enhancement: Improved error handling for invalid email addresses while sending emails
+* Fix: Attachment issue when using Classic Editor for campaign emails
+* Fix: Layout issue on the Plugins page
 
 == Changelog ==
+
+**5.8.2 (07.05.2025)**
+
+* Fix: Attachment issue when using Classic Editor for campaign emails
+* Fix: Layout issue on the Plugins page
 
 **5.8.1 (23.04.2025)**
 

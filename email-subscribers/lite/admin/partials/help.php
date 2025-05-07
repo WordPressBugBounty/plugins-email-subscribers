@@ -138,13 +138,13 @@ $articles = array(
 			<ul class="mx-6 pb-2 leading-relaxed list-disc">
 				<li>Install & Activate <a href="https://www.icegram.com/r7gg" target="_blank" class="text-indigo-600">Temporary Login Without Password</a> plugin</li>
 				<li>Create & Copy new Temporary Login link. <a href="https://www.icegram.com/r7gg" target="_blank" class="text-indigo-600">Learn why you should use this plugin</a></li>
-				<li>Click on <b>Contact US</b> button and let us know your queries along with Temporary Login Link </li>
+				<li>Click on <b>Contact Us</b> button and let us know your queries along with Temporary Login Link </li>
 			</ul>
 			<div class="flex w-2/2 py-2 justify-center <?php echo esc_attr( $contact_us_btn_class ); ?>">
 				<span class="rounded-md shadow-sm">
 				<button type="button" class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium leading-5 text-white transition duration-150 ease-in-out bg-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-500 focus:outline-none focus:shadow-outline-blue">
 				<?php
-					echo esc_html__( 'Contact US', 'email-subscribers' );
+					echo esc_html__( 'Contact Us', 'email-subscribers' );
 				?>
 				</button>
 				</span>
