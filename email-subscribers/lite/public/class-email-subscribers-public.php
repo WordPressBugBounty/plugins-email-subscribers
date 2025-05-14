@@ -284,6 +284,10 @@ class Email_Subscribers_Public {
 						do_action( 'ig_es_message_open', $db_id, $message_id, $campaign_id );
 					}
 
+					header('Content-Type: image/png');
+					echo esc_html( base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/wcAAwAB/UVu6egAAAAASUVORK5CYII=') );
+					exit;
+
 				}
 			} elseif ( 'click' === $option ) {
 

@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 5.8.2
+Stable tag: 5.8.3
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -319,12 +319,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.8.2 =
+= 5.8.3 =
 
-* Fix: Attachment issue when using Classic Editor for campaign emails
-* Fix: Layout issue on the Plugins page
+* Fix: Email opens incorrectly logged as page views in Jetpack
 
 == Changelog ==
+
+**5.8.3 (14.05.2025)**
+
+* Fix: Email opens incorrectly logged as page views in Jetpack
 
 **5.8.2 (07.05.2025)**
 
