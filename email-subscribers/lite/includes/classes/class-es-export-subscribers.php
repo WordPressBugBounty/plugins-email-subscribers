@@ -14,84 +14,60 @@ class Export_Subscribers {
 	 * Constructor
 	 */
 	public function __construct() {
-		$report = ig_es_get_request_data( 'report' );
-		$status = ig_es_get_request_data( 'status' );
-		$link_id = ig_es_get_request_data( 'link_id' );
-		$campaign_id = ig_es_get_request_data( 'campaign_id' );
-		$can_access = ES_Common::ig_es_can_access( 'audience' );
-		$can_access_campaign = ES_Common::ig_es_can_access( 'campaigns' );
-		$export_nonce = ig_es_get_request_data('export-nonce');
-		if (wp_verify_nonce($export_nonce, 'ig-es-subscriber-export-nonce')) {
-			if ($report && $status && $can_access) {
-			  $status = trim( $status );
-			  $selected_list_id = 0;
-
+		$report       = ig_es_get_request_data( 'report' );
+		$status       = ig_es_get_request_data( 'status' );
+		$link_id      = ig_es_get_request_data( 'link_id' );
+		$campaign_id  = ig_es_get_request_data( 'campaign_id' );
+		$export_nonce = ig_es_get_request_data( 'export-nonce' );
+	
+		if ( wp_verify_nonce( $export_nonce, 'ig-es-subscriber-export-nonce' ) ) {
+			if ( $report && $status && ES_Common::ig_es_can_access( 'audience' ) ) {
+	
+				$selected_list_id = 0;
+	
 				if ( 'select_list' === $status ) {
 					$selected_list_id = ig_es_get_request_data( 'list_id', 0 );
-
 					if ( 0 === $selected_list_id ) {
-						$this->show_error_message(__('Please select list', 'email-subscribers'));		
+						$this->show_error_message( __( 'Please select list', 'email-subscribers' ) );
 					}
 				}
-
-			  $csv = $this->generate_csv($status, $selected_list_id);
-			  $file_name = sprintf('%s-contacts.csv', strtolower($status));
-			  $this->output_CSV($csv, $file_name);
-		
-			} elseif ($report && $link_id && $campaign_id && $can_access_campaign) {
-		
-				$subscribers = ES()->actions_db->get_link_cliked_subscribers($campaign_id, $link_id);
-				if ( count( $subscribers ) > 0 ) {
-				$sub_headers = [
-					__('First Name', 'email-subscribers'),
-					__('Last Name', 'email-subscribers'),
-					__('Email', 'email-subscribers'),
-				];
-
-				$csv = implode(',', $sub_headers);
-				$csv.="\n";
-					foreach ($subscribers as $subscriber) {
-				$data = [
-					'first_name' => $this->escape_and_trim_data($subscriber['first_name']),
-					'last_name' => $this->escape_and_trim_data($subscriber['last_name']),
-					'email' => $this->escape_and_trim_data($subscriber['email']),
-				];
-
-				$csv .= '"' . implode('","', $data) . "\"\n";
-					}
-				}
-
-				if (empty($csv)) {
-					$this->show_error_message(__('No data available', 'email-subscribers'));
-				}
-				$this->output_CSV($csv, 'subscriber-contacts.csv');
+	
+				$args = compact( 'status', 'selected_list_id' );
+				ES_Contact_Export_Controller::process_list_export( $args );
+	
+			} elseif ( $report && $link_id && $campaign_id && ES_Common::ig_es_can_access( 'campaigns' ) ) {
+	
+				$args = compact( 'campaign_id', 'link_id' );
+				ES_Contact_Export_Controller::process_campaign_link_export( $args );
 			}
-		}	
+		}
+	
 		add_filter( 'query_vars', array( $this, 'query_vars' ) );
 		add_action( 'parse_request', array( $this, 'parse_request' ) );
 	}
+	
 
 	private function show_error_message( $message) {
 		ES_Common::show_message($message, 'error');
 		exit();
 	}
 	
-	private function escape_and_trim_data( $data) {
-		return trim(str_replace('"', '""', $this->escape_data($data)));
-	}
+	// private function escape_and_trim_data( $data) {
+	// 	return trim(str_replace('"', '""', $this->escape_data($data)));
+	// }
 	
-	private function output_CSV( $csv_content, $file_name) {
-		header('Pragma: public');
-		header('Expires: 0');
-		header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
-		header('Cache-Control: private', false);
-		header('Content-Type: application/octet-stream');
-		header("Content-Disposition: attachment; filename=$file_name");
-		header('Content-Transfer-Encoding: binary');
+	// private function output_CSV( $csv_content, $file_name) {
+	// 	header('Pragma: public');
+	// 	header('Expires: 0');
+	// 	header('Cache-Control: must-revalidate, post-check=0, pre-check=0');
+	// 	header('Cache-Control: private', false);
+	// 	header('Content-Type: application/octet-stream');
+	// 	header("Content-Disposition: attachment; filename=$file_name");
+	// 	header('Content-Transfer-Encoding: binary');
 	
-		echo wp_kses_post($csv_content);
-		exit();
-	}
+	// 	echo wp_kses_post($csv_content);
+	// 	exit();
+	// }
 
 	public function prepare_header_footer_row() {
 
@@ -142,7 +118,7 @@ class Export_Subscribers {
 						</div>
 					</div>
 				</td>
-				<td class="ig_es_total_contacts"><?php echo esc_html( $this->count_subscribers( $key ) ); ?></td>
+				<td class="ig_es_total_contacts"><?php echo esc_html( ES_Contact_Export_Controller::count_subscribers( $key ) ); ?></td>
 				<td>
 					<div class="inline-flex  pl-10"><a href="<?php echo esc_url( $url ); ?>" id="ig_es_export_link_<?php echo esc_attr( $key ); ?>">
 						<svg fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" class="w-8 h-8 text-indigo-600 hover:text-indigo-500 active:text-indigo-600"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -192,38 +168,38 @@ class Export_Subscribers {
 	 *
 	 * @return string|null
 	 */
-	public function count_subscribers( $status = 'all' ) {
+	// public function count_subscribers( $status = 'all' ) {
 
-		global $wpdb;
+	// 	global $wpdb;
 
-		switch ( $status ) {
-			case 'all':
-				return ES()->lists_contacts_db->get_all_contacts_count( 0, false );
-			break;
+	// 	switch ( $status ) {
+	// 		case 'all':
+	// 			return ES()->lists_contacts_db->get_all_contacts_count( 0, false );
+	// 		break;
 
-			case 'subscribed':
-				return ES()->lists_contacts_db->get_subscribed_contacts_count( 0, false );
-			break;
+	// 		case 'subscribed':
+	// 			return ES()->lists_contacts_db->get_subscribed_contacts_count( 0, false );
+	// 		break;
 
-			case 'unsubscribed':
-				return ES()->lists_contacts_db->get_unsubscribed_contacts_count( 0, false );
-			break;
+	// 		case 'unsubscribed':
+	// 			return ES()->lists_contacts_db->get_unsubscribed_contacts_count( 0, false );
+	// 		break;
 
-			case 'confirmed':
-				return ES()->lists_contacts_db->get_confirmed_contacts_count( 0, false );
-			break;
+	// 		case 'confirmed':
+	// 			return ES()->lists_contacts_db->get_confirmed_contacts_count( 0, false );
+	// 		break;
 
-			case 'unconfirmed':
-				return ES()->lists_contacts_db->get_unconfirmed_contacts_count( 0, false );
-			break;
+	// 		case 'unconfirmed':
+	// 			return ES()->lists_contacts_db->get_unconfirmed_contacts_count( 0, false );
+	// 		break;
 
-			case 'select_list':
-			default:
-				return '-';
-			break;
-		}
+	// 		case 'select_list':
+	// 		default:
+	// 			return '-';
+	// 		break;
+	// 	}
 
-	}
+	// }
 
 
 	/**
@@ -270,127 +246,127 @@ class Export_Subscribers {
 	 *
 	 * @return string
 	 */
-	public function generate_csv( $status = 'all', $list_id = 0 ) {
+	// public function generate_csv( $status = 'all', $list_id = 0 ) {
 
-		global $wpbd;
+	// 	global $wpbd;
 
-		// Add filter to increase memory limit
-		add_filter( 'ig_es_memory_limit', 'ig_es_increase_memory_limit' );
+	// 	// Add filter to increase memory limit
+	// 	add_filter( 'ig_es_memory_limit', 'ig_es_increase_memory_limit' );
 
-		wp_raise_memory_limit( 'ig_es' );
+	// 	wp_raise_memory_limit( 'ig_es' );
 
-		// Remove the added filter function so that it won't be called again if wp_raise_memory_limit called later on.
-		remove_filter( 'ig_es_memory_limit', 'ig_es_increase_memory_limit' );
+	// 	// Remove the added filter function so that it won't be called again if wp_raise_memory_limit called later on.
+	// 	remove_filter( 'ig_es_memory_limit', 'ig_es_increase_memory_limit' );
 
-		set_time_limit( IG_SET_TIME_LIMIT );
+	// 	set_time_limit( IG_SET_TIME_LIMIT );
 
-		$results = array();
-		if ( 'all' === $status ) {
-			$results = ES()->lists_contacts_db->get_all_contacts();
-		} elseif ( 'subscribed' === $status ) {
-			$results = ES()->lists_contacts_db->get_all_subscribed_contacts();
-		} elseif ( 'unsubscribed' === $status ) {
-			$results = ES()->lists_contacts_db->get_all_unsubscribed_contacts();
-		} elseif ( 'confirmed' === $status ) {
-			$results = ES()->lists_contacts_db->get_all_confirmed_contacts();
-		} elseif ( 'unconfirmed' === $status ) {
-			$results = ES()->lists_contacts_db->get_all_unconfirmed_contacts();
-		} elseif ( 'select_list' === $status ) {
-			$list_id = absint( $list_id );
-			$results = ES()->lists_contacts_db->get_all_contacts_from_list( $list_id );
-		}
+	// 	$results = array();
+	// 	if ( 'all' === $status ) {
+	// 		$results = ES()->lists_contacts_db->get_all_contacts();
+	// 	} elseif ( 'subscribed' === $status ) {
+	// 		$results = ES()->lists_contacts_db->get_all_subscribed_contacts();
+	// 	} elseif ( 'unsubscribed' === $status ) {
+	// 		$results = ES()->lists_contacts_db->get_all_unsubscribed_contacts();
+	// 	} elseif ( 'confirmed' === $status ) {
+	// 		$results = ES()->lists_contacts_db->get_all_confirmed_contacts();
+	// 	} elseif ( 'unconfirmed' === $status ) {
+	// 		$results = ES()->lists_contacts_db->get_all_unconfirmed_contacts();
+	// 	} elseif ( 'select_list' === $status ) {
+	// 		$list_id = absint( $list_id );
+	// 		$results = ES()->lists_contacts_db->get_all_contacts_from_list( $list_id );
+	// 	}
 
-		$subscribers = array();
+	// 	$subscribers = array();
 
-		if ( count( $results ) > 0 ) {
-			$contact_list_map = array();
-			$contact_ids      = array();
-			foreach ( $results as $result ) {
+	// 	if ( count( $results ) > 0 ) {
+	// 		$contact_list_map = array();
+	// 		$contact_ids      = array();
+	// 		foreach ( $results as $result ) {
 
-				if ( ! in_array( $result['contact_id'], $contact_ids, true ) ) {
-					$contact_ids[] = $result['contact_id'];
-				}
+	// 			if ( ! in_array( $result['contact_id'], $contact_ids, true ) ) {
+	// 				$contact_ids[] = $result['contact_id'];
+	// 			}
 
-				$contact_list_map[ $result['contact_id'] ][] = array(
-					'status'     => $result['status'],
-					'list_id'    => $result['list_id'],
-					'optin_type' => $result['optin_type'],
-				);
-			}
+	// 			$contact_list_map[ $result['contact_id'] ][] = array(
+	// 				'status'     => $result['status'],
+	// 				'list_id'    => $result['list_id'],
+	// 				'optin_type' => $result['optin_type'],
+	// 			);
+	// 		}
 
-			$contact_ids_str = implode( ',', $contact_ids );
+	// 		$contact_ids_str = implode( ',', $contact_ids );
 
-			$select_columns = array(
-				'id',
-				'first_name',
-				'last_name',
-				'email',
-				'created_at',
-			);
+	// 		$select_columns = array(
+	// 			'id',
+	// 			'first_name',
+	// 			'last_name',
+	// 			'email',
+	// 			'created_at',
+	// 		);
 
-			$custom_fields = ES()->custom_fields_db->get_custom_fields();
-			if ( ! empty( $custom_fields ) ) {
-				foreach ( $custom_fields as $field ) {
-					$select_columns[] = $field['slug'];
-				}
-			}
+	// 		$custom_fields = ES()->custom_fields_db->get_custom_fields();
+	// 		if ( ! empty( $custom_fields ) ) {
+	// 			foreach ( $custom_fields as $field ) {
+	// 				$select_columns[] = $field['slug'];
+	// 			}
+	// 		}
 
-			$query = 'SELECT ' . implode( ',', $select_columns ) . " FROM {$wpbd->prefix}ig_contacts WHERE id IN ({$contact_ids_str})";
+	// 		$query = 'SELECT ' . implode( ',', $select_columns ) . " FROM {$wpbd->prefix}ig_contacts WHERE id IN ({$contact_ids_str})";
 
-			$subscribers = $wpbd->get_results( $query, ARRAY_A );
-		}
+	// 		$subscribers = $wpbd->get_results( $query, ARRAY_A );
+	// 	}
 
-		$csv_output = '';
-		if ( count( $subscribers ) > 0 ) {
+	// 	$csv_output = '';
+	// 	if ( count( $subscribers ) > 0 ) {
 
-			$headers = array(
-				__( 'First Name', 'email-subscribers' ),
-				__( 'Last Name', 'email-subscribers' ),
-				__( 'Email', 'email-subscribers' ),
-				__( 'List', 'email-subscribers' ),
-				__( 'Status', 'email-subscribers' ),
-				__( 'Opt-In Type', 'email-subscribers' ),
-				__( 'Created On', 'email-subscribers' ),
-			);
+	// 		$headers = array(
+	// 			__( 'First Name', 'email-subscribers' ),
+	// 			__( 'Last Name', 'email-subscribers' ),
+	// 			__( 'Email', 'email-subscribers' ),
+	// 			__( 'List', 'email-subscribers' ),
+	// 			__( 'Status', 'email-subscribers' ),
+	// 			__( 'Opt-In Type', 'email-subscribers' ),
+	// 			__( 'Created On', 'email-subscribers' ),
+	// 		);
 
-			if ( ! empty( $custom_fields ) ) {
-				foreach ( $custom_fields as $field ) {
-					$headers[] = $field['label'];
-				}
-			}
+	// 		if ( ! empty( $custom_fields ) ) {
+	// 			foreach ( $custom_fields as $field ) {
+	// 				$headers[] = $field['label'];
+	// 			}
+	// 		}
 
-			$lists_id_name_map = ES()->lists_db->get_list_id_name_map();
-			$csv_output       .= implode( ',', $headers );
+	// 		$lists_id_name_map = ES()->lists_db->get_list_id_name_map();
+	// 		$csv_output       .= implode( ',', $headers );
 
-			foreach ( $subscribers as $key => $subscriber ) {
+	// 		foreach ( $subscribers as $key => $subscriber ) {
 
-				$data 				= array();
-				$data['first_name'] = trim( str_replace( '"', '""', $this->escape_data( $subscriber['first_name'] ) ) );
-				$data['last_name']  = trim( str_replace( '"', '""', $this->escape_data( $subscriber['last_name'] ) ) );
-				$data['email']      = trim( str_replace( '"', '""', $this->escape_data( $subscriber['email'] ) ) );
+	// 			$data 				= array();
+	// 			$data['first_name'] = trim( str_replace( '"', '""', $this->escape_data( $subscriber['first_name'] ) ) );
+	// 			$data['last_name']  = trim( str_replace( '"', '""', $this->escape_data( $subscriber['last_name'] ) ) );
+	// 			$data['email']      = trim( str_replace( '"', '""', $this->escape_data( $subscriber['email'] ) ) );
 
-				$contact_id = $subscriber['id'];
-				if ( ! empty( $contact_list_map[ $contact_id ] ) ) {
-					foreach ( $contact_list_map[ $contact_id ] as $list_details ) {
-						$data['list']       = $lists_id_name_map[ $list_details['list_id'] ];
-						$data['status']     = ucfirst( $list_details['status'] );
-						$data['optin_type'] = ( 1 == $list_details['optin_type'] ) ? 'Single Opt-In' : 'Double Opt-In';
-						$data['created_at'] = $subscriber['created_at'];
-						if ( ! empty( $custom_fields ) ) {
-							foreach ( $custom_fields as $field ) {
-								$column_name = $field['slug'];
-								$data[ $column_name ] = $subscriber[ $column_name ];
-							}
-						}
-						$csv_output        .= "\n";
-						$csv_output        .= '"' . implode( '","', $data ) . '"';
-					}
-				}
-			}
-		}
+	// 			$contact_id = $subscriber['id'];
+	// 			if ( ! empty( $contact_list_map[ $contact_id ] ) ) {
+	// 				foreach ( $contact_list_map[ $contact_id ] as $list_details ) {
+	// 					$data['list']       = $lists_id_name_map[ $list_details['list_id'] ];
+	// 					$data['status']     = ucfirst( $list_details['status'] );
+	// 					$data['optin_type'] = ( 1 == $list_details['optin_type'] ) ? 'Single Opt-In' : 'Double Opt-In';
+	// 					$data['created_at'] = $subscriber['created_at'];
+	// 					if ( ! empty( $custom_fields ) ) {
+	// 						foreach ( $custom_fields as $field ) {
+	// 							$column_name = $field['slug'];
+	// 							$data[ $column_name ] = $subscriber[ $column_name ];
+	// 						}
+	// 					}
+	// 					$csv_output        .= "\n";
+	// 					$csv_output        .= '"' . implode( '","', $data ) . '"';
+	// 				}
+	// 			}
+	// 		}
+	// 	}
 
-		return $csv_output;
-	}
+	// 	return $csv_output;
+	// }
 
 	/**
 	 * Escape a string to be used in a CSV context
@@ -408,15 +384,15 @@ class Export_Subscribers {
 	 * @param string $data CSV field to escape.
 	 * @return string
 	 */
-	public function escape_data( $data ) {
-		$active_content_triggers = array( '=', '+', '-', '@' );
+	// public function escape_data( $data ) {
+	// 	$active_content_triggers = array( '=', '+', '-', '@' );
 
-		if ( in_array( mb_substr( $data, 0, 1 ), $active_content_triggers, true ) ) {
-			$data = "'" . $data;
-		}
+	// 	if ( in_array( mb_substr( $data, 0, 1 ), $active_content_triggers, true ) ) {
+	// 		$data = "'" . $data;
+	// 	}
 
-		return $data;
-	}
+	// 	return $data;
+	// }
 
 }
 

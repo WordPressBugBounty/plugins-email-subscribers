@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 5.8.3
+Stable tag: 5.8.4
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -319,11 +319,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.8.3 =
+= 5.8.4 =
 
-* Fix: Email opens incorrectly logged as page views in Jetpack
+* New: Workflow trigger for "New User Role Added" [MAX]
 
 == Changelog ==
+
+**5.8.4 (28.05.2025)**
+
+* New: Workflow trigger for "New User Role Added" [MAX]
 
 **5.8.3 (14.05.2025)**
 

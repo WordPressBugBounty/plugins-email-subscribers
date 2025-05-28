@@ -3460,8 +3460,8 @@
 				if (list_required) {
 					let selected_lists_count = $('#ig-es-multiselect-lists').val() ? $('#ig-es-multiselect-lists').val().length : 0;
 					if (selected_lists_count === 0) {
-						alert(ig_es_form_editor_data.i18n.no_list_selected_message);
 						e.preventDefault();
+						alert(ig_es_form_editor_data.i18n.no_list_selected_message);
 						return false;
 					}
 				}
@@ -3576,6 +3576,8 @@
 				});
 			});
 		});
+
+		
 	});
 
 	function ig_es_uc_first(string){

@@ -92,8 +92,9 @@ class ES_Forms_Table extends ES_List_Table {
 				$form = ig_es_get_request_data( 'form' );
 				echo wp_kses_post( $this->edit_form( absint( $form ) ) );
 			} elseif ( 'duplicate_form' === $action ) {
-				$form = ig_es_get_request_data( 'form' );
-				$duplicated_form_id = $this->duplicate_form( absint( $form ) );
+				$args = array();
+				$args['form_id']    = absint( ig_es_get_request_data( 'form',0 ) );
+				$duplicated_form_id = ES_Forms_Controller::duplicate_form( $args );
 				if ( !empty($duplicated_form_id) ) {
 					wp_redirect( admin_url( 'admin.php?page=es_forms' ) );
 					exit;
@@ -200,7 +201,7 @@ class ES_Forms_Table extends ES_List_Table {
 				<?php
 			}
 	}
-
+    //Code to be remove
 	public function validate_data( $data ) {
 
 		$editor_type = ! empty( $data['editor_type'] ) ? $data['editor_type'] : '';
@@ -248,44 +249,35 @@ class ES_Forms_Table extends ES_List_Table {
 
 		if ( 'submitted' === $submitted ) {
 
-			$nonce     = ig_es_get_request_data( '_wpnonce' );
+			$nonce 	   = ig_es_get_request_data( '_wpnonce' );
 			$form_data = ig_es_get_request_data( 'form_data', array(), false );
 			$lists     = ig_es_get_request_data( 'lists' );
 
-			$form_data['lists'] = $lists;
-
-			$editor_type = ! empty( $form_data['settings']['editor_type'] ) ? $form_data['settings']['editor_type'] : '';
-			if ( isset( $form_data ) ) {
-
-				$form_data = self::sanitize_data( $form_data );
+			if ( ! wp_verify_nonce( $nonce, 'es_form' ) ) {
+				$message = __( 'You do not have permission to edit this form.', 'email-subscribers' );
+				ES_Common::show_message( $message, 'error' );
+				$this->prepare_list_form( null, $form_data );
+				return;
 			}
 			
-			$validate_data = array(
-				'nonce' => $nonce,
-				'name'  => ! empty( $form_data['name'] ) ? sanitize_text_field( $form_data['name'] ) : '',
-				'lists' => ! empty( $form_data['lists'] ) ? $form_data['lists'] : array(),
-				'editor_type' => $editor_type,
-			);
-
-			$response = $this->validate_data( $validate_data );
+			$form_data['lists'] = $lists;
+			$response 			= ES_Form_Controller::save( $form_data );
 
 			if ( 'error' === $response['status'] ) {
 				$message = $response['message'];
 				ES_Common::show_message( $message, 'error' );
 				$this->prepare_list_form( null, $form_data );
-
 				return;
+			} else {
+				$form_url = admin_url( 'admin.php?page=es_forms&action=form_created' );
+				wp_safe_redirect( $form_url );
+				exit();
 			}
-
-			$this->save_form( null, $form_data );
-			$form_url = admin_url( 'admin.php?page=es_forms&action=form_created' );
-			wp_safe_redirect( $form_url );
-			exit();
 		}
 
 		$this->prepare_list_form();
 	}
-
+    //Code to be remove
 	public function edit_form( $id ) {
 		global $wpdb;
 
@@ -298,7 +290,7 @@ class ES_Forms_Table extends ES_List_Table {
 				$submitted = ig_es_get_request_data( 'submitted' );
 
 				if ( 'submitted' === $submitted ) {
-
+                    $form_data['id'] = $id;
 					$nonce     = ig_es_get_request_data( '_wpnonce' );
 					$form_data = ig_es_get_request_data( 'form_data', array(), false );
 					$lists     = ig_es_get_request_data( 'lists' );
@@ -308,39 +300,23 @@ class ES_Forms_Table extends ES_List_Table {
 					$form_data['lists'] = $lists;
 					$editor_type = ! empty( $form_data['settings']['editor_type'] ) ? $form_data['settings']['editor_type'] : '';
 					
-
-					if ( isset( $form_data ) ) {
-
-						$form_data = self::sanitize_data( $form_data );
-					}
-					
-					$validate_data = array(
-						'nonce' => $nonce,
-						'name'  => $form_data['name'],
-						'lists' => $form_data['lists'],
-						'editor_type' => $editor_type,
-					);
-
-					$response = $this->validate_data( $validate_data );
-
+					$response = ES_Form_Controller::save( $form_data );
 					if ( 'error' === $response['status'] ) {
 						$message = $response['message'];
 						ES_Common::show_message( $message, 'error' );
-						$this->prepare_list_form( $id, $form_data );
-
+						$this->prepare_list_form( null, $form_data );
 						return;
+					} else {
+						$form_url = admin_url( 'admin.php?page=es_forms&action=form_updated' );
+						wp_safe_redirect( $form_url );
+						exit();
 					}
-
-					$this->save_form( $id, $form_data );
-					$form_url = admin_url( 'admin.php?page=es_forms&action=form_updated' );
-					wp_safe_redirect( $form_url );
-					exit();
 
 				} else {
 
 					$data      = $data[0];
 					$id        = $data['id'];
-					$form_data = self::get_form_data_from_body( $data );
+					$form_data = ES_Form_Controller::get_form_data_from_body( $data );
 				}
 			} else {
 				$message = __( 'Sorry, form not found', 'email-subscribers' );
@@ -351,19 +327,7 @@ class ES_Forms_Table extends ES_List_Table {
 		}
 	}
 
-	public function duplicate_form( $form_id ) {
-
-		if ( empty( $form_id ) ) {
-			return false;
-		}
-		
-		$duplicated_form_id = ES()->forms_db->duplicate_form( $form_id );
-		if ( empty( $duplicated_form_id ) ) {
-			return false;
-		}
-
-		return $duplicated_form_id;
-	}
+	
 
 	public function prepare_list_form( $id = 0, $data = array() ) {
 
@@ -596,27 +560,27 @@ class ES_Forms_Table extends ES_List_Table {
 		</div>
 		<?php
 	}
+    //Code to be remove
+	// public function save_form( $id, $data ) {
 
-	public function save_form( $id, $data ) {
+	// 	global $wpdb;
 
-		global $wpdb;
+	// 	$form_data = self::prepare_form_data( $data );
 
-		$form_data = self::prepare_form_data( $data );
+	// 	if ( ! empty( $id ) ) {
+	// 		$form_data['updated_at'] = ig_get_current_date_time();
 
-		if ( ! empty( $id ) ) {
-			$form_data['updated_at'] = ig_get_current_date_time();
+	// 		// We don't want to change the created_at date for update
+	// 		unset( $form_data['created_at'] );
+	// 		// phpcs:disable
+	// 		$return = $wpdb->update( IG_FORMS_TABLE, $form_data, array( 'id' => $id ) );
+	// 	} else {
+	// 		$return = $wpdb->insert( IG_FORMS_TABLE, $form_data );
+	// 	}
+	// 	// phpcs:enable
 
-			// We don't want to change the created_at date for update
-			unset( $form_data['created_at'] );
-			// phpcs:disable
-			$return = $wpdb->update( IG_FORMS_TABLE, $form_data, array( 'id' => $id ) );
-		} else {
-			$return = $wpdb->insert( IG_FORMS_TABLE, $form_data );
-		}
-		// phpcs:enable
-
-		return $return;
-	}
+	// 	return $return;
+	// }
 
 	public static function prepare_form_data( $data ) {
 		
@@ -746,7 +710,7 @@ class ES_Forms_Table extends ES_List_Table {
 
 		return $form_data;
 	}
-
+     //Code to be remove
 	public static function get_form_data_from_body( $data ) {
 
 		$name          = ! empty( $data['name'] ) ? $data['name'] : '';
@@ -832,71 +796,16 @@ class ES_Forms_Table extends ES_List_Table {
 	 */
 	public function get_lists( $per_page = 5, $page_number = 1, $do_count_only = false ) {
 
-		global $wpdb, $wpbd;
-
-		$order_by = sanitize_sql_orderby( ig_es_get_request_data( 'orderby' ) );
-		$order    = ig_es_get_request_data( 'order' );
-		$search   = ig_es_get_request_data( 's' );
-
-		$forms_table = IG_FORMS_TABLE;
-		if ( $do_count_only ) {
-			$sql = "SELECT count(*) as total FROM {$forms_table}";
-		} else {
-			$sql = "SELECT * FROM {$forms_table}";
-		}
-
-		$args  = array();
-		$query = array();
-
-		$add_where_clause = false;
-
-		if ( ! empty( $search ) ) {
-			$query[] = ' name LIKE %s ';
-			$args[]  = '%' . $wpdb->esc_like( $search ) . '%';
-
-			$add_where_clause = true;
-		}
-
-		if ( $add_where_clause ) {
-			$sql .= ' WHERE ';
-
-			if ( count( $query ) > 0 ) {
-				$sql .= implode( ' AND ', $query );
-				if ( count( $args ) > 0 ) {
-					$sql = $wpbd->prepare( $sql, $args );
-				}
-			}
-		}
-
-		if ( ! $do_count_only ) {
-
-			$order                 = ! empty( $order ) ? strtolower( $order ) : 'desc';
-			$expected_order_values = array( 'asc', 'desc' );
-			if ( ! in_array( $order, $expected_order_values ) ) {
-				$order = 'desc';
-			}
-
-			$default_order_by = esc_sql( 'created_at' );
-
-			$expected_order_by_values = array( 'name', 'created_at' );
-
-			if ( ! in_array( $order_by, $expected_order_by_values ) ) {
-				$order_by_clause = " ORDER BY {$default_order_by} DESC";
-			} else {
-				$order_by        = esc_sql( $order_by );
-				$order_by_clause = " ORDER BY {$order_by} {$order}, {$default_order_by} DESC";
-			}
-
-			$sql .= $order_by_clause;
-			$sql .= " LIMIT $per_page";
-			$sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
-
-			$result = $wpbd->get_results( $sql, 'ARRAY_A' );
-		} else {
-			$result = $wpbd->get_var( $sql );
-		}
-
-		return $result;
+		$args = array(
+		'order_by'      => sanitize_sql_orderby( ig_es_get_request_data( 'orderby', 'created_at' ) ),
+		'order'         => ig_es_get_request_data( 'order'),
+		'search'        => ig_es_get_request_data( 's' ),
+		'per_page'      => absint( $per_page ),
+		'page_number'   => absint( $page_number ),
+		'do_count_only' => $do_count_only,
+	     );
+		return ES_Forms_Controller::get_forms($args);
+		
 	}
 
 	/**

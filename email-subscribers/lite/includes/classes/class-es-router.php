@@ -31,6 +31,7 @@ if ( ! class_exists( 'ES_Router' ) ) {
 
 		public function register_hooks() {
 			add_action( 'wp_ajax_icegram-express', array( $this, 'handle_ajax_request' ) );
+			//add_action( 'wp_ajax_nopriv_icegram-express', array( $this, 'handle_ajax_request' ) ); //For testing with postman We need
 		}
 
 		/**
@@ -42,8 +43,8 @@ if ( ! class_exists( 'ES_Router' ) ) {
 		 */
 		public function handle_ajax_request() {
 
-			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
-			
+			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' ); //For testing we need to comment
+		
 			$can_access_audience  = ES_Common::ig_es_can_access( 'audience' );
 			$can_access_campaign  = ES_Common::ig_es_can_access( 'campaigns' );
 			$can_access_forms     = ES_Common::ig_es_can_access( 'forms' );
@@ -54,12 +55,11 @@ if ( ! class_exists( 'ES_Router' ) ) {
 				return 0;
 			}
 			$response = array();
-
-
 			$request = $_REQUEST;
 			
 			$handler       = ig_es_get_data( $request, 'handler' );
-			$handler_class = 'ES_' . ucfirst( $handler ) . '_Controller';
+			$handler_class = 'ES_' . str_replace( ' ', '_', ucwords( str_replace( '-', ' ', $handler ) ) ) . '_Controller';
+			
 			if ( empty( $handler ) || ! class_exists( $handler_class ) ) {
 				$response = array(
 					'message' => __( 'No request handler found.', 'email-subscribers' ),
@@ -68,14 +68,19 @@ if ( ! class_exists( 'ES_Router' ) ) {
 			}
 
 			$method = ig_es_get_data( $request, 'method' );
+			
 			if ( ! method_exists( $handler_class, $method ) || ! is_callable( array( $handler_class, $method ) ) ) {
 				$response = array(
 					'message' => __( 'No request method found.', 'email-subscribers' ),
 				);
 				wp_send_json_error( $response );
 			}
-
+			
 			$data   = ig_es_get_request_data( 'data', array(), false );
+			$data['file'] = isset( $_FILES['async-upload']['tmp_name'] )
+			? sanitize_text_field( $_FILES['async-upload']['tmp_name'] )
+			: '';
+			
 			$result = call_user_func( array( $handler_class, $method ), $data );
 
 			if ( $result ) {

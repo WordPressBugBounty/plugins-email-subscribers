@@ -59,6 +59,7 @@ if ( ! ES()->is_pro() ) {
 		),
 		'User'      => array(
 			'ig_es_user_role_changed' => __( 'User Role Changed', 'email-subscribers' ),
+			'ig_es_user_role_added' => __( 'User Role Added', 'email-subscribers' ),
 		),
 		'LearnDash' => array(
 			'ig_es_ld_user_enrolled' => __( 'User enrolled in course', 'email-subscribers' ),

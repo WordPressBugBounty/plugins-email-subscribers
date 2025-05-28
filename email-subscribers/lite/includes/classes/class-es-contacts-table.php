@@ -433,203 +433,63 @@ class ES_Contacts_Table extends ES_List_Table {
 	 * @since 4.0.0
 	 */
 	public function save_contact( $id = 0 ) {
-
-		$first_name = '';
-		$last_name  = '';
-		$email      = '';
-		$guid       = '';
-		$list_ids   = array();
-		$is_new     = true;
-
-		if ( 0 === $id ) {
-
-			$title        = __( ' Add New Contact', 'email-subscribers' );
-			$title_action = '<a href="admin.php?page=es_lists&action=manage-lists" class="ig-es-imp-button px-3 py-1">' . __( 'Manage Lists', 'email-subscribers' ) . '</a>';
-
-		} else {
-			$is_new       = false;
-			$title        = __( ' Edit Contact', 'email-subscribers' );
-			$title_action = '<a href="admin.php?page=es_subscribers&action=new" class="ig-es-title-button mx-2"> ' . __( 'Add New', 'email-subscribers' ) . '</a>';
-
-			$contact = $this->db->get( $id );
-
-			if ( ! empty( $contact ) ) {
-
-				$first_name = ig_es_get_data( $contact, 'first_name' );
-				$last_name  = ig_es_get_data( $contact, 'last_name' );
-				$email      = sanitize_email( ig_es_get_data( $contact, 'email' ) );
-				$guid       = ig_es_get_data( $contact, 'hash' );
-
-				$contact_cf_data = apply_filters( 'es_prepare_cf_data_for_contact_array', $contact );
-
-				$list_ids = ES()->lists_contacts_db->get_list_ids_by_contact( $id );
-			}
-		}
-
-		$submitted = ig_es_get_request_data( 'submitted' );
-
-		if ( 'submitted' === $submitted ) {
+		
+		$is_new = ( $id === 0 );
+		$title = $is_new ? __( ' Add New Contact', 'email-subscribers' ) : __( ' Edit Contact', 'email-subscribers' );
+		$title_action = $is_new
+			? '<a href="admin.php?page=es_lists&action=manage-lists" class="ig-es-imp-button px-3 py-1">' . __( 'Manage Lists', 'email-subscribers' ) . '</a>'
+			: '<a href="admin.php?page=es_subscribers&action=new" class="ig-es-title-button mx-2"> ' . __( 'Add New', 'email-subscribers' ) . '</a>';
+	
+		$data = $is_new ? array() : ES_Contact_Controller::get_existing_contact_data($id);
+	
+		if ( ig_es_get_request_data( 'submitted' ) === 'submitted' ) {
 			$contact_nonce = ig_es_get_request_data( 'ig_es_contact_nonce' );
 			// Verify nonce.
-			if ( wp_verify_nonce( $contact_nonce, 'ig-es-contact-nonce' ) ) {
-				$contact_data = ig_es_get_data( $_POST, 'contact_data', array(), true );
-				$is_error     = false;
-				if ( ! empty( $contact_data ) ) {
+			 if ( wp_verify_nonce( $contact_nonce, 'ig-es-contact-nonce' ) ) {
 
-					$email = sanitize_email( ig_es_get_data( $contact_data, 'email', '', true ) );
+			$contact_data = ig_es_get_data( $_POST, 'contact_data', array(), true );
+			$contact_data['id'] = $id;
+			
+			$save_result = ES_Contact_Controller::process_contact_save( $contact_data );
 
-					if ( $email ) {
-
-						$lists = ig_es_get_data( $contact_data, 'lists', array() );
-
-						if ( count( $lists ) > 0 ) {
-							$first_name = ig_es_get_data( $contact_data, 'first_name', '', true );
-							$last_name  = ig_es_get_data( $contact_data, 'last_name', '', true );
-
-
-							$contact = array(
-								'first_name' => $first_name,
-								'last_name'  => $last_name,
-								'email'      => $email,
-								'status'     => 'verified',
-							);
-
-							$contact = apply_filters( 'es_set_additional_contact_data', $contact, $contact_data );
-
-							//For submitted custom fields
-							$contact_cf_data = apply_filters( 'es_prepare_cf_data_for_contact_array', $contact_data, true );
-
-							// Add contact.
-							$existing_contact_id = ES()->contacts_db->get_contact_id_by_email( $email );
-
-							if ( $existing_contact_id && ( $existing_contact_id != $id ) ) {
-								$message = __( 'Contact already exist.', 'email-subscribers' );
-								ES_Common::show_message( $message, 'error' );
-								$is_error = true;
-							} elseif ( ! empty( $contact['status'] ) && 'ERROR' === $contact['status'] ) {
-								$message = ES_Handle_Subscription::get_messages( $contact['message'] );
-								ES_Common::show_message( $message, 'error' );
-								$is_error = true;
-							} else {
-								if ( $id ) {
-									ES()->contacts_db->update_contact( $id, $contact );
-								} else {
-									$contact['source']     = 'admin';
-									$contact['status']     = ! empty( $contact['status'] ) ? $contact['status'] : 'verified';
-									$contact['hash']       = ES_Common::generate_guid();
-									$contact['created_at'] = ig_get_current_date_time();
-
-									$id = ES()->contacts_db->insert( $contact );
-								}
-							}
-
-							if ( ! $is_error ) {
-
-								$lists = ! empty( $lists ) ? $lists : array( 1 => 0 );
-
-								$existing_subscribed_lists = ES()->lists_contacts_db->get_list_ids_by_contact( $id, 'subscribed' );
-								ES()->lists_contacts_db->update_contact_lists( $id, $lists );
-								$updated_subscribed_lists = ES()->lists_contacts_db->get_list_ids_by_contact( $id, 'subscribed' );
-
-								// Lists whose status changed to unconfirmed or unsubscribed from subscribed.
-								$changed_lists = array_diff( $existing_subscribed_lists, $updated_subscribed_lists );
-
-								// Check if admin has updated status of any subscribed lists.
-								if ( ! $is_new && ! empty( $changed_lists ) ) {
-									do_action( 'ig_es_admin_contact_unsubscribe', $id, 0, 0, $changed_lists );
-								}
-
-								if ( $id ) {
-
-									if ( $is_new ) {
-
-										if ( ! empty( $contact_data['send_welcome_email'] ) ) {
-
-											// Get comma(,) separated list name based on ids.
-											$list_name = ES_Common::prepare_list_name_by_ids( $list_ids );
-											$name      = ES_Common::prepare_name_from_first_name_last_name( $contact['first_name'], $contact['last_name'] );
-
-											$template_data = array(
-												'email' => $contact['email'],
-												'contact_id' => $id,
-												'name' => $name,
-												'first_name' => $contact['first_name'],
-												'last_name' => $contact['last_name'],
-												'guid' => $contact['hash'],
-												'list_name' => $list_name,
-											);
-
-											// Send Welcome Email.
-											ES()->mailer->send_welcome_email( $contact['email'], $template_data );
-										}
-
-										$contact_edit_url = menu_page_url( 'es_subscribers', false );
-										$contact_edit_url = add_query_arg(
-											array(
-												'subscriber' => $id,
-												'action'     => 'edit',
-											),
-											$contact_edit_url
-										);
-
-										/* translators: 1. Contact edit URL tag 2: Anchor close tag */
-										$message = sprintf( __( 'Contact added successfully. %1$sEdit contact%2$s.', 'email-subscribers' ), '<a href="' . esc_url( $contact_edit_url ) . '" class="text-indigo-600">', '</a>' );
-
-										// Reset form data
-										$first_name = '';
-										$last_name  = '';
-										$email      = '';
-										$lists	    = '';
-										$id         = 0;
-
-										$contact_cf_data['custom_fields'] = array();
-									} else {
-										$message = __( 'Contact updated successfully!', 'email-subscribers' );
-									}
-
-									ES_Common::show_message( $message, 'success' );
-								}
-							}
-
-						} else {
-							$message = __( 'Please select list', 'email-subscribers' );
-							ES_Common::show_message( $message, 'error' );
-						}
-					} else {
-						$message = __( 'Please enter valid email address', 'email-subscribers' );
-						ES_Common::show_message( $message, 'error' );
-					}
+			if ( ! empty( $save_result['errors'] ) ) {
+				foreach ( $save_result['errors'] as $error ) {
+					ES_Common::show_message( $error, 'error' );
+				}
+			} else {
+				$message = $save_result['is_new']
+					? sprintf(
+						__( 'Contact added successfully. %1$sEdit contact%2$s.', 'email-subscribers' ),
+						'<a href="' . esc_url( add_query_arg( array( 'subscriber' => $save_result['id'], 'action' => 'edit' ), menu_page_url( 'es_subscribers', false ) ) ) . '" class="text-indigo-600">',
+						'</a>'
+					)
+					: __( 'Contact updated successfully!', 'email-subscribers' );
+	
+				ES_Common::show_message( $message, 'success' );
+	
+				// Reset if new
+				if ( $save_result['is_new'] ) {
+					$data = array();
+				} else {
+					$data = ES_Contact_Controller::get_existing_contact_data( $save_result['id'] );
 				}
 			}
 		}
-
-		$data = array(
-			'id'         => $id,
-			'first_name' => $first_name,
-			'last_name'  => $last_name,
-			'email'      => $email,
-			'guid'       => $guid,
-		);
-
-		if ( isset( $contact_cf_data['custom_fields'] ) ) {
-			$data = array_merge( $data, $contact_cf_data);
-		}
+	}
+	
 		?>
-
 		<div class="gap-5">
-			<?php $this->render_header('new_contact'); //Rendering Header ?>
-			
+			<?php $this->render_header('new_contact'); ?>
 			<div class="bg-white shadow-md rounded-lg">
 				<h2 class="pt-4 px-3 ml-8 text-2xl font-medium text-gray-700">
 					<?php echo esc_html( $title ); ?>
 				</h2>
 				<?php echo wp_kses_post( $this->prepare_contact_form( $data, $is_new ) ); ?>
-
 			</div>
 		</div>
 		<?php
-
 	}
+	
 
 	/**
 	 * Retrieve subscribers data from the database
@@ -640,140 +500,25 @@ class ES_Contacts_Table extends ES_List_Table {
 	 * @return mixed
 	 */
 	public function get_subscribers( $per_page = 5, $page_number = 1, $do_count_only = false ) {
-		global $wpbd;
-
-		$order_by          = sanitize_sql_orderby( ig_es_get_request_data( 'orderby' ) );
-		$order             = ig_es_get_request_data( 'order' );
-		$search            = ig_es_get_request_data( 's' );
-		$filter_by_list_id = ig_es_get_request_data( 'filter_by_list_id' );
-		$filter_by_status  = ig_es_get_request_data( 'filter_by_status' );
-
+		
 		// Advanced filters for Audience Section
 		$advanced_filter = ig_es_get_request_data('advanced_filter');
 		$advanced_filter = ( !empty($advanced_filter) ) ? $advanced_filter['conditions'] : '';
 
-		$contacts_table       = IG_CONTACTS_TABLE;
-		$lists_contacts_table = IG_LISTS_CONTACTS_TABLE;
+		$args = array(
+			'order_by'      => sanitize_sql_orderby( ig_es_get_request_data( 'orderby', 'created_at' ) ),
+			'order'         => ig_es_get_request_data( 'order'),
+			'search'        => ig_es_get_request_data( 's' ),
+			'per_page'      => absint( $per_page ),
+			'page_number'   => absint( $page_number ),
+			'do_count_only' => $do_count_only,
+			'filter_by_list_id' => ig_es_get_request_data( 'filter_by_list_id'),
+			'filter_by_status' => ig_es_get_request_data( 'filter_by_status'),
+			'advanced_filter' => $advanced_filter,
+			 );
+			return ES_Contacts_Controller::get_subscribers($args);
 
-		$add_where_clause = false;
-
-		$args  = array();
-		$query = array();
-
-		if ( $do_count_only ) {
-			$sql = "SELECT count(*) FROM {$contacts_table}";
-		} else {
-			$sql = "SELECT * FROM {$contacts_table}";
-		}
-
-		// Construct proper query conditions for advanced filtering
-		if ( !empty ( $advanced_filter ) ) {
-
-			$query_obj  = new IG_ES_Subscribers_Query();
-			$query_args = array(
-				'select'    => array( 'subscribers.id' ),
-				'conditions'=> $advanced_filter,
-				'return_sql'=> true,
-			);
-
-			$condition = $query_obj->run($query_args);
-
-			array_push($query, 'id IN ( ' . $condition . ' )');
-			$add_where_clause = true;
-		}
-		// Prepare filter by list query
-		if ( ! empty( $filter_by_list_id ) || ! empty( $filter_by_status ) ) {
-			$add_where_clause = true;
-
-			$filter_sql = "SELECT contact_id FROM {$lists_contacts_table}";
-
-			$list_filter_sql    = '';
-			$where_clause_added = false;
-
-			if ( ! empty( $filter_by_list_id ) ) {
-				$list_filter_sql    = $wpbd->prepare( ' WHERE list_id = %d', $filter_by_list_id );
-				$where_clause_added = true;
-			}
-
-			if ( ! empty( $filter_by_status ) ) {
-				$list_filter_sql .= ( $where_clause_added ) ? ' AND ' : ' WHERE';
-				if ( 'soft_bounced' === $filter_by_status ) {
-					$list_filter_sql .= $wpbd->prepare( ' bounce_status = %s', 1 );
-				} elseif ( 'hard_bounced' === $filter_by_status ) {
-					$list_filter_sql .= $wpbd->prepare( ' bounce_status = %s', 2 );
-				} else {
-					$list_filter_sql .= $wpbd->prepare( ' status = %s', $filter_by_status );
-				}
-			}
-
-			$filter_sql .= $list_filter_sql;
-			$query[]     = "id IN ( $filter_sql )";
-		}
-
-		// Prepare search query
-		if ( ! empty( $search ) ) {
-			$query[] = ' ( first_name LIKE %s OR last_name LIKE %s OR email LIKE %s ) ';
-			$args[]  = '%' . $wpbd->esc_like( $search ) . '%';
-			$args[]  = '%' . $wpbd->esc_like( $search ) . '%';
-			$args[]  = '%' . $wpbd->esc_like( $search ) . '%';
-		}
-
-		if ( $add_where_clause || count( $query ) > 0 ) {
-			$sql .= ' WHERE ';
-
-			if ( count( $query ) > 0 ) {
-				$sql .= implode( ' AND ', $query );
-				if ( ! empty( $args ) ) {
-					$sql = $wpbd->prepare( $sql, $args );
-				}
-			}
-		}
-
-		if ( ! $do_count_only ) {
-
-			// Prepare Order by clause
-			$order                 = ! empty( $order ) ? strtolower( $order ) : 'desc';
-			$expected_order_values = array( 'asc', 'desc' );
-			if ( ! in_array( $order, $expected_order_values ) ) {
-				$order = 'desc';
-			}
-
-			$offset = ( $page_number - 1 ) * $per_page;
-
-			$expected_order_by_values = array( 'name', 'email', 'created_at', 'first_name' );
-			if ( ! in_array( $order_by, $expected_order_by_values ) ) {
-				$order_by = 'created_at';
-			}
-
-			$order_by = esc_sql( $order_by );
-
-			$order_by_clause = " ORDER BY {$order_by} {$order}";
-
-			$sql .= $order_by_clause;
-			$sql .= " LIMIT {$offset}, {$per_page}";
-
-			$cache_key       = ES_Cache::generate_key( $sql );
-			$exists_in_cache = ES_Cache::is_exists( $cache_key, 'query' );
-
-			if ( ! $exists_in_cache ) {
-				$result = $wpbd->get_results( $sql, 'ARRAY_A' );
-				ES_Cache::set( $cache_key, $result, 'query' );
-			} else {
-				$result = ES_Cache::get( $cache_key, 'query' );
-			}
-		} else {
-
-			$cache_key       = ES_Cache::generate_key( $sql );
-			$exists_in_cache = ES_Cache::is_exists( $cache_key, 'query' );
-			if ( ! $exists_in_cache ) {
-				$result = $wpbd->get_var( $sql );
-				ES_Cache::set( $cache_key, $result, 'query' );
-			} else {
-				$result = ES_Cache::get( $cache_key, 'query' );
-			}
-		}
-
-		return $result;
+		
 	}
 
 

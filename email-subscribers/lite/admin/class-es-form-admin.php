@@ -39,7 +39,6 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 			add_action( 'wp_ajax_ig_es_get_form_preview', array( $this, 'get_form_preview' ) );
 			add_action( 'ig_es_render_dnd_form', array( $this, 'render_dnd_form' ), 10, 2 );
 			add_action( 'ig_es_render_classic_form', array( $this, 'render_classic_form' ), 10, 2 );
-
 			add_filter( 'ig_es_forms_gallery', array( $this, 'add_forms' ) );
 		}
 
@@ -842,8 +841,8 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 		 *
 		 * @since 4.4.7
 		 */
+		        //This function to be removed.
 		public function get_form_preview() {
-
 			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
 			$can_access_forms = ES_Common::ig_es_can_access( 'forms' );
@@ -854,18 +853,7 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 			$response = array();
 
 			$form_data = ig_es_get_request_data( 'form_data', array(), false );
-			if ( isset( $form_data ) ) {
-				$form_data = ES_Forms_Table::sanitize_data( $form_data );
-			}
-			$template_data            = array();
-			$template_data['content'] = ! empty( $form_data['body'] ) ? $form_data['body'] : '';
-			$template_data['form_id'] = ! empty( $form_data['id'] ) ? $form_data['id'] : 0;
-			$editor_css 	          = ! empty( $form_data['settings']['dnd_editor_css'] ) ? $form_data['settings']['dnd_editor_css'] : '';
-			
-			$form_body                = ! empty( $form_data['body'] ) ? do_shortcode( $form_data['body'] ) : '';
-			$preview_html             = '<style>' . $editor_css . '</style>' . $form_body;
-			$response['preview_html'] = $preview_html;
-			$response = self::process_form_body( $response);
+			$response = ES_Form_Controller::get_form_preview_data($form_data);
 			if ( ! empty( $response ) ) {
 				wp_send_json_success( $response );
 			} else {
