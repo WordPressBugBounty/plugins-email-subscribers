@@ -15,7 +15,7 @@ if ( ! empty( $campaigns ) && count( $campaigns ) > 0 ) { ?>
 			$allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 			if ( ! empty( $campaigns ) ) {
 				foreach ( $campaigns as $campaign_id => $campaign ) {
-					$campaign_kpi = ES_Dashboard::get_recent_campaigns_kpis( $campaign['id'] );
+					$campaign_kpi = ES_Dashboard_Controller::get_recent_campaigns_kpis( $campaign['id'] );
 					if ( !empty( $campaign['name'] ) ) {
 						?>
 					<tr>

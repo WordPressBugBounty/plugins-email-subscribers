@@ -28,7 +28,8 @@
              var imgElem  = jQuery.parseHTML(match);
              var imgClass = jQuery(imgElem).attr('class');
              var imgAlt   = jQuery(imgElem).attr('alt');
-             if ( 'mce-object' === imgClass && '<style>' === imgAlt ) {
+
+            if (imgClass && imgClass.includes('mce-object-style') && imgAlt === '<style>') {
               var styleElem = jQuery(imgElem).attr('data-wp-preserve');
               var style = decodeURIComponent(styleElem);
               return style;

@@ -1,111 +1,5 @@
-*, ::before, ::after {
-  --tw-border-spacing-x: 0;
-  --tw-border-spacing-y: 0;
-  --tw-translate-x: 0;
-  --tw-translate-y: 0;
-  --tw-rotate: 0;
-  --tw-skew-x: 0;
-  --tw-skew-y: 0;
-  --tw-scale-x: 1;
-  --tw-scale-y: 1;
-  --tw-pan-x:  ;
-  --tw-pan-y:  ;
-  --tw-pinch-zoom:  ;
-  --tw-scroll-snap-strictness: proximity;
-  --tw-gradient-from-position:  ;
-  --tw-gradient-via-position:  ;
-  --tw-gradient-to-position:  ;
-  --tw-ordinal:  ;
-  --tw-slashed-zero:  ;
-  --tw-numeric-figure:  ;
-  --tw-numeric-spacing:  ;
-  --tw-numeric-fraction:  ;
-  --tw-ring-inset:  ;
-  --tw-ring-offset-width: 0px;
-  --tw-ring-offset-color: #fff;
-  --tw-ring-color: rgb(63 131 248 / 0.5);
-  --tw-ring-offset-shadow: 0 0 #0000;
-  --tw-ring-shadow: 0 0 #0000;
-  --tw-shadow: 0 0 #0000;
-  --tw-shadow-colored: 0 0 #0000;
-  --tw-blur:  ;
-  --tw-brightness:  ;
-  --tw-contrast:  ;
-  --tw-grayscale:  ;
-  --tw-hue-rotate:  ;
-  --tw-invert:  ;
-  --tw-saturate:  ;
-  --tw-sepia:  ;
-  --tw-drop-shadow:  ;
-  --tw-backdrop-blur:  ;
-  --tw-backdrop-brightness:  ;
-  --tw-backdrop-contrast:  ;
-  --tw-backdrop-grayscale:  ;
-  --tw-backdrop-hue-rotate:  ;
-  --tw-backdrop-invert:  ;
-  --tw-backdrop-opacity:  ;
-  --tw-backdrop-saturate:  ;
-  --tw-backdrop-sepia:  ;
-  --tw-contain-size:  ;
-  --tw-contain-layout:  ;
-  --tw-contain-paint:  ;
-  --tw-contain-style:  ;
-}
-
-::backdrop {
-  --tw-border-spacing-x: 0;
-  --tw-border-spacing-y: 0;
-  --tw-translate-x: 0;
-  --tw-translate-y: 0;
-  --tw-rotate: 0;
-  --tw-skew-x: 0;
-  --tw-skew-y: 0;
-  --tw-scale-x: 1;
-  --tw-scale-y: 1;
-  --tw-pan-x:  ;
-  --tw-pan-y:  ;
-  --tw-pinch-zoom:  ;
-  --tw-scroll-snap-strictness: proximity;
-  --tw-gradient-from-position:  ;
-  --tw-gradient-via-position:  ;
-  --tw-gradient-to-position:  ;
-  --tw-ordinal:  ;
-  --tw-slashed-zero:  ;
-  --tw-numeric-figure:  ;
-  --tw-numeric-spacing:  ;
-  --tw-numeric-fraction:  ;
-  --tw-ring-inset:  ;
-  --tw-ring-offset-width: 0px;
-  --tw-ring-offset-color: #fff;
-  --tw-ring-color: rgb(63 131 248 / 0.5);
-  --tw-ring-offset-shadow: 0 0 #0000;
-  --tw-ring-shadow: 0 0 #0000;
-  --tw-shadow: 0 0 #0000;
-  --tw-shadow-colored: 0 0 #0000;
-  --tw-blur:  ;
-  --tw-brightness:  ;
-  --tw-contrast:  ;
-  --tw-grayscale:  ;
-  --tw-hue-rotate:  ;
-  --tw-invert:  ;
-  --tw-saturate:  ;
-  --tw-sepia:  ;
-  --tw-drop-shadow:  ;
-  --tw-backdrop-blur:  ;
-  --tw-backdrop-brightness:  ;
-  --tw-backdrop-contrast:  ;
-  --tw-backdrop-grayscale:  ;
-  --tw-backdrop-hue-rotate:  ;
-  --tw-backdrop-invert:  ;
-  --tw-backdrop-opacity:  ;
-  --tw-backdrop-saturate:  ;
-  --tw-backdrop-sepia:  ;
-  --tw-contain-size:  ;
-  --tw-contain-layout:  ;
-  --tw-contain-paint:  ;
-  --tw-contain-style:  ;
-}/*
-! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com
+/*
+! tailwindcss v3.4.1 | MIT License | https://tailwindcss.com
 *//*
 1. Prevent padding and border from affecting element width. (https://github.com/mozdevs/cssremedy/issues/4)
 2. Allow adding a border to an element by just adding a border-width. (https://github.com/tailwindcss/tailwindcss/pull/116)
@@ -289,7 +183,6 @@ textarea {
   font-size: 100%; /* 1 */
   font-weight: inherit; /* 1 */
   line-height: inherit; /* 1 */
-  letter-spacing: inherit; /* 1 */
   color: inherit; /* 1 */
   margin: 0; /* 2 */
   padding: 0; /* 3 */
@@ -310,9 +203,9 @@ select {
 */
 
 button,
-input:where([type='button']),
-input:where([type='reset']),
-input:where([type='submit']) {
+[type='button'],
+[type='reset'],
+[type='submit'] {
   -webkit-appearance: button; /* 1 */
   background-color: transparent; /* 2 */
   background-image: none; /* 2 */
@@ -510,7 +403,7 @@ video {
 }
 
 /* Make elements with the HTML hidden attribute stay hidden by default */
-[hidden]:where(:not([hidden="until-found"])) {
+[hidden] {
   display: none;
 }
 
@@ -725,6 +618,106 @@ select {
 [type='file']:focus {
   outline: 1px solid ButtonText;
   outline: 1px auto -webkit-focus-ring-color;
+}
+
+*, ::before, ::after {
+  --tw-border-spacing-x: 0;
+  --tw-border-spacing-y: 0;
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-pan-x:  ;
+  --tw-pan-y:  ;
+  --tw-pinch-zoom:  ;
+  --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
+  --tw-ordinal:  ;
+  --tw-slashed-zero:  ;
+  --tw-numeric-figure:  ;
+  --tw-numeric-spacing:  ;
+  --tw-numeric-fraction:  ;
+  --tw-ring-inset:  ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(63 131 248 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+  --tw-blur:  ;
+  --tw-brightness:  ;
+  --tw-contrast:  ;
+  --tw-grayscale:  ;
+  --tw-hue-rotate:  ;
+  --tw-invert:  ;
+  --tw-saturate:  ;
+  --tw-sepia:  ;
+  --tw-drop-shadow:  ;
+  --tw-backdrop-blur:  ;
+  --tw-backdrop-brightness:  ;
+  --tw-backdrop-contrast:  ;
+  --tw-backdrop-grayscale:  ;
+  --tw-backdrop-hue-rotate:  ;
+  --tw-backdrop-invert:  ;
+  --tw-backdrop-opacity:  ;
+  --tw-backdrop-saturate:  ;
+  --tw-backdrop-sepia:  ;
+}
+
+::backdrop {
+  --tw-border-spacing-x: 0;
+  --tw-border-spacing-y: 0;
+  --tw-translate-x: 0;
+  --tw-translate-y: 0;
+  --tw-rotate: 0;
+  --tw-skew-x: 0;
+  --tw-skew-y: 0;
+  --tw-scale-x: 1;
+  --tw-scale-y: 1;
+  --tw-pan-x:  ;
+  --tw-pan-y:  ;
+  --tw-pinch-zoom:  ;
+  --tw-scroll-snap-strictness: proximity;
+  --tw-gradient-from-position:  ;
+  --tw-gradient-via-position:  ;
+  --tw-gradient-to-position:  ;
+  --tw-ordinal:  ;
+  --tw-slashed-zero:  ;
+  --tw-numeric-figure:  ;
+  --tw-numeric-spacing:  ;
+  --tw-numeric-fraction:  ;
+  --tw-ring-inset:  ;
+  --tw-ring-offset-width: 0px;
+  --tw-ring-offset-color: #fff;
+  --tw-ring-color: rgb(63 131 248 / 0.5);
+  --tw-ring-offset-shadow: 0 0 #0000;
+  --tw-ring-shadow: 0 0 #0000;
+  --tw-shadow: 0 0 #0000;
+  --tw-shadow-colored: 0 0 #0000;
+  --tw-blur:  ;
+  --tw-brightness:  ;
+  --tw-contrast:  ;
+  --tw-grayscale:  ;
+  --tw-hue-rotate:  ;
+  --tw-invert:  ;
+  --tw-saturate:  ;
+  --tw-sepia:  ;
+  --tw-drop-shadow:  ;
+  --tw-backdrop-blur:  ;
+  --tw-backdrop-brightness:  ;
+  --tw-backdrop-contrast:  ;
+  --tw-backdrop-grayscale:  ;
+  --tw-backdrop-hue-rotate:  ;
+  --tw-backdrop-invert:  ;
+  --tw-backdrop-opacity:  ;
+  --tw-backdrop-saturate:  ;
+  --tw-backdrop-sepia:  ;
 }
 .container {
   width: 100%;
@@ -1063,7 +1056,7 @@ p {
 }
 header {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 nav {
   margin-left: auto;
@@ -1153,7 +1146,7 @@ nav .links a, nav .ig-es-nav-tabs a {
   font-size: 0.875rem;
   line-height: 1.5rem;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 nav .links a.active {
   border-bottom-width: 2px;
@@ -1164,7 +1157,7 @@ nav .links a.active {
 }
 nav .ig-es-nav-tabs a.active {
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
 }
 nav .cta {
   display: -webkit-box;
@@ -1205,7 +1198,7 @@ button:focus,
 .primary:is(button,.tab) {
   background-color: var(--brand-color);
   --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 .primary:is(button,.tab):hover {
   background-color: var(--brand-color-2);
@@ -1213,7 +1206,7 @@ button:focus,
 .secondary:is(button,.tab) {
   background-color: var(--secondary);
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .secondary:is(button,.tab):hover {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -1225,7 +1218,7 @@ button:focus,
 .lighter-gray:is(button,.tab) {
   background-color: var(--lighter-gray);
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .lighter-gray:is(button,.tab):hover {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -1240,7 +1233,7 @@ button:focus,
   padding-left: 0.125rem;
   padding-right: 0.125rem;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .cross:is(button,.tab):hover {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -1259,7 +1252,7 @@ button:focus,
 .outline:is(button,.tab) {
   background-color: transparent;
   --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+  color: rgb(255 255 255 / var(--tw-text-opacity));
   outline: 2px solid transparent;
   outline-offset: 2px;
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -1267,7 +1260,7 @@ button:focus,
   -webkit-box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
           box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
   --tw-ring-opacity: 1;
-  --tw-ring-color: rgb(255 255 255 / var(--tw-ring-opacity, 1));
+  --tw-ring-color: rgb(255 255 255 / var(--tw-ring-opacity));
 }
 .outline:is(button,.tab):hover {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -1285,7 +1278,7 @@ button:focus,
 }
 .white:is(button,.tab) {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 .white:is(button,.tab):hover {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -1306,7 +1299,7 @@ select {
   border-width: 1px !important;
   border-color: var(--lighter-gray) !important;
   --tw-bg-opacity: 1 !important;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1)) !important;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
   padding-top: 0.375rem !important;
   padding-bottom: 0.375rem !important;
   padding-left: 0.75rem !important;
@@ -1355,12 +1348,12 @@ input[type="time"] {
   border-top-width: calc(1px * calc(1 - var(--tw-divide-y-reverse)));
   border-bottom-width: calc(1px * var(--tw-divide-y-reverse));
   --tw-divide-opacity: 1;
-  border-color: rgb(244 245 247 / var(--tw-divide-opacity, 1));
+  border-color: rgb(244 245 247 / var(--tw-divide-opacity));
 }
 #dropdown {
   border-radius: 0.5rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
   -webkit-box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -1370,7 +1363,7 @@ input[type="time"] {
 
   #dropdown {
     --tw-bg-opacity: 1;
-    background-color: rgb(55 65 81 / var(--tw-bg-opacity, 1));
+    background-color: rgb(55 65 81 / var(--tw-bg-opacity));
   }
 }
 #dropdown ul {
@@ -1379,13 +1372,13 @@ input[type="time"] {
   font-size: 0.875rem;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+  color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 @media (prefers-color-scheme: dark) {
 
   #dropdown ul {
     --tw-text-opacity: 1;
-    color: rgb(229 231 235 / var(--tw-text-opacity, 1));
+    color: rgb(229 231 235 / var(--tw-text-opacity));
   }
 }
 #dropdown ul li a {
@@ -1397,15 +1390,15 @@ input[type="time"] {
 }
 #dropdown ul li a:hover {
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
 }
 @media (prefers-color-scheme: dark) {
 
   #dropdown ul li a:hover {
     --tw-bg-opacity: 1;
-    background-color: rgb(75 85 99 / var(--tw-bg-opacity, 1));
+    background-color: rgb(75 85 99 / var(--tw-bg-opacity));
     --tw-text-opacity: 1;
-    color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+    color: rgb(255 255 255 / var(--tw-text-opacity));
   }
 }
 .tabs {
@@ -1452,7 +1445,7 @@ input[type="time"] {
 }
 .tabs .tab.active, .tabs .tab:hover {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   font-weight: 500;
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
   --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(0.5px + var(--tw-ring-offset-width)) var(--tw-ring-color);
@@ -1562,7 +1555,7 @@ input[type="time"] {
 }
 .templates .ig-es-card .card-desc {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding-top: 1.25rem;
   padding-bottom: 1.25rem;
   padding-left: 0.75rem;
@@ -1641,7 +1634,7 @@ input[type="time"] {
           column-gap: 0.375rem;
   border-radius: 0.375rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding-left: 0.75rem;
   padding-right: 0.75rem;
   padding-top: 0.5rem;
@@ -1650,7 +1643,7 @@ input[type="time"] {
   line-height: 1.25rem;
   font-weight: 600;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   -webkit-box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -1661,11 +1654,11 @@ input[type="time"] {
           box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
   --tw-ring-inset: inset;
   --tw-ring-opacity: 1;
-  --tw-ring-color: rgb(210 214 220 / var(--tw-ring-opacity, 1));
+  --tw-ring-color: rgb(210 214 220 / var(--tw-ring-opacity));
 }
 .dropdown button.dropdown-button:hover {
   --tw-bg-opacity: 1;
-  background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
+  background-color: rgb(249 250 251 / var(--tw-bg-opacity));
 }
 .dropdown .dropdown-menu {
   left: 0;
@@ -1677,7 +1670,7 @@ input[type="time"] {
           transform: translate(var(--tw-translate-x), var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y));
   border-radius: 0.375rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 10px 15px -3px var(--tw-shadow-color), 0 4px 6px -4px var(--tw-shadow-color);
   -webkit-box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -1686,7 +1679,7 @@ input[type="time"] {
   --tw-ring-shadow: var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color);
   -webkit-box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
           box-shadow: var(--tw-ring-offset-shadow), var(--tw-ring-shadow), var(--tw-shadow, 0 0 #0000);
-  --tw-ring-color: rgb(0 0 0 / var(--tw-ring-opacity, 1));
+  --tw-ring-color: rgb(0 0 0 / var(--tw-ring-opacity));
   --tw-ring-opacity: 0.05;
   -webkit-transition-property: -webkit-transform;
   transition-property: -webkit-transform;
@@ -1706,7 +1699,7 @@ input[type="time"] {
   text-overflow: ellipsis;
   white-space: nowrap;
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
   padding-left: 1rem;
   padding-right: 1rem;
   padding-top: 0.5rem;
@@ -1714,7 +1707,7 @@ input[type="time"] {
   font-size: 0.875rem;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .dropdown .dropdown-menu a {
   display: block;
@@ -1725,19 +1718,19 @@ input[type="time"] {
   font-size: 0.875rem;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+  color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 .dropdown .dropdown-menu a:hover {
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .dropdown .dropdown-menu a:active {
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .template-editor {
   display: -webkit-box;
@@ -1778,13 +1771,13 @@ input[type="time"] {
 .template-editor .all-tags li {
   border-radius: 0.125rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
   padding-left: 0.75rem;
   padding-right: 0.75rem;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 .template-editor .all-tags li span {
   font-size: 0.75rem;
@@ -1823,7 +1816,7 @@ input[type="time"] {
   font-weight: 500;
   line-height: 1.5rem;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) input:not([type="radio"]) {
   display: block;
@@ -1833,7 +1826,7 @@ input[type="time"] {
   padding-top: 0.375rem;
   padding-bottom: 0.375rem;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   -webkit-box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -1850,19 +1843,19 @@ input[type="time"] {
   }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) input:not([type="radio"])::-webkit-input-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) input:not([type="radio"])::-moz-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) input:not([type="radio"])::-ms-input-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) input:not([type="radio"])::placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) input:not([type="radio"]):focus {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -1895,7 +1888,7 @@ input[type="time"] {
   padding-top: 0.375rem;
   padding-bottom: 0.375rem;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   -webkit-box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -1912,19 +1905,19 @@ input[type="time"] {
   }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) textarea::-webkit-input-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) textarea::-moz-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) textarea::-ms-input-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) textarea::placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 :is(.template-editor,.sidebar,.form-fields,#es-admin-contact-form,#es-admin-lists-form,#es-admin-custom-fields-form,#ig-es-trial-optin-form) textarea:focus {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -1956,7 +1949,7 @@ input[type="time"] {
 .sidebar .side-editor {
   width: 100%;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 .sidebar .switch {
   display: -webkit-box;
@@ -1988,7 +1981,7 @@ input[type="time"] {
 }
 .sidebar nav {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 .sidebar nav .links {
   gap: 0;
@@ -2003,7 +1996,7 @@ input[type="time"] {
 }
 .sidebar .nav-child {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 .sidebar .ig-es-post-settings {
   padding-left: 2rem;
@@ -2018,7 +2011,7 @@ input[type="time"] {
   border-bottom-width: 1px;
   border-color: var(--lighter-gray);
   --tw-bg-opacity: 1;
-  background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
+  background-color: rgb(249 250 251 / var(--tw-bg-opacity));
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
@@ -2034,7 +2027,7 @@ input[type="time"] {
 }
 .sidebar .ig-es-campaign-tags-list .campaign-tags-title:hover {
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
 }
 .sidebar .all-tags {
   display: -webkit-box;
@@ -2049,7 +2042,7 @@ input[type="time"] {
           justify-content: space-between;
   border-radius: 0.125rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding: 0.75rem;
   font-size: 0.75rem;
   line-height: 1rem;
@@ -2069,7 +2062,7 @@ input[type="time"] {
   padding-left: 0.75rem;
   padding-right: 0.75rem;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
         background-color: var(--light-gray);
 }
 .sidebar .all-tags svg {
@@ -2108,7 +2101,7 @@ input[type="time"] {
 }
 .sidebar .ig-es-grid-division:hover {
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
 }
 .overview {
   margin-top: 1.25rem;
@@ -2132,7 +2125,7 @@ input[type="time"] {
   border-width: 1px;
   border-color: var(--lighter-gray);
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding: 1rem;
 }
 .overview .kpi {
@@ -2172,7 +2165,7 @@ input[type="time"] {
   line-height: 1rem;
   font-weight: 500;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 .overview .kpi .kpi-stats {
   font-size: 1.125rem;
@@ -2206,12 +2199,12 @@ input[type="time"] {
 .overview .kpi .change.up {
   background-color: rgb(5 122 85 / 0.2);
   --tw-text-opacity: 1;
-  color: rgb(5 122 85 / var(--tw-text-opacity, 1));
+  color: rgb(5 122 85 / var(--tw-text-opacity));
 }
 .overview .kpi .change.down {
   background-color: rgb(224 36 36 / 0.2);
   --tw-text-opacity: 1;
-  color: rgb(224 36 36 / var(--tw-text-opacity, 1));
+  color: rgb(224 36 36 / var(--tw-text-opacity));
 }
 .overview .kpi .change span.value {
   font-size: 0.75rem;
@@ -2244,9 +2237,9 @@ input[type="time"] {
   border-radius: 0.125rem !important;
   border-width: 1px !important;
   --tw-border-opacity: 1 !important;
-  border-color: rgb(210 214 220 / var(--tw-border-opacity, 1)) !important;
+  border-color: rgb(210 214 220 / var(--tw-border-opacity)) !important;
   --tw-bg-opacity: 1 !important;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1)) !important;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
   padding-right: 1rem !important;
   padding-top: 0.375rem !important;
   padding-bottom: 0.375rem !important;
@@ -2254,7 +2247,7 @@ input[type="time"] {
   font-size: 0.875rem !important;
   line-height: 1.25rem !important;
   --tw-text-opacity: 1 !important;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1)) !important;
+  color: rgb(22 30 46 / var(--tw-text-opacity)) !important;
 }
 .search:focus {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color) !important;
@@ -2280,7 +2273,7 @@ input[type="time"] {
 }
 .ig-es-list-table, .es-audience-view, .es-lists-table, .es-forms-table, .es-custom-field-table, .es-reports-view, .es-campaign-reports-table {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding: 1rem;
 }
 .ig-es-list-table h2,.es-audience-view h2,.es-lists-table h2,.es-forms-table h2,.es-custom-field-table h2,.es-reports-view h2,.es-campaign-reports-table h2 {
@@ -2318,7 +2311,7 @@ input[type="time"] {
   }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) .contacts tbody tr,:is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) .lists tbody tr,:is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) .forms tbody tr,:is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) .customfields tbody tr,:is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) .reports tbody tr {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) input.checkbox {
   position: absolute;
@@ -2329,7 +2322,7 @@ input[type="time"] {
   width: 1rem;
   border-radius: 0.25rem;
   --tw-border-opacity: 1;
-  border-color: rgb(210 214 220 / var(--tw-border-opacity, 1));
+  border-color: rgb(210 214 220 / var(--tw-border-opacity));
   color: var(--brand-color);
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) input.checkbox:focus {
@@ -2341,7 +2334,7 @@ input[type="time"] {
   line-height: 1rem;
   font-weight: 500;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) thead input#cb-select-all-1 {
   position: absolute;
@@ -2353,7 +2346,7 @@ input[type="time"] {
   width: 1rem;
   border-radius: 0.25rem;
   --tw-border-opacity: 1;
-  border-color: rgb(210 214 220 / var(--tw-border-opacity, 1));
+  border-color: rgb(210 214 220 / var(--tw-border-opacity));
   color: var(--brand-color);
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) thead input#cb-select-all-1:focus {
@@ -2497,7 +2490,7 @@ input[type="time"] {
   line-height: 1.25rem;
   font-size: 15px;
   --tw-text-opacity: 1;
-  color: rgb(37 47 63 / var(--tw-text-opacity, 1));
+  color: rgb(37 47 63 / var(--tw-text-opacity));
 }
 @media (min-width: 1024px) {
 
@@ -2514,7 +2507,7 @@ input[type="time"] {
   font-size: 0.875rem;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) tbody td:last-of-type {
   position: relative;
@@ -2540,7 +2533,7 @@ input[type="time"] {
   -ms-flex-negative: 0;
       flex-shrink: 0;
   --tw-text-opacity: 1;
-  color: rgb(49 196 141 / var(--tw-text-opacity, 1));
+  color: rgb(49 196 141 / var(--tw-text-opacity));
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) tbody td.status .status-sending {
   display: inline;
@@ -2549,7 +2542,7 @@ input[type="time"] {
   -ms-flex-negative: 0;
       flex-shrink: 0;
   --tw-text-opacity: 1;
-  color: rgb(227 160 8 / var(--tw-text-opacity, 1));
+  color: rgb(227 160 8 / var(--tw-text-opacity));
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) tbody td.status .status-paused {
   display: inline;
@@ -2558,7 +2551,7 @@ input[type="time"] {
   -ms-flex-negative: 0;
       flex-shrink: 0;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) tbody td.status .status-queued {
   display: inline;
@@ -2567,7 +2560,7 @@ input[type="time"] {
   -ms-flex-negative: 0;
       flex-shrink: 0;
   --tw-text-opacity: 1;
-  color: rgb(255 138 76 / var(--tw-text-opacity, 1));
+  color: rgb(255 138 76 / var(--tw-text-opacity));
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) tbody td.status .status-failed {
   display: inline;
@@ -2576,14 +2569,14 @@ input[type="time"] {
   -ms-flex-negative: 0;
       flex-shrink: 0;
   --tw-text-opacity: 1;
-  color: rgb(240 82 82 / var(--tw-text-opacity, 1));
+  color: rgb(240 82 82 / var(--tw-text-opacity));
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) tbody td.status .status-send-now {
   display: inline;
   height: 1.5rem;
   width: 1.5rem;
   --tw-text-opacity: 1;
-  color: rgb(227 160 8 / var(--tw-text-opacity, 1));
+  color: rgb(227 160 8 / var(--tw-text-opacity));
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) tbody td.column-finish_at {
   text-align: left;
@@ -2644,7 +2637,7 @@ input[type="time"] {
           flex-direction: column;
   font-size: 13px;
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) tfoot {
   background-color: var(--light-gray);
@@ -2652,7 +2645,7 @@ input[type="time"] {
   line-height: 1rem;
   font-weight: 500;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) tfoot input#cb-select-all-2 {
   position: absolute;
@@ -2664,7 +2657,7 @@ input[type="time"] {
   width: 1rem;
   border-radius: 0.25rem;
   --tw-border-opacity: 1;
-  border-color: rgb(210 214 220 / var(--tw-border-opacity, 1));
+  border-color: rgb(210 214 220 / var(--tw-border-opacity));
   color: var(--brand-color);
 }
 :is(.ig-es-list-table .table,.es-audience-view .table,.es-lists-table .table,.es-forms-table .table,.es-custom-field-table .table,.es-reports-view .table,.es-campaign-reports-table .table,.ig-es-list-table #post-body-content,.es-audience-view #post-body-content,.es-lists-table #post-body-content,.es-forms-table #post-body-content,.es-custom-field-table #post-body-content,.es-reports-view #post-body-content,.es-campaign-reports-table #post-body-content) tfoot input#cb-select-all-2:focus {
@@ -2770,7 +2763,7 @@ input[type="time"] {
   position: absolute;
   inset: 0;
   --tw-bg-opacity: 1;
-  background-color: rgb(107 114 128 / var(--tw-bg-opacity, 1));
+  background-color: rgb(107 114 128 / var(--tw-bg-opacity));
   opacity: 0.75;
 }
 .ig-es-popup {
@@ -2778,7 +2771,7 @@ input[type="time"] {
   overflow: hidden;
   border-radius: 0.25rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   text-align: left;
   font-weight: 500;
   --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
@@ -2814,14 +2807,14 @@ input[type="time"] {
 .ig-es-popup .ig-es-popup-close-cta {
   border-radius: 0.25rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
   padding: 0;
   --tw-text-opacity: 1;
-  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+  color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 .ig-es-popup .ig-es-popup-close-cta:hover {
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .ig-es-popup .ig-es-popup-close-cta:focus {
   outline: 2px solid transparent;
@@ -2835,7 +2828,7 @@ input[type="time"] {
   cursor: pointer;
   border-radius: 0.25rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding: 1.5rem;
   text-align: center;
 }
@@ -2860,7 +2853,7 @@ input[type="time"] {
   font-weight: 600;
   line-height: 1.5rem;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .sr-only {
   position: absolute;
@@ -3346,19 +3339,19 @@ input[type="time"] {
 }
 .border-gray-200 {
   --tw-border-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+  border-color: rgb(229 231 235 / var(--tw-border-opacity));
 }
 .border-gray-300 {
   --tw-border-opacity: 1;
-  border-color: rgb(210 214 220 / var(--tw-border-opacity, 1));
+  border-color: rgb(210 214 220 / var(--tw-border-opacity));
 }
 .border-gray-400 {
   --tw-border-opacity: 1;
-  border-color: rgb(159 166 178 / var(--tw-border-opacity, 1));
+  border-color: rgb(159 166 178 / var(--tw-border-opacity));
 }
 .border-indigo-300 {
   --tw-border-opacity: 1;
-  border-color: rgb(180 198 252 / var(--tw-border-opacity, 1));
+  border-color: rgb(180 198 252 / var(--tw-border-opacity));
 }
 .border-lighter-gray {
   border-color: var(--lighter-gray);
@@ -3371,38 +3364,38 @@ input[type="time"] {
 }
 .bg-blue-600 {
   --tw-bg-opacity: 1;
-  background-color: rgb(28 100 242 / var(--tw-bg-opacity, 1));
+  background-color: rgb(28 100 242 / var(--tw-bg-opacity));
 }
 .bg-gray-100 {
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
 }
 .bg-gray-200 {
   --tw-bg-opacity: 1;
-  background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1));
+  background-color: rgb(229 231 235 / var(--tw-bg-opacity));
 }
 .bg-gray-400 {
   --tw-bg-opacity: 1;
-  background-color: rgb(159 166 178 / var(--tw-bg-opacity, 1));
+  background-color: rgb(159 166 178 / var(--tw-bg-opacity));
 }
 .bg-gray-50 {
   --tw-bg-opacity: 1;
-  background-color: rgb(249 250 251 / var(--tw-bg-opacity, 1));
+  background-color: rgb(249 250 251 / var(--tw-bg-opacity));
 }
 .bg-gray-700\/50 {
   background-color: rgb(55 65 81 / 0.5);
 }
 .bg-green-100 {
   --tw-bg-opacity: 1;
-  background-color: rgb(222 247 236 / var(--tw-bg-opacity, 1));
+  background-color: rgb(222 247 236 / var(--tw-bg-opacity));
 }
 .bg-green-600 {
   --tw-bg-opacity: 1;
-  background-color: rgb(5 122 85 / var(--tw-bg-opacity, 1));
+  background-color: rgb(5 122 85 / var(--tw-bg-opacity));
 }
 .bg-indigo-600 {
   --tw-bg-opacity: 1;
-  background-color: rgb(88 80 236 / var(--tw-bg-opacity, 1));
+  background-color: rgb(88 80 236 / var(--tw-bg-opacity));
 }
 .bg-light-gray {
   background-color: var(--light-gray);
@@ -3412,26 +3405,26 @@ input[type="time"] {
 }
 .bg-red-100 {
   --tw-bg-opacity: 1;
-  background-color: rgb(253 232 232 / var(--tw-bg-opacity, 1));
+  background-color: rgb(253 232 232 / var(--tw-bg-opacity));
 }
 .bg-red-600 {
   --tw-bg-opacity: 1;
-  background-color: rgb(224 36 36 / var(--tw-bg-opacity, 1));
+  background-color: rgb(224 36 36 / var(--tw-bg-opacity));
 }
 .bg-teal-50 {
   --tw-bg-opacity: 1;
-  background-color: rgb(237 250 250 / var(--tw-bg-opacity, 1));
+  background-color: rgb(237 250 250 / var(--tw-bg-opacity));
 }
 .bg-transparent {
   background-color: transparent;
 }
 .bg-white {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 .bg-yellow-100 {
   --tw-bg-opacity: 1;
-  background-color: rgb(253 246 178 / var(--tw-bg-opacity, 1));
+  background-color: rgb(253 246 178 / var(--tw-bg-opacity));
 }
 .bg-opacity-100 {
   --tw-bg-opacity: 1;
@@ -3447,6 +3440,10 @@ input[type="time"] {
 }
 .p-8 {
   padding: 2rem;
+}
+.px-1 {
+  padding-left: 0.25rem;
+  padding-right: 0.25rem;
 }
 .px-1\.5 {
   padding-left: 0.375rem;
@@ -3616,79 +3613,79 @@ input[type="time"] {
 }
 .text-black {
   --tw-text-opacity: 1;
-  color: rgb(0 0 0 / var(--tw-text-opacity, 1));
+  color: rgb(0 0 0 / var(--tw-text-opacity));
 }
 .text-blue-600 {
   --tw-text-opacity: 1;
-  color: rgb(28 100 242 / var(--tw-text-opacity, 1));
+  color: rgb(28 100 242 / var(--tw-text-opacity));
 }
 .text-blue-800 {
   --tw-text-opacity: 1;
-  color: rgb(30 66 159 / var(--tw-text-opacity, 1));
+  color: rgb(30 66 159 / var(--tw-text-opacity));
 }
 .text-gray-400 {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 .text-gray-500 {
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 .text-gray-600 {
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 .text-gray-700 {
   --tw-text-opacity: 1;
-  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+  color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 .text-gray-800 {
   --tw-text-opacity: 1;
-  color: rgb(37 47 63 / var(--tw-text-opacity, 1));
+  color: rgb(37 47 63 / var(--tw-text-opacity));
 }
 .text-gray-900 {
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .text-green-600 {
   --tw-text-opacity: 1;
-  color: rgb(5 122 85 / var(--tw-text-opacity, 1));
+  color: rgb(5 122 85 / var(--tw-text-opacity));
 }
 .text-indigo-500 {
   --tw-text-opacity: 1;
-  color: rgb(104 117 245 / var(--tw-text-opacity, 1));
+  color: rgb(104 117 245 / var(--tw-text-opacity));
 }
 .text-indigo-600 {
   --tw-text-opacity: 1;
-  color: rgb(88 80 236 / var(--tw-text-opacity, 1));
+  color: rgb(88 80 236 / var(--tw-text-opacity));
 }
 .text-purple-500 {
   --tw-text-opacity: 1;
-  color: rgb(144 97 249 / var(--tw-text-opacity, 1));
+  color: rgb(144 97 249 / var(--tw-text-opacity));
 }
 .text-purple-600 {
   --tw-text-opacity: 1;
-  color: rgb(126 58 242 / var(--tw-text-opacity, 1));
+  color: rgb(126 58 242 / var(--tw-text-opacity));
 }
 .text-red-400 {
   --tw-text-opacity: 1;
-  color: rgb(249 128 128 / var(--tw-text-opacity, 1));
+  color: rgb(249 128 128 / var(--tw-text-opacity));
 }
 .text-red-600 {
   --tw-text-opacity: 1;
-  color: rgb(224 36 36 / var(--tw-text-opacity, 1));
+  color: rgb(224 36 36 / var(--tw-text-opacity));
 }
 .text-teal-400 {
   --tw-text-opacity: 1;
-  color: rgb(22 189 202 / var(--tw-text-opacity, 1));
+  color: rgb(22 189 202 / var(--tw-text-opacity));
 }
 .text-teal-700 {
   --tw-text-opacity: 1;
-  color: rgb(3 102 114 / var(--tw-text-opacity, 1));
+  color: rgb(3 102 114 / var(--tw-text-opacity));
 }
 .text-white {
   --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 .underline {
   text-decoration-line: underline;
@@ -3728,10 +3725,10 @@ input[type="time"] {
           filter: var(--tw-blur) var(--tw-brightness) var(--tw-contrast) var(--tw-grayscale) var(--tw-hue-rotate) var(--tw-invert) var(--tw-saturate) var(--tw-sepia) var(--tw-drop-shadow);
 }
 .transition {
-  -webkit-transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter;
+  -webkit-transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, -webkit-box-shadow, -webkit-transform, -webkit-filter, -webkit-backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, -webkit-box-shadow, -webkit-transform, -webkit-filter, -webkit-backdrop-filter;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter, -webkit-backdrop-filter;
   -webkit-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
           transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   -webkit-transition-duration: 150ms;
@@ -3829,7 +3826,7 @@ table td
 :is(.es-import-option,#ig_es_mailer_settings-field-row,#icegram-mailer-info) [type="radio"]:checked + .es-mailer-logo:hover {
   border-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+  border-color: rgb(229 231 235 / var(--tw-border-opacity));
 }
 :is(.es-import-option,#ig_es_mailer_settings-field-row,#icegram-mailer-info) .border-0 {
       border-width: 0px;
@@ -3841,7 +3838,7 @@ table td
   width: 1rem;
   border-radius: 0.25rem;
   --tw-border-opacity: 1;
-  border-color: rgb(210 214 220 / var(--tw-border-opacity, 1));
+  border-color: rgb(210 214 220 / var(--tw-border-opacity));
   color: var(--brand-color);
 }
 #wordpress-users input.checkbox:focus, #ig-es-wc-order-statuses-wrapper input.checkbox:focus {
@@ -3855,7 +3852,7 @@ table td
   width: 16rem;
   border-radius: 0.125rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding: 0.75rem;
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
@@ -3880,7 +3877,7 @@ table td
   border-radius: 0.5rem;
   border-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+  border-color: rgb(229 231 235 / var(--tw-border-opacity));
   padding-bottom: 3rem;
 }
 .icegram-express_page_es_subscribers .es-collapsible .ig-es-condition-group .add-or-condition {
@@ -3895,7 +3892,7 @@ table td
   overflow: hidden;
   border-radius: 0.25rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(229 231 235 / var(--tw-bg-opacity, 1));
+  background-color: rgb(229 231 235 / var(--tw-bg-opacity));
   text-align: right;
   line-height: 1rem;
 }
@@ -3909,7 +3906,7 @@ table td
   overflow: hidden;
   border-radius: 0.25rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(141 162 251 / var(--tw-bg-opacity, 1));
+  background-color: rgb(141 162 251 / var(--tw-bg-opacity));
   background-image: -webkit-gradient(linear, left top, right top, from(var(--tw-gradient-stops)));
   background-image: linear-gradient(to right, var(--tw-gradient-stops));
   --tw-gradient-from: #42389d var(--tw-gradient-from-position);
@@ -3929,7 +3926,7 @@ table td
   padding-top: 0.375rem;
   padding-bottom: 0.375rem;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   -webkit-box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -3946,19 +3943,19 @@ table td
   }
 #es-menu-tab-content input:not([type="radio"])::-webkit-input-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 #es-menu-tab-content input:not([type="radio"])::-moz-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 #es-menu-tab-content input:not([type="radio"])::-ms-input-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 #es-menu-tab-content input:not([type="radio"])::placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 #es-menu-tab-content input:not([type="radio"]):focus {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -3983,11 +3980,11 @@ table td
   width: 20%;
   border-right-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(244 245 247 / var(--tw-border-opacity, 1));
+  border-color: rgb(244 245 247 / var(--tw-border-opacity));
   padding-top: 1rem;
   line-height: 1.5;
   --tw-text-opacity: 1;
-  color: rgb(37 47 63 / var(--tw-text-opacity, 1));
+  color: rgb(37 47 63 / var(--tw-text-opacity));
 }
 #es-settings-menu .es-menu-list {
   z-index: 20;
@@ -3995,7 +3992,7 @@ table td
   margin-bottom: 0.5rem;
   margin-top: 0;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   --tw-shadow: 0 0 #0000;
   --tw-shadow-colored: 0 0 #0000;
   -webkit-box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -4039,7 +4036,7 @@ table td
 #es-settings-menu .es-menu-list ul li:hover {
   border-radius: 0.25rem;
   --tw-border-opacity: 1;
-  border-color: rgb(88 80 236 / var(--tw-border-opacity, 1));
+  border-color: rgb(88 80 236 / var(--tw-border-opacity));
 }
 @media (min-width: 768px) {
 
@@ -4075,7 +4072,7 @@ table td
   overflow: hidden;
   border-radius: 0.5rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 @media (min-width: 1024px) {
 
@@ -4095,7 +4092,7 @@ table td
   margin-left: 1rem;
   border-bottom-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+  border-color: rgb(229 231 235 / var(--tw-border-opacity));
   padding-top: 1rem;
   padding-bottom: 1rem;
 }
@@ -4113,7 +4110,7 @@ table td
   line-height: 1.25rem;
   font-weight: 600;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 #es-menu-tab-content #tabs-general table tr th p, #es-menu-tab-content #tabs-email_sending table tr th p, #es-menu-tab-content #tabs-security_settings table tr th p, #es-menu-tab-content #tabs-rest_api_settings table tr th p, #es-menu-tab-content #tabs-user_roles table tr th p {
   margin-top: 0.25rem;
@@ -4123,13 +4120,13 @@ table td
   font-style: italic;
   line-height: 1.375;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 #es-menu-tab-content #tabs-general table tr td, #es-menu-tab-content #tabs-email_sending table tr td, #es-menu-tab-content #tabs-security_settings table tr td, #es-menu-tab-content #tabs-rest_api_settings table tr td, #es-menu-tab-content #tabs-user_roles table tr td {
   width: 66.666667%;
   border-radius: 0.5rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
   padding-left: 1.25rem;
@@ -4162,7 +4159,7 @@ table td
   height: 2.25rem;
   width: 60%;
   --tw-border-opacity: 1;
-  border-color: rgb(159 166 178 / var(--tw-border-opacity, 1));
+  border-color: rgb(159 166 178 / var(--tw-border-opacity));
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
@@ -4174,14 +4171,14 @@ table td
   font-style: italic;
   line-height: 1.375;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 #es-menu-tab-content #tabs-general table tr td input.checkbox, #es-menu-tab-content #tabs-email_sending table tr td input.checkbox, #es-menu-tab-content #tabs-security_settings table tr td input.checkbox, #es-menu-tab-content #tabs-rest_api_settings table tr td input.checkbox, #es-menu-tab-content #tabs-user_roles table tr td input.checkbox {
   height: 1rem;
   width: 1rem;
   border-radius: 0.25rem;
   --tw-border-opacity: 1;
-  border-color: rgb(210 214 220 / var(--tw-border-opacity, 1));
+  border-color: rgb(210 214 220 / var(--tw-border-opacity));
   color: var(--brand-color);
   --tw-ring-offset-width: 0px;
 }
@@ -4207,7 +4204,7 @@ table td
   font-style: italic;
   line-height: 1.375;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 #es-menu-tab-content #tabs-general table tr td #house_keeping_section input.checkbox, #es-menu-tab-content #tabs-email_sending table tr td #house_keeping_section input.checkbox, #es-menu-tab-content #tabs-security_settings table tr td #house_keeping_section input.checkbox, #es-menu-tab-content #tabs-rest_api_settings table tr td #house_keeping_section input.checkbox, #es-menu-tab-content #tabs-user_roles table tr td #house_keeping_section input.checkbox {
   display: inline-block;
@@ -4215,7 +4212,7 @@ table td
   width: 1rem;
   border-radius: 0.25rem;
   --tw-border-opacity: 1;
-  border-color: rgb(210 214 220 / var(--tw-border-opacity, 1));
+  border-color: rgb(210 214 220 / var(--tw-border-opacity));
   color: var(--brand-color);
 }
 #es-menu-tab-content #tabs-general table tr td #house_keeping_section input.checkbox:focus, #es-menu-tab-content #tabs-email_sending table tr td #house_keeping_section input.checkbox:focus, #es-menu-tab-content #tabs-security_settings table tr td #house_keeping_section input.checkbox:focus, #es-menu-tab-content #tabs-rest_api_settings table tr td #house_keeping_section input.checkbox:focus, #es-menu-tab-content #tabs-user_roles table tr td #house_keeping_section input.checkbox:focus {
@@ -4228,7 +4225,7 @@ table td
   line-height: 1.25rem;
   font-weight: 400;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 /* End */
 /* ESS upsell noticebox CSS */
@@ -4241,7 +4238,7 @@ table td
   width: 80%;
   border-radius: 0.375rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(237 250 250 / var(--tw-bg-opacity, 1));
+  background-color: rgb(237 250 250 / var(--tw-bg-opacity));
   padding-left: 0.5rem;
   padding-right: 0.5rem;
   padding-top: 0.25rem;
@@ -4265,7 +4262,7 @@ table td
   font-weight: 500;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(30 66 159 / var(--tw-text-opacity, 1));
+  color: rgb(30 66 159 / var(--tw-text-opacity));
 }
 #es-menu-tab-content #tabs-general table tr td #sending_service_info .ess-upsell-sec .main-upsell-sec .upsell-btn-sec, #es-menu-tab-content #tabs-email_sending table tr td #sending_service_info .ess-upsell-sec .main-upsell-sec .upsell-btn-sec, #es-menu-tab-content #tabs-security_settings table tr td #sending_service_info .ess-upsell-sec .main-upsell-sec .upsell-btn-sec, #es-menu-tab-content #tabs-rest_api_settings table tr td #sending_service_info .ess-upsell-sec .main-upsell-sec .upsell-btn-sec, #es-menu-tab-content #tabs-user_roles table tr td #sending_service_info .ess-upsell-sec .main-upsell-sec .upsell-btn-sec {
   margin-top: 0.5rem;
@@ -4273,7 +4270,7 @@ table td
   font-size: 0.875rem;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(3 102 114 / var(--tw-text-opacity, 1));
+  color: rgb(3 102 114 / var(--tw-text-opacity));
 }
 #es-menu-tab-content #tabs-general table tr td #sending_service_info .ess-upsell-sec .main-upsell-sec .upsell-btn-sec .upsell-btn-div, #es-menu-tab-content #tabs-email_sending table tr td #sending_service_info .ess-upsell-sec .main-upsell-sec .upsell-btn-sec .upsell-btn-div, #es-menu-tab-content #tabs-security_settings table tr td #sending_service_info .ess-upsell-sec .main-upsell-sec .upsell-btn-sec .upsell-btn-div, #es-menu-tab-content #tabs-rest_api_settings table tr td #sending_service_info .ess-upsell-sec .main-upsell-sec .upsell-btn-sec .upsell-btn-div, #es-menu-tab-content #tabs-user_roles table tr td #sending_service_info .ess-upsell-sec .main-upsell-sec .upsell-btn-sec .upsell-btn-div {
   padding-top: 1.5rem;
@@ -4311,9 +4308,9 @@ table td
   height: 2.5rem;
   width: 60%;
   --tw-border-opacity: 1;
-  border-color: rgb(159 166 178 / var(--tw-border-opacity, 1));
+  border-color: rgb(159 166 178 / var(--tw-border-opacity));
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
@@ -4330,7 +4327,7 @@ table td
 }
 #es-menu-tab-content #tabs-general table tr td .pepipost ul li a, #es-menu-tab-content #tabs-email_sending table tr td .pepipost ul li a, #es-menu-tab-content #tabs-security_settings table tr td .pepipost ul li a, #es-menu-tab-content #tabs-rest_api_settings table tr td .pepipost ul li a, #es-menu-tab-content #tabs-user_roles table tr td .pepipost ul li a, #es-menu-tab-content #tabs-general table tr td .gmail ul li a, #es-menu-tab-content #tabs-email_sending table tr td .gmail ul li a, #es-menu-tab-content #tabs-security_settings table tr td .gmail ul li a, #es-menu-tab-content #tabs-rest_api_settings table tr td .gmail ul li a, #es-menu-tab-content #tabs-user_roles table tr td .gmail ul li a, #es-menu-tab-content #tabs-general table tr td .Amazon_SES ul li a, #es-menu-tab-content #tabs-email_sending table tr td .Amazon_SES ul li a, #es-menu-tab-content #tabs-security_settings table tr td .Amazon_SES ul li a, #es-menu-tab-content #tabs-rest_api_settings table tr td .Amazon_SES ul li a, #es-menu-tab-content #tabs-user_roles table tr td .Amazon_SES ul li a, #es-menu-tab-content #tabs-general table tr td .mailgun ul li a, #es-menu-tab-content #tabs-email_sending table tr td .mailgun ul li a, #es-menu-tab-content #tabs-security_settings table tr td .mailgun ul li a, #es-menu-tab-content #tabs-rest_api_settings table tr td .mailgun ul li a, #es-menu-tab-content #tabs-user_roles table tr td .mailgun ul li a, #es-menu-tab-content #tabs-general table tr td .sendgrid ul li a, #es-menu-tab-content #tabs-email_sending table tr td .sendgrid ul li a, #es-menu-tab-content #tabs-security_settings table tr td .sendgrid ul li a, #es-menu-tab-content #tabs-rest_api_settings table tr td .sendgrid ul li a, #es-menu-tab-content #tabs-user_roles table tr td .sendgrid ul li a, #es-menu-tab-content #tabs-general table tr td .sparkpost ul li a, #es-menu-tab-content #tabs-email_sending table tr td .sparkpost ul li a, #es-menu-tab-content #tabs-security_settings table tr td .sparkpost ul li a, #es-menu-tab-content #tabs-rest_api_settings table tr td .sparkpost ul li a, #es-menu-tab-content #tabs-user_roles table tr td .sparkpost ul li a, #es-menu-tab-content #tabs-general table tr td .postmark ul li a, #es-menu-tab-content #tabs-email_sending table tr td .postmark ul li a, #es-menu-tab-content #tabs-security_settings table tr td .postmark ul li a, #es-menu-tab-content #tabs-rest_api_settings table tr td .postmark ul li a, #es-menu-tab-content #tabs-user_roles table tr td .postmark ul li a, #es-menu-tab-content #tabs-general table tr td .sendinblue ul li a, #es-menu-tab-content #tabs-email_sending table tr td .sendinblue ul li a, #es-menu-tab-content #tabs-security_settings table tr td .sendinblue ul li a, #es-menu-tab-content #tabs-rest_api_settings table tr td .sendinblue ul li a, #es-menu-tab-content #tabs-user_roles table tr td .sendinblue ul li a, #es-menu-tab-content #tabs-general table tr td .mailjet ul li a, #es-menu-tab-content #tabs-email_sending table tr td .mailjet ul li a, #es-menu-tab-content #tabs-security_settings table tr td .mailjet ul li a, #es-menu-tab-content #tabs-rest_api_settings table tr td .mailjet ul li a, #es-menu-tab-content #tabs-user_roles table tr td .mailjet ul li a {
   --tw-text-opacity: 1;
-  color: rgb(28 100 242 / var(--tw-text-opacity, 1));
+  color: rgb(28 100 242 / var(--tw-text-opacity));
 }
 /* End */
 /* Cron info & authentication table CSS */
@@ -4343,14 +4340,14 @@ table td
 }
 :is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-general table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-email_sending table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-security_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-user_roles table tr td #ig-ess-plan-info-table) thead tr {
   --tw-bg-opacity: 1;
-  background-color: rgb(235 245 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(235 245 255 / var(--tw-bg-opacity));
   font-size: 0.75rem;
   font-weight: 500;
   text-transform: uppercase;
   line-height: 1rem;
   letter-spacing: 0.05em;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 :is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-general table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-email_sending table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-security_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-user_roles table tr td #ig-ess-plan-info-table) thead tr th {
   display: table-cell;
@@ -4362,13 +4359,13 @@ table td
 :is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-general table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-email_sending table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-security_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-user_roles table tr td #ig-ess-plan-info-table) tbody tr {
   border-bottom-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+  border-color: rgb(229 231 235 / var(--tw-border-opacity));
 }
 :is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-general table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-email_sending table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-security_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-user_roles table tr td #ig-ess-plan-info-table) tbody tr td {
   width: 25%;
   border-radius: 0px;
   --tw-bg-opacity: 1;
-  background-color: rgb(235 245 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(235 245 255 / var(--tw-bg-opacity));
   text-align: left;
 }
 :is(#es-menu-tab-content #tabs-general table tr td table.cron-info,#es-menu-tab-content #tabs-email_sending table tr td table.cron-info,#es-menu-tab-content #tabs-security_settings table tr td table.cron-info,#es-menu-tab-content #tabs-rest_api_settings table tr td table.cron-info,#es-menu-tab-content #tabs-user_roles table tr td table.cron-info,#es-menu-tab-content #tabs-general table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-email_sending table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-security_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-rest_api_settings table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-user_roles table tr td table#ig-es-settings-authentication-table,#es-menu-tab-content #tabs-general table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-email_sending table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-security_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-user_roles table tr td #ig-es-rest-api-section table,#es-menu-tab-content #tabs-general table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-email_sending table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-security_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-rest_api_settings table tr td #ig-ess-plan-info-table,#es-menu-tab-content #tabs-user_roles table tr td #ig-ess-plan-info-table) tbody tr td span#ig-es-verify-auth-message {
@@ -4398,7 +4395,7 @@ table td
   line-height: 1.25rem;
   font-weight: 600;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 #es-menu-tab-content #tabs-general table tr td #sending_service_optin p, #es-menu-tab-content #tabs-email_sending table tr td #sending_service_optin p, #es-menu-tab-content #tabs-security_settings table tr td #sending_service_optin p, #es-menu-tab-content #tabs-rest_api_settings table tr td #sending_service_optin p, #es-menu-tab-content #tabs-user_roles table tr td #sending_service_optin p, #es-menu-tab-content #tabs-general table tr td #sending_service_info p, #es-menu-tab-content #tabs-email_sending table tr td #sending_service_info p, #es-menu-tab-content #tabs-security_settings table tr td #sending_service_info p, #es-menu-tab-content #tabs-rest_api_settings table tr td #sending_service_info p, #es-menu-tab-content #tabs-user_roles table tr td #sending_service_info p {
   padding-left: 3rem;
@@ -4408,7 +4405,7 @@ table td
   font-style: italic;
   line-height: 1.375;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 #es-menu-tab-content #tabs-general table tr td #sending_service_optin #icegram-mailer-info p, #es-menu-tab-content #tabs-email_sending table tr td #sending_service_optin #icegram-mailer-info p, #es-menu-tab-content #tabs-security_settings table tr td #sending_service_optin #icegram-mailer-info p, #es-menu-tab-content #tabs-rest_api_settings table tr td #sending_service_optin #icegram-mailer-info p, #es-menu-tab-content #tabs-user_roles table tr td #sending_service_optin #icegram-mailer-info p, #es-menu-tab-content #tabs-general table tr td #sending_service_info #icegram-mailer-info p, #es-menu-tab-content #tabs-email_sending table tr td #sending_service_info #icegram-mailer-info p, #es-menu-tab-content #tabs-security_settings table tr td #sending_service_info #icegram-mailer-info p, #es-menu-tab-content #tabs-rest_api_settings table tr td #sending_service_info #icegram-mailer-info p, #es-menu-tab-content #tabs-user_roles table tr td #sending_service_info #icegram-mailer-info p {
   margin-bottom: 0.5rem;
@@ -4438,11 +4435,11 @@ table td
       -ms-flex-align: center;
           align-items: center;
   --tw-bg-opacity: 1;
-  background-color: rgb(66 56 157 / var(--tw-bg-opacity, 1));
+  background-color: rgb(66 56 157 / var(--tw-bg-opacity));
   padding: 0.5rem;
   line-height: 1.5;
   --tw-text-opacity: 1;
-  color: rgb(229 237 255 / var(--tw-text-opacity, 1));
+  color: rgb(229 237 255 / var(--tw-text-opacity));
 }
 @media (min-width: 1024px) {
 
@@ -4462,7 +4459,7 @@ table td
 }
 #es-menu-tab-content #tabs-general table tr td .user_role_upsell_box div a, #es-menu-tab-content #tabs-email_sending table tr td .user_role_upsell_box div a, #es-menu-tab-content #tabs-security_settings table tr td .user_role_upsell_box div a, #es-menu-tab-content #tabs-rest_api_settings table tr td .user_role_upsell_box div a, #es-menu-tab-content #tabs-user_roles table tr td .user_role_upsell_box div a {
   --tw-text-opacity: 1;
-  color: rgb(141 162 251 / var(--tw-text-opacity, 1));
+  color: rgb(141 162 251 / var(--tw-text-opacity));
 }
 /* User Roles table CSS */
 #es-menu-tab-content #tabs-general table tr td table.user-roles-table, #es-menu-tab-content #tabs-email_sending table tr td table.user-roles-table, #es-menu-tab-content #tabs-security_settings table tr td table.user-roles-table, #es-menu-tab-content #tabs-rest_api_settings table tr td table.user-roles-table, #es-menu-tab-content #tabs-user_roles table tr td table.user-roles-table {
@@ -4474,10 +4471,10 @@ table td
 }
 #es-menu-tab-content #tabs-general table tr td table.user-roles-table thead tr, #es-menu-tab-content #tabs-email_sending table tr td table.user-roles-table thead tr, #es-menu-tab-content #tabs-security_settings table tr td table.user-roles-table thead tr, #es-menu-tab-content #tabs-rest_api_settings table tr td table.user-roles-table thead tr, #es-menu-tab-content #tabs-user_roles table tr td table.user-roles-table thead tr {
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
   line-height: 1rem;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 #es-menu-tab-content #tabs-general table tr td table.user-roles-table thead tr th, #es-menu-tab-content #tabs-email_sending table tr td table.user-roles-table thead tr th, #es-menu-tab-content #tabs-security_settings table tr td table.user-roles-table thead tr th, #es-menu-tab-content #tabs-rest_api_settings table tr td table.user-roles-table thead tr th, #es-menu-tab-content #tabs-user_roles table tr td table.user-roles-table thead tr th {
   display: table-cell;
@@ -4491,7 +4488,7 @@ table td
 }
 #es-menu-tab-content #tabs-general table tr td table.user-roles-table tbody, #es-menu-tab-content #tabs-email_sending table tr td table.user-roles-table tbody, #es-menu-tab-content #tabs-security_settings table tr td table.user-roles-table tbody, #es-menu-tab-content #tabs-rest_api_settings table tr td table.user-roles-table tbody, #es-menu-tab-content #tabs-user_roles table tr td table.user-roles-table tbody {
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 #es-menu-tab-content #tabs-general table tr td table.user-roles-table tbody tr td:first-of-type, #es-menu-tab-content #tabs-email_sending table tr td table.user-roles-table tbody tr td:first-of-type, #es-menu-tab-content #tabs-security_settings table tr td table.user-roles-table tbody tr td:first-of-type, #es-menu-tab-content #tabs-rest_api_settings table tr td table.user-roles-table tbody tr td:first-of-type, #es-menu-tab-content #tabs-user_roles table tr td table.user-roles-table tbody tr td:first-of-type {
   padding-top: 1rem;
@@ -4504,7 +4501,7 @@ table td
   font-weight: 500;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(37 47 63 / var(--tw-text-opacity, 1));
+  color: rgb(37 47 63 / var(--tw-text-opacity));
 }
 #es-menu-tab-content #tabs-general table tr td table.user-roles-table tbody tr td, #es-menu-tab-content #tabs-email_sending table tr td table.user-roles-table tbody tr td, #es-menu-tab-content #tabs-security_settings table tr td table.user-roles-table tbody tr td, #es-menu-tab-content #tabs-rest_api_settings table tr td table.user-roles-table tbody tr td, #es-menu-tab-content #tabs-user_roles table tr td table.user-roles-table tbody tr td {
   padding-left: 2.5rem;
@@ -4540,12 +4537,12 @@ table td
   overflow: hidden;
   border-radius: 0.375rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 .recent-campaigns table tbody tr, .audience-activity table tbody tr, .forms-lists table tbody tr {
   border-bottom-width: 1px;
   --tw-border-opacity: 1;
-  border-color: rgb(229 231 235 / var(--tw-border-opacity, 1));
+  border-color: rgb(229 231 235 / var(--tw-border-opacity));
   font-size: 0.875rem;
   line-height: 1.25rem;
 }
@@ -4562,7 +4559,7 @@ table td
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 .recent-campaigns table tbody tr td.avatar-column .avatar, .audience-activity table tbody tr td.avatar-column .avatar, .forms-lists table tbody tr td.avatar-column .avatar {
   padding-right: 1rem;
@@ -4570,13 +4567,13 @@ table td
 .recent-campaigns table tbody tr td.avatar-column .avatar .dash-avatar, .audience-activity table tbody tr td.avatar-column .avatar .dash-avatar, .forms-lists table tbody tr td.avatar-column .avatar .dash-avatar {
   border-radius: 0.375rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(236 236 236 / var(--tw-bg-opacity, 1));
+  background-color: rgb(236 236 236 / var(--tw-bg-opacity));
   padding: 0.25rem;
 }
 .recent-campaigns table tbody tr td .dash-recent-p, .audience-activity table tbody tr td .dash-recent-p, .forms-lists table tbody tr td .dash-recent-p {
   margin-top: 0.5rem;
   --tw-text-opacity: 1;
-  color: rgb(0 0 0 / var(--tw-text-opacity, 1));
+  color: rgb(0 0 0 / var(--tw-text-opacity));
 }
 .recent-campaigns table tbody tr td .dash-status, .audience-activity table tbody tr td .dash-status, .forms-lists table tbody tr td .dash-status {
   display: -webkit-inline-box;
@@ -4624,11 +4621,11 @@ table td
   font-weight: 400;
   line-height: 1.75rem;
   --tw-text-opacity: 1;
-  color: rgb(0 0 0 / var(--tw-text-opacity, 1));
+  color: rgb(0 0 0 / var(--tw-text-opacity));
 }
 .toplevel_page_es_dashboard .forms-lists .new_form_link a:hover, .toplevel_page_es_dashboard .forms-lists .new_list_link a:hover {
   --tw-text-opacity: 1;
-  color: rgb(0 0 0 / var(--tw-text-opacity, 1));
+  color: rgb(0 0 0 / var(--tw-text-opacity));
 }
 .toplevel_page_es_dashboard .lists-container {
   margin-top: 0 !important;
@@ -4663,19 +4660,19 @@ table td
   font-size: 0.875rem;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+  color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 #ig-es-create-dropdown a:hover {
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 #ig-es-create-dropdown a:focus {
   --tw-bg-opacity: 1;
-  background-color: rgb(244 245 247 / var(--tw-bg-opacity, 1));
+  background-color: rgb(244 245 247 / var(--tw-bg-opacity));
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
   outline: 2px solid transparent;
   outline-offset: 2px;
 }
@@ -4687,7 +4684,7 @@ table td
   font-style: italic;
   line-height: 1.75rem;
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section {
   display: -webkit-box;
@@ -4710,7 +4707,7 @@ table td
   font-weight: 500;
   line-height: 1.5rem;
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section #ig-es-trial-expired-block #ig-es-trial-optin-btn svg, .ig-dashboardcommon-section #ig-es-trial-active-block #ig-es-trial-optin-btn svg, .ig-dashboardcommon-section #ig-es-trial-optin-block #ig-es-trial-optin-btn svg {
   height: 1rem;
@@ -4746,7 +4743,7 @@ table td
   padding-bottom: 0.75rem;
   padding-left: 1rem;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section #ig-es-trial-expired-block .block-status, .ig-dashboardcommon-section #ig-es-trial-active-block .block-status, .ig-dashboardcommon-section #ig-es-trial-optin-block .block-status {
   margin-left: 0.5rem;
@@ -4755,21 +4752,21 @@ table td
   display: inline-flex;
   border-radius: 9999px;
   --tw-bg-opacity: 1;
-  background-color: rgb(222 247 236 / var(--tw-bg-opacity, 1));
+  background-color: rgb(222 247 236 / var(--tw-bg-opacity));
   padding: 0.25rem;
   vertical-align: sub;
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(0 0 0 / var(--tw-text-opacity, 1));
+  color: rgb(0 0 0 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section #ig-es-trial-expired-block .block-status svg, .ig-dashboardcommon-section #ig-es-trial-active-block .block-status svg, .ig-dashboardcommon-section #ig-es-trial-optin-block .block-status svg {
   display: inline-block;
   height: 1.25rem;
   width: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(5 122 85 / var(--tw-text-opacity, 1));
+  color: rgb(5 122 85 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section #ig-es-trial-expired-block .trial-ended-block, .ig-dashboardcommon-section #ig-es-trial-active-block .trial-ended-block, .ig-dashboardcommon-section #ig-es-trial-optin-block .trial-ended-block {
   margin-left: 0.5rem;
@@ -4778,14 +4775,14 @@ table td
   display: inline-flex;
   border-radius: 9999px;
   --tw-bg-opacity: 1;
-  background-color: rgb(224 36 36 / var(--tw-bg-opacity, 1));
+  background-color: rgb(224 36 36 / var(--tw-bg-opacity));
   padding: 0.25rem;
   vertical-align: sub;
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section #ig-es-trial-expired-block .trial-ended-block svg, .ig-dashboardcommon-section #ig-es-trial-active-block .trial-ended-block svg, .ig-dashboardcommon-section #ig-es-trial-optin-block .trial-ended-block svg {
   margin-left: 0.25rem;
@@ -4793,7 +4790,7 @@ table td
   height: 1.25rem;
   width: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section #ig-ess-account-overview-block {
   position: relative;
@@ -4811,7 +4808,7 @@ table td
   padding-bottom: 1rem;
   text-align: center;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section #ig-ess-account-overview-block .block-status {
   display: -webkit-inline-box;
@@ -4819,21 +4816,21 @@ table td
   display: inline-flex;
   border-radius: 9999px;
   --tw-bg-opacity: 1;
-  background-color: rgb(222 247 236 / var(--tw-bg-opacity, 1));
+  background-color: rgb(222 247 236 / var(--tw-bg-opacity));
   padding: 0.25rem;
   vertical-align: sub;
   font-size: 0.75rem;
   font-weight: 600;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(0 0 0 / var(--tw-text-opacity, 1));
+  color: rgb(0 0 0 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section #ig-ess-account-overview-block .block-status svg {
   display: inline-block;
   height: 1.25rem;
   width: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(5 122 85 / var(--tw-text-opacity, 1));
+  color: rgb(5 122 85 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section #sending-service-benefits .item-dots, .ig-dashboardcommon-section #sending-service-onboarding-tasks-list .item-dots {
   position: relative;
@@ -4857,11 +4854,11 @@ table td
   width: 0.5rem;
   border-radius: 9999px;
   --tw-bg-opacity: 1;
-  background-color: rgb(210 214 220 / var(--tw-bg-opacity, 1));
-  -webkit-transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter;
+  background-color: rgb(210 214 220 / var(--tw-bg-opacity));
+  -webkit-transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, -webkit-box-shadow, -webkit-transform, -webkit-filter, -webkit-backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, -webkit-box-shadow, -webkit-transform, -webkit-filter, -webkit-backdrop-filter;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter, -webkit-backdrop-filter;
   -webkit-transition-duration: 150ms;
           transition-duration: 150ms;
   -webkit-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -4869,22 +4866,22 @@ table td
 }
 .group:hover .ig-dashboardcommon-section #sending-service-benefits .item-dots span,.group:hover  .ig-dashboardcommon-section #sending-service-onboarding-tasks-list .item-dots span {
   --tw-bg-opacity: 1;
-  background-color: rgb(159 166 178 / var(--tw-bg-opacity, 1));
+  background-color: rgb(159 166 178 / var(--tw-bg-opacity));
 }
 .group:focus .ig-dashboardcommon-section #sending-service-benefits .item-dots span,.group:focus  .ig-dashboardcommon-section #sending-service-onboarding-tasks-list .item-dots span {
   --tw-bg-opacity: 1;
-  background-color: rgb(159 166 178 / var(--tw-bg-opacity, 1));
+  background-color: rgb(159 166 178 / var(--tw-bg-opacity));
 }
 .ig-dashboardcommon-section #sending-service-benefits svg, .ig-dashboardcommon-section #sending-service-onboarding-tasks-list svg {
   margin-top: 0.25rem;
   height: 100%;
   width: 100%;
   --tw-text-opacity: 1;
-  color: rgb(81 69 205 / var(--tw-text-opacity, 1));
-  -webkit-transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter;
+  color: rgb(81 69 205 / var(--tw-text-opacity));
+  -webkit-transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, -webkit-box-shadow, -webkit-transform, -webkit-filter, -webkit-backdrop-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, -webkit-box-shadow, -webkit-transform, -webkit-filter, -webkit-backdrop-filter;
   transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter;
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter, -webkit-box-shadow, -webkit-transform, -webkit-filter, -webkit-backdrop-filter;
   -webkit-transition-duration: 150ms;
           transition-duration: 150ms;
   -webkit-transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
@@ -4892,11 +4889,11 @@ table td
 }
 .group:hover .ig-dashboardcommon-section #sending-service-benefits svg,.group:hover  .ig-dashboardcommon-section #sending-service-onboarding-tasks-list svg {
   --tw-text-opacity: 1;
-  color: rgb(88 80 236 / var(--tw-text-opacity, 1));
+  color: rgb(88 80 236 / var(--tw-text-opacity));
 }
 .group:focus .ig-dashboardcommon-section #sending-service-benefits svg,.group:focus  .ig-dashboardcommon-section #sending-service-onboarding-tasks-list svg {
   --tw-text-opacity: 1;
-  color: rgb(88 80 236 / var(--tw-text-opacity, 1));
+  color: rgb(88 80 236 / var(--tw-text-opacity));
 }
 .ig-dashboardcommon-section .ess-block {
   margin-left: 1rem;
@@ -4932,7 +4929,7 @@ table td
   font-weight: 500;
   line-height: 1.75rem;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 .reports-statistic .campaign-info .campaign-title .campaign-sent-status {
   margin-left: 0.5rem;
@@ -4949,7 +4946,7 @@ table td
   height: 1.25rem;
   width: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(49 196 141 / var(--tw-text-opacity, 1));
+  color: rgb(49 196 141 / var(--tw-text-opacity));
 }
 .reports-statistic .campaign-info .campaign-title .campaign-sent-status .queue {
   margin-top: 0.375rem;
@@ -4958,7 +4955,7 @@ table td
   height: 1.25rem;
   width: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(255 138 76 / var(--tw-text-opacity, 1));
+  color: rgb(255 138 76 / var(--tw-text-opacity));
 }
 .reports-statistic .campaign-info .campaign-title .campaign-sent-status .sending {
   margin-top: 0.375rem;
@@ -4967,7 +4964,7 @@ table td
   height: 1.25rem;
   width: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(227 160 8 / var(--tw-text-opacity, 1));
+  color: rgb(227 160 8 / var(--tw-text-opacity));
 }
 .reports-statistic .campaign-info .campaign-title .campaign-sent-status .active {
   display: -webkit-inline-box;
@@ -4975,11 +4972,11 @@ table td
   display: inline-flex;
   border-radius: 9999px;
   --tw-bg-opacity: 1;
-  background-color: rgb(222 247 236 / var(--tw-bg-opacity, 1));
+  background-color: rgb(222 247 236 / var(--tw-bg-opacity));
   padding-left: 0.5rem;
   padding-right: 0.5rem;
   --tw-text-opacity: 1;
-  color: rgb(3 84 63 / var(--tw-text-opacity, 1));
+  color: rgb(3 84 63 / var(--tw-text-opacity));
 }
 .reports-statistic .campaign-info .campaign-title .campaign-sent-status .inactive {
   display: -webkit-inline-box;
@@ -4987,11 +4984,11 @@ table td
   display: inline-flex;
   border-radius: 9999px;
   --tw-bg-opacity: 1;
-  background-color: rgb(253 232 232 / var(--tw-bg-opacity, 1));
+  background-color: rgb(253 232 232 / var(--tw-bg-opacity));
   padding-left: 0.5rem;
   padding-right: 0.5rem;
   --tw-text-opacity: 1;
-  color: rgb(155 28 28 / var(--tw-text-opacity, 1));
+  color: rgb(155 28 28 / var(--tw-text-opacity));
 }
 .reports-statistic .campaign-info .campaign-other-info {
   width: 100%;
@@ -5002,7 +4999,7 @@ table td
   font-style: italic;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 .reports-statistic .campaign-info .campaign-other-info .type {
   overflow: hidden;
@@ -5015,7 +5012,7 @@ table td
   font-weight: 400;
   font-style: normal;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .reports-statistic .campaign-info .campaign-other-info .from {
   overflow: hidden;
@@ -5029,7 +5026,7 @@ table td
   font-weight: 400;
   font-style: normal;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .reports-statistic .campaign-info .campaign-other-info .recipient {
   position: relative;
@@ -5051,20 +5048,20 @@ table td
   font-weight: 400;
   font-style: normal;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .reports-statistic .campaign-info .campaign-other-info .date {
   padding-left: 1.5rem;
   padding-top: 0.5rem;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 .reports-statistic .campaign-info .campaign-other-info .date span {
   padding-left: 0.25rem;
   font-weight: 400;
   font-style: normal;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
 }
 .reports-statistic .statistic-info {
   width: 50%;
@@ -5081,7 +5078,7 @@ table td
   font-weight: 500;
   line-height: 1.5rem;
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 .reports-statistic .statistic-info .stat-sec .stat-grid-sec {
   margin-left: 1.5rem;
@@ -5100,7 +5097,7 @@ table td
   font-weight: 700;
   line-height: 1;
   --tw-text-opacity: 1;
-  color: rgb(88 80 236 / var(--tw-text-opacity, 1));
+  color: rgb(88 80 236 / var(--tw-text-opacity));
 }
 .reports-statistic .statistic-info .stat-sec .stat-grid-sec .open_rate {
   font-size: 1.25rem;
@@ -5108,14 +5105,14 @@ table td
   font-weight: 700;
   line-height: 1;
   --tw-text-opacity: 1;
-  color: rgb(88 80 236 / var(--tw-text-opacity, 1));
+  color: rgb(88 80 236 / var(--tw-text-opacity));
 }
 .reports-statistic .statistic-info .stat-sec .stat-grid-sec .opened {
   margin-top: 0.25rem;
   font-weight: 500;
   line-height: 1.5rem;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 .reports-statistic .statistic-info .stat-sec .stat-grid-sec .click_count {
   font-size: 1.5rem;
@@ -5123,7 +5120,7 @@ table td
   font-weight: 700;
   line-height: 1;
   --tw-text-opacity: 1;
-  color: rgb(88 80 236 / var(--tw-text-opacity, 1));
+  color: rgb(88 80 236 / var(--tw-text-opacity));
 }
 .reports-statistic .statistic-info .stat-sec .stat-grid-sec .click_rate {
   font-size: 1.25rem;
@@ -5131,14 +5128,14 @@ table td
   font-weight: 700;
   line-height: 1;
   --tw-text-opacity: 1;
-  color: rgb(88 80 236 / var(--tw-text-opacity, 1));
+  color: rgb(88 80 236 / var(--tw-text-opacity));
 }
 .reports-statistic .statistic-info .stat-sec .stat-grid-sec .clicked {
   margin-top: 0.25rem;
   font-weight: 500;
   line-height: 1.5rem;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 .reports-statistic .statistic-info .stat-sec .stat-grid-sec .total_email_sent, .reports-statistic .statistic-info .stat-sec .stat-grid-sec .email_unsubscribed_count {
   font-size: 1.5rem;
@@ -5146,7 +5143,7 @@ table td
   font-weight: 700;
   line-height: 1;
   --tw-text-opacity: 1;
-  color: rgb(88 80 236 / var(--tw-text-opacity, 1));
+  color: rgb(88 80 236 / var(--tw-text-opacity));
 }
 /* .email_sent, .email_unsubscribed {
           @apply mt-1 font-medium leading-6 text-gray-500";
@@ -5159,7 +5156,7 @@ table td
   font-size: 0.875rem;
   line-height: 1.25rem;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
 }
 .system_info {
   margin-top: 1.5rem;
@@ -5177,14 +5174,14 @@ table td
   line-height: 1.75rem;
   letter-spacing: 0.025em;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 .system_info .info {
   position: relative;
   margin-top: 0.5rem;
   border-radius: 0.375rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
   -webkit-box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -5194,7 +5191,7 @@ table td
   margin-top: 0.5rem;
   border-radius: 0.375rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding-top: 0.75rem;
   padding-bottom: 0.75rem;
   padding-left: 1.5rem;
@@ -5203,7 +5200,7 @@ table td
   line-height: 1.25rem;
   letter-spacing: 0.025em;
   --tw-text-opacity: 1;
-  color: rgb(107 114 128 / var(--tw-text-opacity, 1));
+  color: rgb(107 114 128 / var(--tw-text-opacity));
   --tw-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
   --tw-shadow-colored: 0 1px 3px 0 var(--tw-shadow-color), 0 1px 2px -1px var(--tw-shadow-color);
   -webkit-box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -5269,7 +5266,7 @@ table td
   height: auto;
   border-radius: 0.25rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding: 1rem;
   text-align: left;
   --tw-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
@@ -5292,7 +5289,7 @@ table td
 }
 #report_preview_template .report_template_div .template-abs-div a {
   --tw-text-opacity: 1;
-  color: rgb(88 80 236 / var(--tw-text-opacity, 1));
+  color: rgb(88 80 236 / var(--tw-text-opacity));
 }
 #report_preview_template .report_template_div .template-abs-div h3 {
   text-align: center;
@@ -5330,11 +5327,11 @@ table td
   font-weight: 500;
   letter-spacing: 0.025em;
   --tw-text-opacity: 1;
-  color: rgb(55 65 81 / var(--tw-text-opacity, 1));
+  color: rgb(55 65 81 / var(--tw-text-opacity));
 }
 #report_preview_template .report_template_div .template-abs-div .temp-btn-div #es_close_preview:hover {
   --tw-border-opacity: 1;
-  border-color: rgb(249 128 128 / var(--tw-border-opacity, 1));
+  border-color: rgb(249 128 128 / var(--tw-border-opacity));
 }
 #report_preview_template .report_template_div .template-abs-div .temp-btn-div #es_close_preview:focus {
   --tw-shadow: 0 0 0 3px rgba(248, 180, 180, 0.45);
@@ -5365,7 +5362,7 @@ table td
   line-height: 1.75rem;
   letter-spacing: 0.025em;
   --tw-text-opacity: 1;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1));
+  color: rgb(75 85 99 / var(--tw-text-opacity));
 }
 .link-activty #es_reports_link_activity {
   width: 100%;
@@ -5413,7 +5410,7 @@ table td
 }
 .select2-container--default .select2-selection--multiple {
   --tw-text-opacity: 1 !important;
-  color: rgb(0 0 0 / var(--tw-text-opacity, 1)) !important;
+  color: rgb(0 0 0 / var(--tw-text-opacity)) !important;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' style='color: rgb(156 163 175 /1)' viewBox='0 0 20 20' fill='currentColor' aria-hidden='true'%3E%3Cpath fill-rule='evenodd' d='M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z' clip-rule='evenodd'%3E%3C/path%3E%3C/svg%3E");
   background-size: 1.25rem;
   background-position: calc(100% - 0.45rem);
@@ -5431,19 +5428,19 @@ table td
 .select2-container--default
   .select2-results__option--highlighted.select2-results__option--selectable {
   --tw-bg-opacity: 1 !important;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1)) !important;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
   --tw-text-opacity: 1 !important;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1)) !important;
+  color: rgb(75 85 99 / var(--tw-text-opacity)) !important;
 }
 .select2-container--default
   .select2-results__option--highlighted.select2-results__option--selectable:hover {
   --tw-text-opacity: 1 !important;
-  color: rgb(75 85 99 / var(--tw-text-opacity, 1)) !important;
+  color: rgb(75 85 99 / var(--tw-text-opacity)) !important;
   background-color: var(--light-gray);
 }
 .select2-container--default .select2-results__option--selected {
   --tw-bg-opacity: 1 !important;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1)) !important;
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity)) !important;
 }
 .select2-results__option:before {
   position: relative;
@@ -5456,7 +5453,7 @@ table td
   border-width: 2px;
   border-style: solid;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   vertical-align: middle;
   content: "";
 }
@@ -5466,7 +5463,7 @@ table td
   border-width: 0px;
   padding-right: 0.125rem;
   --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 :is(.es-import-option,#ig_es_mailer_settings-field-row,#icegram-mailer-info) .select2-results__option[aria-selected="true"]:before,:is(.es-import-option,#ig_es_mailer_settings-field-row,#icegram-mailer-info) 
 .select2-container--default .select2-results__option--selected:before {
@@ -5590,7 +5587,7 @@ table td
           justify-content: flex-start;
   gap: 0.5rem;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding-left: 1rem;
   padding-right: 1rem;
   padding-top: 0.375rem;
@@ -5638,13 +5635,13 @@ table td
   border-radius: 0.125rem;
   border-width: 0px;
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
   padding-top: 0.25rem;
   padding-bottom: 0.25rem;
   font-family: Inter, sans-serif;
   font-weight: 400;
   --tw-text-opacity: 1;
-  color: rgb(22 30 46 / var(--tw-text-opacity, 1));
+  color: rgb(22 30 46 / var(--tw-text-opacity));
   --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
   --tw-shadow-colored: 0 1px 2px 0 var(--tw-shadow-color);
   -webkit-box-shadow: var(--tw-ring-offset-shadow, 0 0 #0000), var(--tw-ring-shadow, 0 0 #0000), var(--tw-shadow);
@@ -5661,19 +5658,19 @@ table td
   }
 .es-sidebar .gjs-field input:not([type="radio"])::-webkit-input-placeholder, .es-sidebar .gjs-field select::-webkit-input-placeholder, .es-sidebar .gjs-field textarea::-webkit-input-placeholder, .es-sidebar::-webkit-input-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 .es-sidebar .gjs-field input:not([type="radio"])::-moz-placeholder, .es-sidebar .gjs-field select::-moz-placeholder, .es-sidebar .gjs-field textarea::-moz-placeholder, .es-sidebar::-moz-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 .es-sidebar .gjs-field input:not([type="radio"])::-ms-input-placeholder, .es-sidebar .gjs-field select::-ms-input-placeholder, .es-sidebar .gjs-field textarea::-ms-input-placeholder, .es-sidebar::-ms-input-placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 .es-sidebar .gjs-field input:not([type="radio"])::placeholder, .es-sidebar .gjs-field select::placeholder, .es-sidebar .gjs-field textarea::placeholder, .es-sidebar::placeholder {
   --tw-text-opacity: 1;
-  color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+  color: rgb(159 166 178 / var(--tw-text-opacity));
 }
 .es-sidebar .gjs-field input:not([type="radio"]):focus, .es-sidebar .gjs-field select:focus, .es-sidebar .gjs-field textarea:focus, .es-sidebar:focus {
   --tw-ring-offset-shadow: var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);
@@ -5735,6 +5732,10 @@ table td
   content: var(--tw-content);
   left: 2px;
 }
+.after\:top-0::after {
+  content: var(--tw-content);
+  top: 0;
+}
 .after\:top-0\.5::after {
   content: var(--tw-content);
   top: 0.125rem;
@@ -5758,12 +5759,12 @@ table td
 .after\:border-gray-300::after {
   content: var(--tw-content);
   --tw-border-opacity: 1;
-  border-color: rgb(210 214 220 / var(--tw-border-opacity, 1));
+  border-color: rgb(210 214 220 / var(--tw-border-opacity));
 }
 .after\:bg-white::after {
   content: var(--tw-content);
   --tw-bg-opacity: 1;
-  background-color: rgb(255 255 255 / var(--tw-bg-opacity, 1));
+  background-color: rgb(255 255 255 / var(--tw-bg-opacity));
 }
 .after\:transition-all::after {
   content: var(--tw-content);
@@ -5780,15 +5781,15 @@ table td
 }
 .hover\:border-red-400:hover {
   --tw-border-opacity: 1;
-  border-color: rgb(249 128 128 / var(--tw-border-opacity, 1));
+  border-color: rgb(249 128 128 / var(--tw-border-opacity));
 }
 .hover\:bg-indigo-500:hover {
   --tw-bg-opacity: 1;
-  background-color: rgb(104 117 245 / var(--tw-bg-opacity, 1));
+  background-color: rgb(104 117 245 / var(--tw-bg-opacity));
 }
 .hover\:text-white:hover {
   --tw-text-opacity: 1;
-  color: rgb(255 255 255 / var(--tw-text-opacity, 1));
+  color: rgb(255 255 255 / var(--tw-text-opacity));
 }
 .hover\:underline:hover {
   text-decoration-line: underline;
@@ -5811,7 +5812,7 @@ table td
 }
 .focus\:ring-purple-500:focus {
   --tw-ring-opacity: 1;
-  --tw-ring-color: rgb(144 97 249 / var(--tw-ring-opacity, 1));
+  --tw-ring-color: rgb(144 97 249 / var(--tw-ring-opacity));
 }
 .active\:shadow-lg:active {
   --tw-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -5839,7 +5840,7 @@ table td
 .peer:checked ~ .peer-checked\:after\:border-white::after {
   content: var(--tw-content);
   --tw-border-opacity: 1;
-  border-color: rgb(255 255 255 / var(--tw-border-opacity, 1));
+  border-color: rgb(255 255 255 / var(--tw-border-opacity));
 }
 @media (min-width: 640px) {
 
@@ -5961,17 +5962,17 @@ table td
 
   .dark\:border-gray-600 {
     --tw-border-opacity: 1;
-    border-color: rgb(75 85 99 / var(--tw-border-opacity, 1));
+    border-color: rgb(75 85 99 / var(--tw-border-opacity));
   }
 
   .dark\:bg-gray-700 {
     --tw-bg-opacity: 1;
-    background-color: rgb(55 65 81 / var(--tw-bg-opacity, 1));
+    background-color: rgb(55 65 81 / var(--tw-bg-opacity));
   }
 
   .dark\:text-gray-400 {
     --tw-text-opacity: 1;
-    color: rgb(159 166 178 / var(--tw-text-opacity, 1));
+    color: rgb(159 166 178 / var(--tw-text-opacity));
   }
 
   .dark\:ring-offset-gray-800 {
@@ -5980,6 +5981,6 @@ table td
 
   .dark\:focus\:ring-purple-600:focus {
     --tw-ring-opacity: 1;
-    --tw-ring-color: rgb(126 58 242 / var(--tw-ring-opacity, 1));
+    --tw-ring-color: rgb(126 58 242 / var(--tw-ring-opacity));
   }
 }

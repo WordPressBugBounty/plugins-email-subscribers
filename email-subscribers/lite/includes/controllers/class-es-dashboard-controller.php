@@ -1,67 +1,108 @@
 <?php
 
-// Exit if accessed directly
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 
-if ( ! class_exists( 'ES_Dashboard' ) ) {
-	
 	/**
-	 * Get dashboard statistics
-	 *
-	 * @since 5.5.5
+	 * Class to handle dashboard operation
+	 * 
+	 * @class ES_Dashboard_Controller
 	 */
-	class ES_Dashboard {
+	class ES_Dashboard_Controller {
 
-		public function show() {
-			$args = array(
-				'days' => 60,
-			);
-			$dashboard_data = ES_Dashboard_Controller::get_dashboard_data( $args );
+		// class instance
+		public static $instance;
+		public static $api_instance = null;
 
-			ES_Admin::get_view(
-				'dashboard/dashboard',
-				$dashboard_data
-			);
+		// class constructor
+		public function __construct() {
+			$this->init();
 		}
 
-		public static function get_subscribers_stats() {
-
-			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
-
-			$can_access_audience = ES_Common::ig_es_can_access( 'audience' );
-			if ( ! $can_access_audience ) {
-				return 0;
+		public static function get_instance() {
+			if ( ! isset( self::$instance ) ) {
+				self::$instance = new self();
 			}
 
-			//$page           = 'es_dashboard';
-			$days           = ig_es_get_request_data( 'days' );
-			$list_id        = ig_es_get_request_data( 'list_id' );
-			$args           = array(
-				'list_id' => $list_id,
-				'days'    => $days,
-				'page'    => 'es_dashboard',
-				'override_cache' => true
-			);
-			//$override_cache = true;
-			$reports_data   = ES_Dashboard_Controller::get_subscribers_stats( $args );
-			ob_start();
-			ES_Admin::get_view(
-				'dashboard/subscribers-stats',
-				array(
-					'reports_data'   => $reports_data,
-					'days'           => $days
-				)
-			);
-			$html             = ob_get_clean();
-			$response['html'] = $html;
-			wp_send_json_success( $response );
+			return self::$instance;
 		}
 
-		
+		public function init() {
+			$this->register_hooks();
+		}
 
-		public function prepare_activities_from_actions( $actions ) {
+		public function register_hooks() {
+		}
+
+		public static function get_subscribers_stats( $args = array() ) {
+			
+			$page           = isset( $args['page'] ) ? $args['page'] : 'es_dashboard';
+			$days           = isset( $args['days'] ) ? $args['days'] : '';
+			$list_id        = isset( $args['list_id'] ) ? $args['list_id'] : '';
+			$override_cache = isset( $args['override_cache'] ) ? $args['override_cache'] : true;
+
+			$reports_args = array(
+				'list_id' => $list_id,
+				'days'    => $days,
+			);
+			
+			$reports_data   = ES_Reports_Data::get_dashboard_reports_data( $page, $override_cache, $reports_args  );
+			return $reports_data;
+		}
+
+		public static function get_dashboard_data( $args ) {
+
+			$dashboard_kpi = ES_Reports_Data::get_dashboard_reports_data( 'es_dashboard', true, $args );
+			
+			$campaign_args = array(
+				'status'          => array(
+					IG_ES_CAMPAIGN_STATUS_IN_ACTIVE,
+					IG_ES_CAMPAIGN_STATUS_ACTIVE,
+				),
+				'order_by_column' => 'ID',
+				'limit'           => '5',
+				'order'           => 'DESC',
+			);
+			$campaigns = ES()->campaigns_db->get_campaigns( $campaign_args );
+			
+			$audience_activity = self::get_audience_activities();
+		
+			// Forms
+			$forms_args = array(
+				'order_by_column' => 'ID',
+				'limit'           => '2',
+				'order'           => 'DESC',
+			);
+			$forms = ES()->forms_db->get_forms( $forms_args );
+		
+			// Lists
+			$lists = array_slice( array_reverse( ES()->lists_db->get_lists() ), 0, 2 );
+		
+			return array(
+				'campaigns'         => $campaigns,
+				'audience_activity' => $audience_activity,
+				'forms'             => $forms,
+				'lists'             => $lists,
+				'dashboard_kpi'     => $dashboard_kpi,
+			);
+		}
+		
+		public static function get_audience_activities() {
+			$recent_activities_args = array(
+				'limit'    => 5,
+				'order_by' => 'updated_at',
+				'order'    => 'DESC',
+				'type' => array(
+					IG_CONTACT_SUBSCRIBE,
+					IG_CONTACT_UNSUBSCRIBE
+				)
+			);
+			$recent_actions    = ES()->actions_db->get_actions( $recent_activities_args );
+			$recent_activities = self::prepare_activities_from_actions( $recent_actions );
+			
+			return $recent_activities;
+		}
+
+		public static function prepare_activities_from_actions( $actions ) {
 			$activities = array();
 			if ( $actions ) {
 				$contact_ids      = array_column( $actions, 'contact_id' );
@@ -136,5 +177,9 @@ if ( ! class_exists( 'ES_Dashboard' ) ) {
 
 			return $campaign;
 		}
+	
 	}
+
 }
+
+ES_Dashboard_Controller::get_instance();

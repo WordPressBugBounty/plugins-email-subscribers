@@ -1023,6 +1023,10 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/controllers/class-es-contact-import-controller.php',
 				'lite/includes/controllers/class-es-contact-export-controller.php',
 
+				'lite/includes/controllers/class-es-dashboard-controller.php',
+
+				'lite/includes/controllers/class-es-settings-controller.php',
+
 				'starter/starter-class-email-subscribers.php',
 				'pro/pro-class-email-subscribers.php',
 
