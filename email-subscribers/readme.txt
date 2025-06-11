@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 5.8.5
+Stable tag: 5.8.6
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -322,11 +322,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.8.5 =
+= 5.8.6 =
 
-* Fix: <style> to <img> tag conversion issue when switching between Visual and Code modes in Campaign Classic Editor
+* Fix: XSS vulnerability on "Manage Lists" page [Thanks to Cleantalk team]
 
 == Changelog ==
+
+**5.8.6 (11.06.2025)**
+
+* Fix: XSS vulnerability on "Manage Lists" page [Thanks to Cleantalk team]
 
 **5.8.5 (04.06.2025)**
 

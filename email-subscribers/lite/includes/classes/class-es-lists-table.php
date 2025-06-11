@@ -518,7 +518,7 @@ class ES_Lists_Table extends ES_List_Table {
 			case 'subscribed':
 				$count = ES()->lists_contacts_db->get_total_count_by_list( $item['id'], 'subscribed' );
 				if ( $count > 0 ) {
-					$url = admin_url( 'admin.php?page=es_subscribers&filter_by_status=subscribed&filter_by_list_id=' . $item['id'] );
+					$url = esc_url( admin_url( 'admin.php?page=es_subscribers&filter_by_status=subscribed&filter_by_list_id=' . intval( $item['id'] ) ) );
 					/* translators: 1: Subscribed-Filter url  2: Count */
 					$count = '<a href="' . $url . '" target="_blank">' . number_format( $count ) . '</a>';
 				}
@@ -569,8 +569,10 @@ class ES_Lists_Table extends ES_List_Table {
 					return '-';
 				}
 				
-				$description  = '<span class="es_list_desc" title="' . $item['description'] . '">';
-				$description .= strlen( $item['description'] ) > 50 ? substr( $item['description'], 0, 50 ) . '...' : $item['description'];
+				$desc_text = strlen( $item['description'] ) > 50 ? substr( $item['description'], 0, 50 ) . '...' : $item['description'];
+
+				$description  = '<span class="es_list_desc" title="' . esc_attr( $item['description'] ) . '">';
+				$description .= esc_html( $desc_text );
 				$description .= '</span>';
 				
 				return $description;

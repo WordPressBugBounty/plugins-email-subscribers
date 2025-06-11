@@ -723,45 +723,48 @@ class ES_Contacts_Table extends ES_List_Table {
 	 */
 	public function prepare_lists_html( $contact_id = 0, $columns = 2 ) {
 		$lists = ES()->lists_db->get_id_name_map();
-
 		$lists_html = '';
 		if ( count( $lists ) > 0 ) {
-
 			$list_contact_status_map = array();
 			if ( ! empty( $contact_id ) ) {
 				$list_contact_status_map = ES()->lists_contacts_db->get_list_contact_status_map( $contact_id );
 			}
-
 			$lists_html = "<table class='ig-es-form-list-html'><tr>";
-
 			$i = 0;
 			foreach ( $lists as $list_id => $list_name ) {
 				if ( 0 != $i && 0 === ( $i % $columns ) ) {
 					$lists_html .= "</tr><tr class='mt-3'>";
 				}
-
-	$selected = ! empty( $list_contact_status_map[ $list_id ] ) ? $list_contact_status_map[ $list_id ] : '';
-
-	$status_dropdown_html  = '<select class="h-8 form-select w-40 mt-2 mr-4 shadow-sm border-gray-400 ig-es-statuses-dropdown shadow-sm  sm:text-sm sm:leading-5" name="contact_data[lists][' . esc_attr( $list_id ) . ']" >';
-	$status_dropdown_html .= ES_Common::prepare_statuses_dropdown_options( $selected );
-	$status_dropdown_html .= '</select>';
-
-	$status_span = '';
+	
+				$selected = ! empty( $list_contact_status_map[ $list_id ] ) ? $list_contact_status_map[ $list_id ] : '';
+	
+				$status_dropdown_html  = '<select class="h-8 form-select w-40 mt-2 mr-4 shadow-sm border-gray-400 ig-es-statuses-dropdown shadow-sm  sm:text-sm sm:leading-5" name="contact_data[lists][' . esc_attr( $list_id ) . ']" >';
+				$status_dropdown_html .= ES_Common::prepare_statuses_dropdown_options( esc_attr( $selected ) );
+				$status_dropdown_html .= '</select>';
+	
+				$status_span = '';
 				if ( ! empty( $list_contact_status_map[ $list_id ] ) ) {
-					$status_span = '<span class="border-gray-400 focus:bg-gray-100 es_list_contact_status ' . $list_contact_status_map[ $list_id ] . '" title="' . ucwords( $list_contact_status_map[ $list_id ] ) . '">';
+					$class_name = esc_attr( $list_contact_status_map[ $list_id ] );
+					$title_attr = esc_attr( ucwords( $list_contact_status_map[ $list_id ] ) );
+					$status_span = '<span class="border-gray-400 focus:bg-gray-100 es_list_contact_status ' . $class_name . '" title="' . $title_attr . '">';
 				}
-	$list_title  = $list_name;
-	$list_name   = strlen( $list_name ) > 15 ? substr( $list_name, 0, 15 ) . '...' : $list_name;
-	$lists_html .= "<td class='pr-2 pt-2 text-sm leading-5 font-normal text-gray-500'>$status_span<span title='$list_title'>$list_name</span></td><td>$status_dropdown_html</td>";
-
-	$i ++;
+	
+				$list_title  = $list_name;
+				$list_name   = strlen( $list_name ) > 15 ? substr( $list_name, 0, 15 ) . '...' : $list_name;
+	
+				$lists_html .= "<td class='pr-2 pt-2 text-sm leading-5 font-normal text-gray-500'>" .
+					$status_span .
+					"<span title='" . esc_attr( $list_title ) . "'>" . esc_html( $list_name ) . "</span></td><td>" .
+					wp_kses_post( $status_dropdown_html ) .
+					"</td>";
+				$i ++;
 			}
-
+	
 			$lists_html .= '</tr></table>';
 		}
-
+	
 		return $lists_html;
-	}
+	}	
 
 	/**
 	 * Show lists with it's status
