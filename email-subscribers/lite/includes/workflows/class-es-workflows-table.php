@@ -309,45 +309,7 @@ class ES_Workflows_Table extends ES_List_Table {
 		}
 	}
 
-	/**
-	 * Retrieve lists data from the database
-	 *
-	 * @param int $per_page Workflows to show per page.
-	 * @param int $page_number Page number to show.
-	 * @param int $do_count_only Flag to fetch only count.
-	 *
-	 * @return mixed
-	 */
-	public function get_lists( $per_page = 5, $page_number = 1, $do_count_only = false ) {
-
-		$order_by = sanitize_sql_orderby( ig_es_get_request_data( 'orderby' ) );
-		$order    = ig_es_get_request_data( 'order' );
-		$search   = ig_es_get_request_data( 's' );
-		$type     = ig_es_get_request_data( 'type' );
-
-		$args = array(
-			's'           => $search,
-			'order'       => $order,
-			'order_by'    => $order_by,
-			'per_page'    => $per_page,
-			'page_number' => $page_number,
-			'type'        => $type,
-		);
-
-		if ( '' !== $type ) {
-			if ( 'system' === $type ) {
-				$type = IG_ES_WORKFLOW_TYPE_SYSTEM;
-			} elseif ( 'user' === $type ) {
-				$type = IG_ES_WORKFLOW_TYPE_USER;
-			}
-
-			$args['type'] = $type;
-		}
-
-		$result = ES()->workflows_db->get_workflows( $args, ARRAY_A, $do_count_only );
-
-		return $result;
-	}
+	
 
 	/**
 	 * Text Display when no items available
@@ -530,7 +492,23 @@ class ES_Workflows_Table extends ES_List_Table {
 		$per_page = $this->get_items_per_page( self::$option_per_page, 25 );
 
 		$current_page = $this->get_pagenum();
-		$total_items  = $this->get_lists( 0, 0, true );
+      
+		$order_by = sanitize_sql_orderby( ig_es_get_request_data( 'orderby' ) );
+		$order    = ig_es_get_request_data( 'order' );
+		$search   = ig_es_get_request_data( 's' );
+		$type     = ig_es_get_request_data( 'type' );
+		
+		$args = array(
+			's'           => $search,
+			'order'       => $order,
+			'order_by'    => $order_by,
+			'per_page'    => $per_page,
+			'page_number' => $current_page,
+			'type'        => $type,
+			'do_count_only'=> true
+		);
+
+		$total_items  = ES_Workflows_Controller::get_lists( $args );
 
 		$this->set_pagination_args(
 			array(
@@ -538,8 +516,8 @@ class ES_Workflows_Table extends ES_List_Table {
 				'per_page'    => $per_page, // We have to determine how many items to show on a page.
 			)
 		);
-
-		$this->items = $this->get_lists( $per_page, $current_page );
+        $args['do_count_only'] = false;
+		$this->items = ES_Workflows_Controller::get_lists($args);
 	}
 
 	/**
@@ -557,9 +535,8 @@ class ES_Workflows_Table extends ES_List_Table {
 				$status  = 'error';
 			} else {
 				$workflow_id = ig_es_get_request_data( 'id' );
-
-				$this->db->delete_workflows( $workflow_id );
-				$this->db->delete_workflows_campaign( $workflow_id );
+				$args = array( 'workflow_id' => $workflow_id );
+				ES_Workflows_Controller::delete_workflows( $args );
 				$message = __( 'Workflow deleted successfully!', 'email-subscribers' );
 				$status  = 'success';
 			}
@@ -577,8 +554,8 @@ class ES_Workflows_Table extends ES_List_Table {
 
 			if ( is_array( $ids ) && count( $ids ) > 0 ) {
 				// Delete multiple Workflows.
-				$this->db->delete_workflows( $ids );
-				$this->db->delete_workflows_campaign( $ids );
+				$args = array( 'workflow_id' => $ids );
+				ES_Workflows_Controller::delete_workflows( $args );
 				$message = __( 'Workflow(s) deleted successfully!', 'email-subscribers' );
 				ES_Common::show_message( $message );
 			} else {
@@ -595,9 +572,9 @@ class ES_Workflows_Table extends ES_List_Table {
 			if ( is_array( $ids ) && count( $ids ) > 0 ) {
 
 				$new_status = ( 'bulk_activate' === $action ) ? 1 : 0;
-
-				// Update multiple Workflows.
-				$this->db->update_status( $ids, $new_status );
+				
+                $args = array( 'workflow_ids' => $ids,'status'=>$new_status);
+				ES_Workflows_Controller::update_status( $args );
 
 				$workflow_action = 'bulk_activate' === $action ? __( 'activated', 'email-subscribers' ) : __( 'deactivated', 'email-subscribers' );
 

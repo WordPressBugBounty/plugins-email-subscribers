@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 5.8.6
+Stable tag: 5.8.7
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -322,11 +322,17 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.8.6 =
+= 5.8.7 =
 
-* Fix: XSS vulnerability on "Manage Lists" page [Thanks to Cleantalk team]
+* Fix: Issue while editing/deleting duplicated campaigns [MAX]
+* Fix: Unable to change 'Subscriber list status' using the dropdown while editing contacts
 
 == Changelog ==
+
+**5.8.7 (18.06.2025)**
+
+* Fix: Issue while editing/deleting duplicated campaigns [MAX]
+* Fix: Unable to change 'Subscriber list status' using the dropdown while editing contacts
 
 **5.8.6 (11.06.2025)**
 

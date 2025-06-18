@@ -724,6 +724,7 @@ class ES_Contacts_Table extends ES_List_Table {
 	public function prepare_lists_html( $contact_id = 0, $columns = 2 ) {
 		$lists = ES()->lists_db->get_id_name_map();
 		$lists_html = '';
+		$allowedtags = ig_es_allowed_html_tags_in_esc();
 		if ( count( $lists ) > 0 ) {
 			$list_contact_status_map = array();
 			if ( ! empty( $contact_id ) ) {
@@ -755,7 +756,7 @@ class ES_Contacts_Table extends ES_List_Table {
 				$lists_html .= "<td class='pr-2 pt-2 text-sm leading-5 font-normal text-gray-500'>" .
 					$status_span .
 					"<span title='" . esc_attr( $list_title ) . "'>" . esc_html( $list_name ) . "</span></td><td>" .
-					wp_kses_post( $status_dropdown_html ) .
+					wp_kses( $status_dropdown_html,$allowedtags ) .
 					"</td>";
 				$i ++;
 			}

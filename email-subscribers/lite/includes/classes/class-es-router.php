@@ -77,9 +77,9 @@ if ( ! class_exists( 'ES_Router' ) ) {
 			}
 			
 			$data   = ig_es_get_request_data( 'data', array(), false );
-			$data['file'] = isset( $_FILES['async-upload']['tmp_name'] )
-			? sanitize_text_field( $_FILES['async-upload']['tmp_name'] )
-			: '';
+			if( isset( $_FILES['async-upload']['tmp_name'] ) ){
+				$data['file'] =  sanitize_text_field( $_FILES['async-upload']['tmp_name'] );
+			}
 			
 			$result = call_user_func( array( $handler_class, $method ), $data );
 

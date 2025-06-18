@@ -129,16 +129,12 @@ class ES_Workflow_Admin_Ajax {
 	public static function toggle_workflow_status() {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+        $args = array(
+			'workflow_id' => ig_es_get_request_data( 'workflow_id' ),
+			'new_state'   => ig_es_get_request_data( 'new_state' ),
+		);
 
-		$workflow  = ES_Workflow_Factory::get( ig_es_get_request_data( 'workflow_id' ) );
-		$new_state = ig_es_get_request_data( 'new_state' );
-
-		if ( ! $workflow || ! $new_state ) {
-			die;
-		}
-
-		$status_updated = $workflow->update_status( $new_state );
-
+		$status_updated = ES_Workflows_Controller::toggle_status( $args );
 		if ( $status_updated ) {
 			wp_send_json_success();
 		} else {
@@ -181,39 +177,8 @@ class ES_Workflow_Admin_Ajax {
 		if ( ! $item_name ) {
 			die;
 		}
-
-		$workflow_id = 0;
-
-		$workflow_gallery = ES_Workflow_Gallery::get_workflow_gallery_items();
-		if ( ! empty( $workflow_gallery[ $item_name ] ) ) {
-			$item_data = $workflow_gallery[ $item_name ];
-
-			$workflow_title  = isset( $item_data['title'] ) ? ig_es_clean( $item_data['title'] ) : '';
-			$workflow_name   = ! empty( $workflow_title ) ? sanitize_title( ES_Clean::string( $workflow_title ) ) : '';
-			$trigger_name    = isset( $item_data['trigger_name'] ) ? ig_es_clean( $item_data['trigger_name'] ) : '';
-			$trigger_options = isset( $item_data['trigger_options'] ) ? ig_es_clean( $item_data['trigger_options'] ) : array();
-			$rules           = isset( $item_data['rules'] ) ? ig_es_clean( $item_data['rules'] ) : array();
-			$actions         = isset( $item_data['actions'] ) ? $item_data['actions'] : array(); // We can't sanitize actions data since some actions like Send email allows html in its field.
-			$status          = isset( $item_data['status'] ) ? ig_es_clean( $item_data['status'] ) : 0;
-			$type            = isset( $item_data['type'] ) ? ig_es_clean( $item_data['type'] ) : 0;
-			$priority        = isset( $item_data['priority'] ) ? ig_es_clean( $item_data['priority'] ) : 0;
-			$meta            = isset( $item_data['meta'] ) ? ig_es_clean( $item_data['meta'] ) : 0;
-
-			$workflow_data = array(
-				'name'            => $workflow_name,
-				'title'           => $workflow_title,
-				'trigger_name'    => $trigger_name,
-				'trigger_options' => maybe_serialize( $trigger_options ),
-				'rules'           => maybe_serialize( $rules ),
-				'actions'         => maybe_serialize( $actions ),
-				'meta'            => maybe_serialize( $meta ),
-				'status'          => 0,
-				'type'            => 0,
-				'priority'        => 0,
-			);
-
-			$workflow_id = ES()->workflows_db->insert_workflow( $workflow_data );
-		}
+        $args = array( 'item_name' => $item_name );
+		$workflow_id = ES_Workflows_Controller::create_workflow_from_gallery_item( $args );
 
 		if ( $workflow_id ) {
 			$redirect_url = ES_Workflow_Admin_Edit::get_admin_edit_url( $workflow_id );

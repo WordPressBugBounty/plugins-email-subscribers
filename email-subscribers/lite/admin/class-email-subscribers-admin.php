@@ -1323,31 +1323,14 @@ class Email_Subscribers_Admin {
 		if ( ! $can_access_reports ) {
 			return 0;
 		}
-
 		$report_id     = ig_es_get_request_data( 'campaign_id' );
 		$campaign_type = ig_es_get_request_data( 'campaign_type' );
-		$response      = array();
-		$email_body    = '';
-
-		if ( ! empty( $report_id ) ) {
-
-			if ( ! empty( $campaign_type ) && in_array( $campaign_type, array( 'sequence_message', 'workflow_email' ), true ) ) {
-				$email_body = ES()->campaigns_db->get_campaign_by_id( $report_id );
-			} else {
-				$email_body = ES_DB_Mailing_Queue::get_mailing_queue_by_id( $report_id );
-			}
-			$es_email_type             = get_option( 'ig_es_email_type' );    // Not the ideal way. Email type can differ while previewing sent email.
-			$response['template_html'] = ES_Common::es_process_template_body( $email_body['body'] );
-			/*
-			if ( 'WP HTML MAIL' == $es_email_type || 'PHP HTML MAIL' == $es_email_type ) {
-			$response['template_html'] = ES_Common::es_process_template_body( $email_body['body'] );
-			} else {
-			$response['template_html'] = str_replace( '<br />', "\r\n", $email_body['body'] );
-			$response['template_html'] = str_replace( '<br>', "\r\n", $email_body['body'] );
-			}
-			*/
-		}
-
+		$args = array(
+			'report_id'     => $report_id,
+			'campaign_type' => $campaign_type,
+		);
+		$response = ES_Reports_Controller::preview_email_in_report( $args );
+		
 		if ( ! empty( $response ) ) {
 			wp_send_json_success( $response );
 		} else {

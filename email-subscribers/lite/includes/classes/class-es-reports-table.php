@@ -466,12 +466,6 @@ class ES_Reports_Table extends ES_List_Table {
 			)
 		);
 
-		$this->items = $this->get_notifications( $per_page, $current_page, false );
-	}
-
-	public function get_notifications( $per_page = 5, $page_number = 1, $do_count_only = false ) {
-		global $wpdb, $wpbd;
-
 		$order_by                          = sanitize_sql_orderby( ig_es_get_request_data( 'orderby' ) );
 		$order                             = ig_es_get_request_data( 'order' );
 		$campaign_id                       = ig_es_get_request_data( 'campaign_id' );
@@ -480,100 +474,20 @@ class ES_Reports_Table extends ES_List_Table {
 		$filter_reports_by_campaign_type   = ig_es_get_request_data( 'filter_reports_by_campaign_type' );
 		$filter_reports_by_month_year	   = ig_es_get_request_data( 'filter_reports_by_date' );
 
-		$ig_mailing_queue_table = IG_MAILING_QUEUE_TABLE;
+		$args = array(
+			'per_page'                           => $per_page,
+			'page_number'                        => $current_page,
+			'do_count_only'                      => false,
+			'order_by'                           => $order_by,
+			'order'                              => $order,
+			'campaign_id'                        => $campaign_id,
+			'search'                             => $search,
+			'filter_reports_by_campaign_status'  => $filter_reports_by_campaign_status,
+			'filter_reports_by_campaign_type'    => $filter_reports_by_campaign_type,
+			'filter_reports_by_month_year'       => $filter_reports_by_month_year,
+		);
 
-		if ( $do_count_only ) {
-			$sql = "SELECT count(*) as total FROM {$ig_mailing_queue_table}";
-		} else {
-			$sql = "SELECT * FROM {$ig_mailing_queue_table}";
-		}
-
-		$where_columns    = array();
-		$where_args       = array();
-		$add_where_clause = true;
-
-		if ( ! empty( $campaign_id ) && is_numeric( $campaign_id ) ) {
-			$where_columns[] = 'campaign_id = %d';
-			$where_args[]    = $campaign_id;
-		}
-
-		if ( ! empty( $filter_reports_by_month_year ) ) {
-
-			if ( preg_match('/^[0-9]{6}$/', $filter_reports_by_month_year) ) {
-
-				$year_val  = substr($filter_reports_by_month_year, 0, 4);
-				$month_val = substr($filter_reports_by_month_year, 4 );
-
-				$date_string = $year_val . '-' . $month_val;
-				$date        = new DateTime($date_string);
-
-				$start_date = $date->format('Y-m-01 H:i:s') ;
-				$end_date   = $date->format('Y-m-t H:i:s');
-
-				array_push( $where_columns, 'start_at >= %s', 'start_at <= %s' );
-				array_push($where_args, $start_date, $end_date);
-			}
-		}
-		
-		$where_query = '';
-		if ( ! empty( $where_columns ) ) {
-			$where_query = implode( ' AND ', $where_columns );
-			$where_query = $wpbd->prepare( $where_query, $where_args );
-		}
-
-		if ( ! empty( $where_query ) ) {
-			$sql             .= ' WHERE ' . $where_query;
-			$add_where_clause = false;
-		}
-
-		if ( ! empty( $filter_reports_by_campaign_status ) || ( '0' === $filter_reports_by_campaign_status ) ) {
-			if ( ! $add_where_clause ) {
-				$sql .= $wpdb->prepare( ' AND status = %s', $filter_reports_by_campaign_status );
-			} else {
-				$sql             .= $wpdb->prepare( ' WHERE status = %s', $filter_reports_by_campaign_status );
-				$add_where_clause = false;
-			}
-		}
-
-		if ( ! empty( $filter_reports_by_campaign_type ) ) {
-			if ( ! $add_where_clause ) {
-				$sql .= $wpdb->prepare( ' AND meta LIKE %s', '%' . $wpdb->esc_like( $filter_reports_by_campaign_type ) . '%' );
-			} else {
-				$sql .= $wpdb->prepare( ' WHERE meta LIKE %s', '%' . $wpdb->esc_like( $filter_reports_by_campaign_type ) . '%' );
-			}
-		}
-
-		if ( ! $do_count_only ) {
-
-			// Prepare Order by clause
-			$order = ! empty( $order ) ? strtolower( $order ) : 'desc';
-
-			$expected_order_values = array( 'asc', 'desc' );
-			if ( ! in_array( $order, $expected_order_values ) ) {
-				$order = 'desc';
-			}
-
-			$default_order_by = esc_sql( 'created_at' );
-
-			$expected_order_by_values = array( 'subject', 'type', 'status', 'start_at', 'count', 'created_at' );
-
-			if ( ! in_array( $order_by, $expected_order_by_values ) ) {
-				$order_by_clause = " ORDER BY {$default_order_by} DESC";
-			} else {
-				$order_by        = esc_sql( $order_by );
-				$order_by_clause = " ORDER BY {$order_by} {$order}, {$default_order_by} DESC";
-			}
-
-			$sql   .= $order_by_clause;
-			$sql   .= " LIMIT $per_page";
-			$sql   .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
-			$result = $wpbd->get_results( $sql, 'ARRAY_A' );
-
-		} else {
-			$result = $wpbd->get_var( $sql );
-		}
-
-		return $result;
+		$this->items = ES_Reports_Controller::get_notifications( $args );
 	}
 
 	public function process_bulk_action() {
@@ -597,9 +511,9 @@ class ES_Reports_Table extends ES_List_Table {
 				$message = __( 'You do not have permission to delete notification', 'email-subscribers' );
 				ES_Common::show_message( $message, 'error' );
 			} else {
-				$notification_ids = absint( ig_es_get_request_data( 'list' ) );
-				ES_DB_Mailing_Queue::delete_notifications( array( $notification_ids ) );
-				ES_DB_Sending_Queue::delete_by_mailing_queue_id( array( $notification_ids ) );
+				$notification_ids =  ig_es_get_request_data( 'list' );
+				$args = array('notification_ids' => $notification_ids);
+				ES_Reports_Controller::delete_notification($args);
 				$message = __( 'Report deleted successfully!', 'email-subscribers' );
 				ES_Common::show_message( $message, 'success' );
 			}
@@ -615,8 +529,8 @@ class ES_Reports_Table extends ES_List_Table {
 			$notification_ids = ig_es_get_request_data( 'bulk_delete' );
 
 			if ( count( $notification_ids ) > 0 ) {
-				ES_DB_Mailing_Queue::delete_notifications( $notification_ids );
-				ES_DB_Sending_Queue::delete_by_mailing_queue_id( $notification_ids );
+				$args = array('notification_ids' => $notification_ids);
+				ES_Reports_Controller::delete_notification($args);
 				$message = __( 'Reports deleted successfully!', 'email-subscribers' );
 				ES_Common::show_message( $message, 'success' );
 			}

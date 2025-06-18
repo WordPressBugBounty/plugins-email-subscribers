@@ -723,3 +723,63 @@ if ( ! function_exists( 'ig_es_survey_before_plugin_upgrade' ) ) {
 	}
 }
 add_action('admin_notices', 'ig_es_survey_before_plugin_upgrade');
+
+if ( ! function_exists( 'ig_es_subscribe_to_plugin_deactivation_list' ) ) {
+	function ig_es_subscribe_to_plugin_deactivation_list( $data ) {
+		
+		$admin_email = ES_Common::get_admin_email();
+		$user        = get_user_by( 'email', $admin_email );
+		$admin_name  = '';
+		if ( $user instanceof WP_User ) {
+			$admin_name = $user->display_name;
+		}
+
+		$email = $admin_email;
+		$name  = $admin_name;
+
+		switch( $data['feedback']['value'] ) {
+			case 'i-am-switching-to-a-different-plugin':
+				$list = '46e63a445c57';
+				break;
+			
+			case 'i-could-not-get-the-plugin-to-work':
+				$list = '8e63321da577';
+				break;
+			
+			case 'it-is-a-temporary-deactivation':
+				$list = 'b3d2c4e62f8e';
+				break;
+
+			default:
+				$list = '';
+				break;
+		}
+
+		if ( ! empty( $list ) && is_email( $email ) ) {
+
+			$url_params = array(
+			'ig_es_external_action' => 'subscribe',
+			'name'                  => $name,
+			'email'                 => $email,
+			'list'                  => $list,
+			);
+
+			$ip_address = ig_es_get_ip();
+			if ( ! empty( $ip_address ) && 'UNKNOWN' !== $ip_address ) {
+				$url_params['ip_address'] = $ip_address;
+			}
+
+			$ig_url = 'https://www.icegram.com/';
+			$ig_url = add_query_arg( $url_params, $ig_url );
+
+			$args = array(
+			'timeout' => 15,
+			'blocking'  => false,
+			);
+
+			// Make a get request.
+			wp_remote_get( $ig_url, $args );
+		}
+	}
+}
+add_action( 'ig_es_deactivation_feedback_submitted', 'ig_es_subscribe_to_plugin_deactivation_list' );

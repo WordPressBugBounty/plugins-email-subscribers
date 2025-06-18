@@ -2035,6 +2035,8 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 				$result['message'] = $error_message;
 			}
 
+			do_action( $this->plugin_abbr.'_deactivation_feedback_submitted', $data );
+
 			die( json_encode( $result ) );
 		}
 

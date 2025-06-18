@@ -71,24 +71,21 @@ class ES_Workflow_Admin_Edit {
 		add_action( 'admin_notices', array( __CLASS__, 'show_membership_integration_notice' ) );
 	}
 
-	/**
-	 * Handle send test email for send email action
-	 *
-	 * @since 5.3.6
-	 */
 	public static function send_workflow_action_test_email() {
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
-
+	
 		$email    = sanitize_email( ig_es_get_request_data( 'es_test_email' ) );
 		$subject  = ig_es_get_request_data( 'subject', '' );
 		$content  = ig_es_get_request_data( 'content', '', false );
 		$trigger  = ig_es_get_request_data( 'trigger', '' );
 		$template = ig_es_get_request_data( 'template', '' );
 		$heading  = ig_es_get_request_data( 'heading', '' );
-
+	
 		$content = ES_Common::strip_js_code( $content );
-
-		$content = ES_Workflow_Action_Preview::get_preview( $trigger, array(
+	
+		$args = array(
+			'ig-es-email'                => $email,
+			'trigger'                    => $trigger,
 			'action_name'                => 'ig_es_send_email',
 			'ig-es-send-to'              => '',
 			'ig-es-email-subject'        => $subject,
@@ -96,61 +93,64 @@ class ES_Workflow_Admin_Edit {
 			'ig-es-email-heading'        => $heading,
 			'ig-es-email-content'        => $content,
 			'ig-es-tracking-campaign-id' => ''
-		) );
-
-		$response = ES()->mailer->send_test_email( $email, $subject, $content, array() );
-
+		);
+	
+		$response = ES_Workflows_Controller::send_test_email( $args );
+	
 		if ( $response && 'SUCCESS' === $response['status'] ) {
 			$response['message'] = __( 'Email has been sent. Please check your inbox', 'email-subscribers' );
 		}
+	
 		wp_send_json( array( 'status' => 'SUCCESS' ) );
 	}
+	
 
 	/**
-	 * Get the workflow email preview
-	 *
-	 * @since 5.3.6
-	 */
-	public static function get_workflow_email_preview() {
-		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+ * Get the workflow email preview
+ *
+ * @since 5.3.6
+ */
+public static function get_workflow_email_preview() {
+	check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
-		$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
-		if ( ! $can_access_workflows ) {
-			return;
-		}
-		$allowedtags = ig_es_allowed_html_tags_in_esc();
-
-		$content  = ig_es_get_request_data( 'content', '', false );
-		$content  = wp_kses( $content, $allowedtags );
-		
-		$response = array();
-
-		$trigger  = sanitize_text_field( ig_es_get_request_data( 'trigger' ) );
-		$subject  = sanitize_text_field( ig_es_get_request_data( 'subject' ) );
-		$template = sanitize_text_field( ig_es_get_request_data( 'template' ) );
-		$heading  = sanitize_text_field( ig_es_get_request_data( 'heading' ) );
-
-		$response['preview_html'] = ES_Workflow_Action_Preview::get_preview( $trigger, array(
-			'action_name'                => 'ig_es_send_email',
-			'ig-es-send-to'              => '',
-			'ig-es-email-subject'        => esc_html( $subject ),
-			'ig-es-email-template'       => esc_html( $template ),
-			'ig-es-email-heading'        => esc_html( $heading ),
-			'ig-es-email-content'        => $content,
-			'ig-es-tracking-campaign-id' => ''
-		) );
-
-		$response[ 'subject' ] = $subject;
-
-
-		if ( ! empty( $response ) ) {
-			wp_send_json_success( $response );
-		} else {
-			wp_send_json_error();
-		}
-
-
+	$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
+	if ( ! $can_access_workflows ) {
+		return;
 	}
+
+	$allowedtags = ig_es_allowed_html_tags_in_esc();
+
+	$content  = ig_es_get_request_data( 'content', '', false );
+	$content  = wp_kses( $content, $allowedtags );
+
+	$trigger  = sanitize_text_field( ig_es_get_request_data( 'trigger' ) );
+	$subject  = sanitize_text_field( ig_es_get_request_data( 'subject' ) );
+	$template = sanitize_text_field( ig_es_get_request_data( 'template' ) );
+	$heading  = sanitize_text_field( ig_es_get_request_data( 'heading' ) );
+
+	$args = array(
+		'trigger'                    => $trigger, 
+		'action_name'                => 'ig_es_send_email',
+		'ig-es-send-to'              => '',
+		'ig-es-email-subject'        => esc_html( $subject ),
+		'ig-es-email-template'       => esc_html( $template ),
+		'ig-es-email-heading'        => esc_html( $heading ),
+		'ig-es-email-content'        => $content,
+		'ig-es-tracking-campaign-id' => ''
+	);
+
+	$response = array();
+
+	// Now call new function
+	$response['preview_html'] = ES_Workflows_Controller::generate_preview_html( $args );
+	$response['subject']      = $subject;
+
+	if ( ! empty( $response ) ) {
+		wp_send_json_success( $response );
+	} else {
+		wp_send_json_error();
+	}
+}
 
 	/**
 	 * Method to get trigger data
@@ -286,18 +286,22 @@ class ES_Workflow_Admin_Edit {
 		if ( ! empty( $save_workflow ) ) {
 			$workflow_id    = ig_es_get_request_data( 'workflow_id' );
 			$workflow_nonce = ig_es_get_request_data( 'ig-es-workflow-nonce' );
+			$posted = ig_es_get_request_data( 'ig_es_workflow_data', array(), false );
 			$action_status  = '';
 			if ( ! wp_verify_nonce( $workflow_nonce, 'ig-es-workflow' ) ) {
 				$action_status = 'not_allowed';
 			} elseif ( ! empty( $workflow_id ) ) {
-				$workflow_id = self::save( $workflow_id );
+
+				$args = array('workflow_id'=> $workflow_id,'posted' =>$posted);
+				$workflow_id = ES_Workflows_Controller::save( $args );
 				if ( ! empty( $workflow_id ) ) {
 					$action_status = 'updated';
 				} else {
 					$action_status = 'error';
 				}
 			} else {
-				$workflow_id = self::save();
+				$args = array('workflow_id'=> 0,'posted' =>$posted);
+				$workflow_id = ES_Workflows_Controller::save( $args );
 				if ( ! empty( $workflow_id ) ) {
 					$action_status = 'added';
 				} else {
@@ -638,134 +642,6 @@ class ES_Workflow_Admin_Edit {
 	}
 
 	/**
-	 * Method to save workflow
-	 *
-	 * @since 4.4.1
-	 * @param int $workflow_id Workflow ID.
-	 * @return mixed $workflow_id/false workflow id on success otherwise false
-	 *
-	 * @since 4.5.3 Removed sanitization for $posted being performed through ig_es_get_request_data function. Instead added individual sanitization based on workflow field.
-	 */
-	public static function save( $workflow_id = 0 ) {
-
-		$posted = ig_es_get_request_data( 'ig_es_workflow_data', array(), false );
-
-		if ( ! is_array( $posted ) ) {
-			return false;
-		}
-
-		$workflow_title  = isset( $posted['title'] ) ? ig_es_clean( $posted['title'] ) : '';
-		$workflow_name   = ! empty( $workflow_title ) ? sanitize_title( ES_Clean::string( $workflow_title ) ) : '';
-		$trigger_name    = isset( $posted['trigger_name'] ) ? ig_es_clean( $posted['trigger_name'] ) : '';
-		$trigger_options = isset( $posted['trigger_options'] ) ? ig_es_clean( $posted['trigger_options'] ) : array();
-		$rules           = isset( $posted['rules'] ) ? self::filter_valid_rules_to_save( ig_es_clean( $posted['rules'] ) ) : array();
-		$actions         = isset( $posted['actions'] ) ? $posted['actions'] : array(); // We can't sanitize actions data since some actions like Send email allows html in its field.
-		$status          = isset( $posted['status'] ) ? ig_es_clean( $posted['status'] ) : 0;
-		$type            = isset( $posted['type'] ) ? ig_es_clean( $posted['type'] ) : 0;
-		$priority        = isset( $posted['priority'] ) ? ig_es_clean( $posted['priority'] ) : 0;
-
-		$workflow_meta                = array();
-		$workflow_meta['when_to_run'] = self::extract_string_option_value( 'when_to_run', $posted, 'immediately' );
-
-		switch ( $workflow_meta['when_to_run'] ) {
-
-			case 'delayed':
-				$workflow_meta['run_delay_value'] = self::extract_string_option_value( 'run_delay_value', $posted );
-				$workflow_meta['run_delay_unit']  = self::extract_string_option_value( 'run_delay_unit', $posted );
-				break;
-
-			case 'scheduled':
-				$workflow_meta['run_delay_value'] = self::extract_string_option_value( 'run_delay_value', $posted );
-				$workflow_meta['run_delay_unit']  = self::extract_string_option_value( 'run_delay_unit', $posted );
-				$workflow_meta['scheduled_time']  = self::extract_string_option_value( 'scheduled_time', $posted );
-				$workflow_meta['scheduled_day']   = self::extract_array_option_value( 'scheduled_day', $posted );
-				break;
-
-			case 'fixed':
-				$workflow_meta['fixed_date'] = self::extract_string_option_value( 'fixed_date', $posted );
-				$workflow_meta['fixed_time'] = self::extract_array_option_value( 'fixed_time', $posted );
-				break;
-
-			case 'datetime':
-				$workflow_meta['queue_datetime'] = self::extract_string_option_value( 'queue_datetime', $posted );
-				break;
-		}
-
-		if ( ! empty( $workflow_id ) ) {
-			$run_workflow = ig_es_get_request_data( 'run_workflow', 'no' );
-			if ( 'no' === $run_workflow ) {
-				$existing_meta = ES()->workflows_db->get_column( 'meta', $workflow_id );
-				$existing_meta = maybe_unserialize( $existing_meta );
-				if ( ! empty( $existing_meta['last_ran_at'] ) ) {
-					// Don't update the workflow last run time unless admin check the run workflow option.
-					$workflow_meta['last_ran_at'] = $existing_meta['last_ran_at'];
-				}
-			}
-		}
-
-		$workflow_data = array(
-			'name'            => $workflow_name,
-			'title'           => $workflow_title,
-			'trigger_name'    => $trigger_name,
-			'trigger_options' => maybe_serialize( $trigger_options ),
-			'rules'           => maybe_serialize( $rules ),
-			'actions'         => maybe_serialize( $actions ),
-			'meta'            => maybe_serialize( $workflow_meta ),
-			'status'          => $status,
-			'type'            => $type,
-			'priority'        => $priority,
-		);
-
-		if ( empty( $workflow_id ) ) {
-			$workflow_id = ES()->workflows_db->insert_workflow( $workflow_data );
-		} else {
-			$workflow = new ES_Workflow( $workflow_id );
-			if ( $workflow->exists ) {
-				$workflow_updated = ES()->workflows_db->update_workflow( $workflow_id, $workflow_data );
-				if ( ! $workflow_updated ) {
-					// Return false if update failed.
-					return false;
-				}
-			}
-		}
-
-		return $workflow_id;
-	}
-
-	/**
-	 * Filter the rules before saving it into DB
-	 *
-	 * @param $rules
-	 *
-	 * @return array
-	 */
-	public static function filter_valid_rules_to_save( $rules ) {
-		if ( empty( $rules ) || ! is_array( $rules ) ) {
-			return array();
-		}
-		$valid_rules = array();
-
-		foreach ( $rules as $rule_group ) {
-			if ( empty( $rule_group ) || ! is_array( $rule_group ) ) {
-				continue;
-			}
-			$valid_rule_group = array();
-			foreach ( $rule_group as $rule ) {
-				if ( empty( $rule['name'] ) || empty( $rule['compare'] ) || empty( $rule['value'] ) ) {
-					continue;
-				}
-				array_push( $valid_rule_group, $rule );
-			}
-
-			if ( ! empty( $valid_rule_group ) ) {
-				array_push( $valid_rules, $valid_rule_group );
-			}
-		}
-
-		return $valid_rules;
-	}
-
-	/**
 	 * Update campaign data in workflow
 	 *
 	 * @param int $workflow_id
@@ -970,35 +846,9 @@ class ES_Workflow_Admin_Edit {
 		}
 	}
 
-	/**
-	 * Returns option value from workflow option data string
-	 *
-	 * @since 4.4.1
-	 *
-	 * @param string $option Option name.
-	 * @param array  $posted Posted data.
-	 * @param string $default Default value.
-	 *
-	 * @return string
-	 */
-	public static function extract_string_option_value( $option, $posted, $default = '' ) {
-		return isset( $posted['workflow_options'][ $option ] ) ? ES_Clean::string( $posted['workflow_options'][ $option ] ) : $default;
-	}
+	
 
-	/**
-	 * Returns option value array from workflow option data array
-	 *
-	 * @since 4.4.1
-	 *
-	 * @param string $option Option name.
-	 * @param array  $posted Posted data.
-	 * @param string $default Default value.
-	 *
-	 * @return array
-	 */
-	public static function extract_array_option_value( $option, $posted, $default = array() ) {
-		return isset( $posted['workflow_options'][ $option ] ) ? ES_Clean::recursive( $posted['workflow_options'][ $option ] ) : $default;
-	}
+	
 
 	/**
 	 * Method to get admin edit url of a workflow

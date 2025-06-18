@@ -8,109 +8,18 @@ if ( ! defined( 'ABSPATH' ) ) {
 ?>
 <?php
 global $ig_es_tracker, $ig_es_feedback;
-$ig_install_url            = admin_url( 'plugin-install.php?s=icegram&tab=search&type=term' );
-$rainmaker_install_url     = admin_url( 'plugin-install.php?s=rainmaker&tab=search&type=term' );
-$smart_manager_install_url = admin_url( 'plugin-install.php?s=smart+manager&tab=search&type=term' );
-$tlwp_install_url          = admin_url( 'plugin-install.php?s=temporary+login+without+password&tab=search&type=term' );
-$duplicate_install_url          = admin_url( 'plugin-install.php?s=icegram&tab=search&type=author' );
-$deactivate_link           = admin_url( 'plugins.php' );
-$icegram_plugin            = 'icegram/icegram.php';
-$rainmaker_plugin          = 'icegram-rainmaker/icegram-rainmaker.php';
-$smart_manager_plugin      = 'smart-manager-for-wp-e-commerce/smart-manager';
-$temporary_login           = admin_url( 'plugin-install.php?s=temporary+login+without+password&tab=search&type=term' );
-$active_plugins            = $ig_es_tracker::get_active_plugins();
-$inactive_plugins          = $ig_es_tracker::get_inactive_plugins();
-$all_plugins               = $ig_es_tracker::get_plugins();
 
-$contact_us_btn_class = "ig-feedback-button-{$ig_es_feedback->plugin}";
+$plugins = ES_Help_Info_Controller::get_plugins();
 
-$ig_plugins = array(
-	array(
-		'title'       => __( 'Icegram', 'email-subscribers' ),
-		'logo'        => 'https://ps.w.org/icegram/assets/icon-128x128.png',
-		'desc'        => __( 'The best WP popup plugin that creates a popup. Customize popup, target popups to show offers, email signups, social buttons, etc and increase conversions on your website.', 'email-subscribers' ),
-		'name'        => 'icegram/icegram.php',
-		'install_url' => $ig_install_url,
-		'plugin_url'  => 'https://wordpress.org/plugins/icegram/',
-	),
-	array(
-		'title'       => __( 'Rainmaker', 'email-subscribers' ),
-		'logo'        => 'https://ps.w.org/icegram-rainmaker/assets/icon-128x128.png',
-		'desc'        => __( 'Get readymade contact forms, email subscription forms and custom forms for your website. Choose from beautiful templates and get started within seconds', 'email-subscribers' ),
-		'name'        => 'icegram-rainmaker/icegram-rainmaker.php',
-		'install_url' => $rainmaker_install_url,
-		'plugin_url'  => 'https://wordpress.org/plugins/icegram-rainmaker/',
+$active_plugins   = $plugins['active_plugins'];
+$inactive_plugins = $plugins['inactive_plugins'];
+$all_plugins      = $plugins['all_plugins'];
 
-	),
-
-	array(
-		'title'       => __( 'Smart Manager For WooCommerce', 'email-subscribers' ),
-		'logo'        => 'https://ps.w.org/smart-manager-for-wp-e-commerce/assets/icon-128x128.png',
-		'desc'        => __( 'The #1 and a powerful tool to manage stock, inventory from a single place. Super quick and super easy', 'email-subscribers' ),
-		'name'        => 'smart-manager-for-wp-e-commerce/smart-manager.php',
-		'install_url' => $smart_manager_install_url,
-		'plugin_url'  => 'https://wordpress.org/plugins/smart-manager-for-wp-e-commerce/',
-	),
-
-	array(
-		'title'       => __( 'Temporary Login Without Password', 'email-subscribers' ),
-		'logo'        => 'https://ps.w.org/temporary-login-without-password/assets/icon-128x128.png',
-		'desc'        => __( 'Create self-expiring, automatic login links for WordPress. Give them to developers when they ask for admin access to your site.', 'email-subscribers' ),
-		'name'        => 'temporary-login-without-password/temporary-login-without-password.php',
-		'install_url' => $tlwp_install_url,
-		'plugin_url'  => 'https://wordpress.org/plugins/temporary-login-without-password/',
-	),
-	array(
-		'title'       => __( 'Duplicate Pages and Posts', 'email-subscribers' ),
-		'logo'        => 'https://s.w.org/plugins/geopattern-icon/duplicate-post-page-copy-clone-wp.svg',
-		'desc'        => __( 'A Duplicate Pages and Posts Plugin is a tool for WordPress that enables users to easily create duplicate versions of existing posts, pages, or custom post types with just a click.', 'email-subscribers' ),
-		'name'        => 'duplicate-post-page-copy-clone-wp/duplicate-post-page-copy-clone-wp.php',
-		'install_url' => $duplicate_install_url,
-		'plugin_url'  => 'https://wordpress.org/plugins/duplicate-post-page-copy-clone-wp/',
-	),
-);
-
-$topics = ES_Common::get_useful_articles();
-
+$ig_plugins = ES_Help_Info_Controller::get_other_plugins();
+$articles   = ES_Help_Info_Controller::get_help_articles();
+$topics     = ES_Help_Info_Controller::get_useful_articles();
 $topics_indexes = array_rand( $topics, 5 );
-
-$articles = array(
-	array(
-		'title' => 'Create and Send Newsletter Emails',
-		'link'  => 'https://www.icegram.com/documentation/es-how-to-create-and-send-newsletter-emails/?utm_source=es&utm_medium=in_app&utm_campaign=view_docs_help_page',
-		'class' => 'font-medium text-blue-500 hover:text-blue-700',
-	),
-	array(
-		'title' => 'Schedule Cron Emails in cPanel',
-		'link'  => 'https://www.icegram.com/documentation/es-how-to-schedule-cron-emails/?utm_source=es&utm_medium=in_app&utm_campaign=view_docs_help_page',
-		'class' => 'font-medium text-blue-500 hover:text-blue-700',
-	),
-	array(
-		'title' => 'How to enable consent checkbox in the subscribe form?',
-		'link'  => 'https://www.icegram.com/documentation/es-gdpr-how-to-enable-consent-checkbox-in-the-subscription-form/?utm_source=es&utm_medium=in_app&utm_campaign=view_docs_help_page',
-		'class' => 'font-medium text-blue-500 hover:text-blue-700',
-	),
-	array(
-		'title' => 'What data Icegram Express stores on your end?',
-		'link'  => 'https://www.icegram.com/documentation/es-gdpr-what-data-email-subscribers-stores-on-your-end/?utm_source=es&utm_medium=in_app&utm_campaign=view_docs_help_page',
-		'class' => 'font-medium text-blue-500 hover:text-blue-700',
-	),
-	array(
-		'title' => 'Create and Send Post Notification Emails when new posts are published',
-		'link'  => 'https://www.icegram.com/documentation/es-how-to-create-and-send-post-notification-emails-when-new-posts-are-published/?utm_source=es&utm_medium=in_app&utm_campaign=view_docs_help_page',
-		'class' => 'font-medium text-blue-500 hover:text-blue-700',
-	),
-	array(
-		'title' => 'Keywords in the Broadcast',
-		'link'  => 'https://www.icegram.com/documentation/what-keywords-can-be-used-while-designing-the-campaign/?utm_source=es&utm_medium=in_app&utm_campaign=view_docs_help_page',
-		'class' => 'font-medium text-blue-500 hover:text-blue-700',
-	),
-	array(
-		'title' => 'Keywords in the Post Notifications',
-		'link'  => 'https://www.icegram.com/documentation/what-keywords-can-be-used-while-designing-the-campaign/?utm_source=es&utm_medium=in_app&utm_campaign=view_docs_help_page',
-		'class' => 'font-medium text-blue-500 hover:text-blue-700',
-	),
-);
+$contact_us_btn_class = "ig-feedback-button-{$ig_es_feedback->plugin}";
 
 ?>
 <div class="font-sans wrap pt-4">
