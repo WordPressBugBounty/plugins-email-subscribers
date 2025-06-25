@@ -445,19 +445,19 @@ class ES_Contacts_Table extends ES_List_Table {
 		if ( ig_es_get_request_data( 'submitted' ) === 'submitted' ) {
 			$contact_nonce = ig_es_get_request_data( 'ig_es_contact_nonce' );
 			// Verify nonce.
-			 if ( wp_verify_nonce( $contact_nonce, 'ig-es-contact-nonce' ) ) {
+			if ( wp_verify_nonce( $contact_nonce, 'ig-es-contact-nonce' ) ) {
 
 			$contact_data = ig_es_get_data( $_POST, 'contact_data', array(), true );
 			$contact_data['id'] = $id;
 			
 			$save_result = ES_Contact_Controller::process_contact_save( $contact_data );
 
-			if ( ! empty( $save_result['errors'] ) ) {
-				foreach ( $save_result['errors'] as $error ) {
-					ES_Common::show_message( $error, 'error' );
-				}
-			} else {
-				$message = $save_result['is_new']
+				if ( ! empty( $save_result['errors'] ) ) {
+					foreach ( $save_result['errors'] as $error ) {
+						ES_Common::show_message( $error, 'error' );
+					}
+				} else {
+					$message = $save_result['is_new']
 					? sprintf(
 						__( 'Contact added successfully. %1$sEdit contact%2$s.', 'email-subscribers' ),
 						'<a href="' . esc_url( add_query_arg( array( 'subscriber' => $save_result['id'], 'action' => 'edit' ), menu_page_url( 'es_subscribers', false ) ) ) . '" class="text-indigo-600">',
@@ -465,17 +465,17 @@ class ES_Contacts_Table extends ES_List_Table {
 					)
 					: __( 'Contact updated successfully!', 'email-subscribers' );
 	
-				ES_Common::show_message( $message, 'success' );
+					ES_Common::show_message( $message, 'success' );
 	
-				// Reset if new
-				if ( $save_result['is_new'] ) {
-					$data = array();
-				} else {
-					$data = ES_Contact_Controller::get_existing_contact_data( $save_result['id'] );
+					// Reset if new
+					if ( $save_result['is_new'] ) {
+						$data = array();
+					} else {
+						$data = ES_Contact_Controller::get_existing_contact_data( $save_result['id'] );
+					}
 				}
 			}
 		}
-	}
 	
 		?>
 		<div class="gap-5">
@@ -755,9 +755,9 @@ class ES_Contacts_Table extends ES_List_Table {
 	
 				$lists_html .= "<td class='pr-2 pt-2 text-sm leading-5 font-normal text-gray-500'>" .
 					$status_span .
-					"<span title='" . esc_attr( $list_title ) . "'>" . esc_html( $list_name ) . "</span></td><td>" .
-					wp_kses( $status_dropdown_html,$allowedtags ) .
-					"</td>";
+					"<span title='" . esc_attr( $list_title ) . "'>" . esc_html( $list_name ) . '</span></td><td>' .
+					wp_kses( $status_dropdown_html, $allowedtags ) .
+					'</td>';
 				$i ++;
 			}
 	

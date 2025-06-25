@@ -129,7 +129,7 @@ class ES_Workflow_Admin_Ajax {
 	public static function toggle_workflow_status() {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
-        $args = array(
+		$args = array(
 			'workflow_id' => ig_es_get_request_data( 'workflow_id' ),
 			'new_state'   => ig_es_get_request_data( 'new_state' ),
 		);
@@ -177,7 +177,7 @@ class ES_Workflow_Admin_Ajax {
 		if ( ! $item_name ) {
 			die;
 		}
-        $args = array( 'item_name' => $item_name );
+		$args = array( 'item_name' => $item_name );
 		$workflow_id = ES_Workflows_Controller::create_workflow_from_gallery_item( $args );
 
 		if ( $workflow_id ) {

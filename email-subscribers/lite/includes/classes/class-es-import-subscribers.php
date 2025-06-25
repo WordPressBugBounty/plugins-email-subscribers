@@ -561,10 +561,10 @@ class ES_Import_Subscribers {
 				'last_first' => __( '(Last Name) (First Name)', 'email-subscribers' ),
 				'created_at' => __( 'Subscribed at', 'email-subscribers' ),
 			);
-			if ( ! empty( $response['data']['importing_from'] ) && 'wordpress_users' !== $response['data']['importing_from'] ) {
-				$fields['list_name'] = __( 'List Name', 'email-subscribers' );
-				$fields['status']    = __( 'Status', 'email-subscribers' );
-			}
+				if ( ! empty( $response['data']['importing_from'] ) && 'wordpress_users' !== $response['data']['importing_from'] ) {
+					$fields['list_name'] = __( 'List Name', 'email-subscribers' );
+					$fields['status']    = __( 'Status', 'email-subscribers' );
+				}
 
 			$fields = apply_filters( 'es_import_show_more_fields_for_mapping', $fields );
 
@@ -587,66 +587,66 @@ class ES_Import_Subscribers {
 			$html     .= '<thead><tr class="border-b border-gray-200 bg-gray-50 text-left text-sm leading-4 font-medium text-gray-500 tracking-wider"><th class="pl-3 py-4" style="width:20px;">#</th>';
 			$phpmailer = ES()->mailer->get_phpmailer();
 			$headers   = array();
-			if ( ! empty( $response['data']['headers'] ) ) {
-				$headers = $response['data']['headers'];
-			}
-			for ( $i = 0; $i < $cols; $i++ ) {
-				$col_data = trim( $data[ $i ] );
-				// Convert special characters in the email domain name to ascii.
-				if ( is_callable( array( $phpmailer, 'punyencodeAddress' ) ) ) {
-					$col_data = $phpmailer->punyencodeAddress( $col_data );
+				if ( ! empty( $response['data']['headers'] ) ) {
+					$headers = $response['data']['headers'];
 				}
-				$is_email = is_email( trim( $col_data ) );
-				$select   = '<select class="form-select font-normal text-gray-600 h-8 shadow-sm" name="mapping_order[]">';
-				$select  .= '<option value="-1">' . esc_html__( 'Ignore column', 'email-subscribers' ) . '</option>';
-				foreach ( $fields as $key => $value ) {
-					$is_selected = false;
-					if ( $is_email && 'email' === $key ) {
-						$is_selected = true;
-					} elseif ( ! empty( $headers[ $i ] ) ) {
-						if ( strip_tags( $headers[ $i ] ) === $fields[ $key ] ) {
-							$is_selected = ( 'first_name' === $key ) || ( 'last_name' === $key ) || ( 'list_name' === $key && 'mailchimp-api' === $response['data']['importing_from'] ) || ( 'status' === $key && 'mailchimp-api' === $response['data']['importing_from'] );
+				for ( $i = 0; $i < $cols; $i++ ) {
+					$col_data = trim( $data[ $i ] );
+					// Convert special characters in the email domain name to ascii.
+					if ( is_callable( array( $phpmailer, 'punyencodeAddress' ) ) ) {
+						$col_data = $phpmailer->punyencodeAddress( $col_data );
+					}
+					$is_email = is_email( trim( $col_data ) );
+					$select   = '<select class="form-select font-normal text-gray-600 h-8 shadow-sm" name="mapping_order[]">';
+					$select  .= '<option value="-1">' . esc_html__( 'Ignore column', 'email-subscribers' ) . '</option>';
+					foreach ( $fields as $key => $value ) {
+						$is_selected = false;
+						if ( $is_email && 'email' === $key ) {
+							$is_selected = true;
+						} elseif ( ! empty( $headers[ $i ] ) ) {
+							if ( strip_tags( $headers[ $i ] ) === $fields[ $key ] ) {
+								$is_selected = ( 'first_name' === $key ) || ( 'last_name' === $key ) || ( 'list_name' === $key && 'mailchimp-api' === $response['data']['importing_from'] ) || ( 'status' === $key && 'mailchimp-api' === $response['data']['importing_from'] );
+							}
 						}
+						$select .= '<option value="' . $key . '" ' . ( $is_selected ? 'selected' : '' ) . '>' . $value . '</option>';
 					}
-					$select .= '<option value="' . $key . '" ' . ( $is_selected ? 'selected' : '' ) . '>' . $value . '</option>';
+					$select .= '</select>';
+					$html   .= '<th class="pl-3 py-4 font-medium">' . $select . '</th>';
 				}
-				$select .= '</select>';
-				$html   .= '<th class="pl-3 py-4 font-medium">' . $select . '</th>';
-			}
 			$html .= '</tr>';
-			if ( ! empty( $headers ) ) {
-				$html .= '<tr class="border-b border-gray-200 text-left text-sm leading-4 font-medium text-gray-500 tracking-wider rounded-md"><th></th>';
-				foreach ( $headers as $header ) {
-					$html .= '<th class="pl-3 py-3 font-medium">' . esc_html ($header) . '</th>';
-				}
-				$html .= '</tr>';
-			}
-			$html .= '</thead><tbody>';
-			for ( $i = 0; $i < min( 3, $contactcount ); $i++ ) {
-				$data  = str_getcsv( ( $first[ $i ] ), $response['data']['separator'], '"' );
-				$html .= '<tr class="border-b border-gray-200 text-left text-sm leading-4 text-gray-500 tracking-wide"><td class="pl-3">' . number_format_i18n( $i + 1 ) . '</td>';
-				foreach ( $data as $cell ) {
-					if ( ! empty( $cell ) && is_email( $cell ) ) {
-						$cell = sanitize_email( strtolower( $cell ) );
+				if ( ! empty( $headers ) ) {
+					$html .= '<tr class="border-b border-gray-200 text-left text-sm leading-4 font-medium text-gray-500 tracking-wider rounded-md"><th></th>';
+					foreach ( $headers as $header ) {
+						$html .= '<th class="pl-3 py-3 font-medium">' . esc_html ($header) . '</th>';
 					}
-					$html .= '<td class="pl-3 py-3" title="' . strip_tags( $cell ) . '">' . ( esc_html ( $cell ) ) . '</td>';
+					$html .= '</tr>';
 				}
-				$html .= '<tr>';
-			}
-			if ( $contactcount > 3 ) {
-				$hidden_contacts_count = $contactcount - 4;
-				if ( $hidden_contacts_count > 0 ) {
-					/* translators: %s: Hidden contacts count */
-					$html .= '<tr class="alternate bg-gray-50 pl-3 py-3 border-b border-gray-200 text-gray-500"><td class="pl-2 py-3">&nbsp;</td><td colspan="' . ( $cols ) . '"><span class="description">&hellip;' . sprintf( esc_html__( '%s contacts are hidden', 'email-subscribers' ), number_format_i18n( $contactcount - 4 ) ) . '&hellip;</span></td>';
+			$html .= '</thead><tbody>';
+				for ( $i = 0; $i < min( 3, $contactcount ); $i++ ) {
+					$data  = str_getcsv( ( $first[ $i ] ), $response['data']['separator'], '"' );
+					$html .= '<tr class="border-b border-gray-200 text-left text-sm leading-4 text-gray-500 tracking-wide"><td class="pl-3">' . number_format_i18n( $i + 1 ) . '</td>';
+					foreach ( $data as $cell ) {
+						if ( ! empty( $cell ) && is_email( $cell ) ) {
+							$cell = sanitize_email( strtolower( $cell ) );
+						}
+						$html .= '<td class="pl-3 py-3" title="' . strip_tags( $cell ) . '">' . ( esc_html ( $cell ) ) . '</td>';
+					}
+					$html .= '<tr>';
 				}
+				if ( $contactcount > 3 ) {
+					$hidden_contacts_count = $contactcount - 4;
+					if ( $hidden_contacts_count > 0 ) {
+						/* translators: %s: Hidden contacts count */
+						$html .= '<tr class="alternate bg-gray-50 pl-3 py-3 border-b border-gray-200 text-gray-500"><td class="pl-2 py-3">&nbsp;</td><td colspan="' . ( $cols ) . '"><span class="description">&hellip;' . sprintf( esc_html__( '%s contacts are hidden', 'email-subscribers' ), number_format_i18n( $contactcount - 4 ) ) . '&hellip;</span></td>';
+					}
 
-				$data  = str_getcsv( array_pop( $last ), $response['data']['separator'], '"' );
-				$html .= '<tr class="border-b border-gray-200 text-left text-sm leading-4 text-gray-500 tracking-wider"><td class="pl-3 py-3">' . number_format_i18n( $contactcount ) . '</td>';
-				foreach ( $data as $cell ) {
-					$html .= '<td class="pl-3 py-3 " title="' . strip_tags( $cell ) . '">' . ( esc_html ( $cell ) ) . '</td>';
+					$data  = str_getcsv( array_pop( $last ), $response['data']['separator'], '"' );
+					$html .= '<tr class="border-b border-gray-200 text-left text-sm leading-4 text-gray-500 tracking-wider"><td class="pl-3 py-3">' . number_format_i18n( $contactcount ) . '</td>';
+					foreach ( $data as $cell ) {
+						$html .= '<td class="pl-3 py-3 " title="' . strip_tags( $cell ) . '">' . ( esc_html ( $cell ) ) . '</td>';
+					}
+					$html .= '<tr>';
 				}
-				$html .= '<tr>';
-			}
 			$html .= '</tbody>';
 
 			$html .= '</table>';
@@ -655,8 +655,8 @@ class ES_Import_Subscribers {
 
 			$response['html']    = $html;
 			$response['success'] = true;
-		    }
-	    }
+			}
+		}
 
 		wp_send_json( $response );
 	}
@@ -671,7 +671,7 @@ class ES_Import_Subscribers {
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
 		$args = array(
-	        'id'         => $_POST['id'],
+			'id'         => $_POST['id'],
 			'options'    => $_POST['options'],
 		);
 
@@ -772,7 +772,7 @@ class ES_Import_Subscribers {
 		ES_Contact_Import_Controller::api_request_data( $args );
 
 	}
-    
+	
 	// public static function insert_into_temp_table( $raw_data, $seperator = ',', $data_contain_headers = false, $headers = array(), $identifier = '', $importing_from = 'csv' ) {
 	// 	global $wpdb;
 	// 	$raw_data = ( trim( str_replace( array( "\r", "\r\n", "\n\n" ), "\n", $raw_data ) ) );

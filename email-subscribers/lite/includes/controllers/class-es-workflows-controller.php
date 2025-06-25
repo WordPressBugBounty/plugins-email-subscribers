@@ -242,7 +242,7 @@ if ( ! class_exists( 'ES_Workflows_Controller' ) ) {
 
 			$subject = $args['ig-es-email-subject']; 
 			$subject = sanitize_text_field( $args['ig-es-email-subject'] );
-            $email   = sanitize_email( $args['ig-es-email'] );
+			$email   = sanitize_email( $args['ig-es-email'] );
 
 			$content = self::generate_preview_html( $args );
 			$response = ES()->mailer->send_test_email( $email, $subject, $content, array() );
@@ -295,31 +295,31 @@ if ( ! class_exists( 'ES_Workflows_Controller' ) ) {
 	 *
 	 * @return array
 	 */
-	public static function filter_valid_rules_to_save( $rules ) {
-		if ( empty( $rules ) || ! is_array( $rules ) ) {
-			return array();
-		}
-		$valid_rules = array();
-
-		foreach ( $rules as $rule_group ) {
-			if ( empty( $rule_group ) || ! is_array( $rule_group ) ) {
-				continue;
+		public static function filter_valid_rules_to_save( $rules ) {
+			if ( empty( $rules ) || ! is_array( $rules ) ) {
+				return array();
 			}
-			$valid_rule_group = array();
-			foreach ( $rule_group as $rule ) {
-				if ( empty( $rule['name'] ) || empty( $rule['compare'] ) || empty( $rule['value'] ) ) {
+			$valid_rules = array();
+
+			foreach ( $rules as $rule_group ) {
+				if ( empty( $rule_group ) || ! is_array( $rule_group ) ) {
 					continue;
 				}
-				array_push( $valid_rule_group, $rule );
+				$valid_rule_group = array();
+				foreach ( $rule_group as $rule ) {
+					if ( empty( $rule['name'] ) || empty( $rule['compare'] ) || empty( $rule['value'] ) ) {
+						continue;
+					}
+					array_push( $valid_rule_group, $rule );
+				}
+
+				if ( ! empty( $valid_rule_group ) ) {
+					array_push( $valid_rules, $valid_rule_group );
+				}
 			}
 
-			if ( ! empty( $valid_rule_group ) ) {
-				array_push( $valid_rules, $valid_rule_group );
-			}
+			return $valid_rules;
 		}
-
-		return $valid_rules;
-	}
 
 	}
 

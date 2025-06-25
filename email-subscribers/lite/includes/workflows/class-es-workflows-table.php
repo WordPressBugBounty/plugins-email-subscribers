@@ -492,7 +492,7 @@ class ES_Workflows_Table extends ES_List_Table {
 		$per_page = $this->get_items_per_page( self::$option_per_page, 25 );
 
 		$current_page = $this->get_pagenum();
-      
+	  
 		$order_by = sanitize_sql_orderby( ig_es_get_request_data( 'orderby' ) );
 		$order    = ig_es_get_request_data( 'order' );
 		$search   = ig_es_get_request_data( 's' );
@@ -516,7 +516,7 @@ class ES_Workflows_Table extends ES_List_Table {
 				'per_page'    => $per_page, // We have to determine how many items to show on a page.
 			)
 		);
-        $args['do_count_only'] = false;
+		$args['do_count_only'] = false;
 		$this->items = ES_Workflows_Controller::get_lists($args);
 	}
 
@@ -573,7 +573,7 @@ class ES_Workflows_Table extends ES_List_Table {
 
 				$new_status = ( 'bulk_activate' === $action ) ? 1 : 0;
 				
-                $args = array( 'workflow_ids' => $ids,'status'=>$new_status);
+				$args = array( 'workflow_ids' => $ids,'status'=>$new_status);
 				ES_Workflows_Controller::update_status( $args );
 
 				$workflow_action = 'bulk_activate' === $action ? __( 'activated', 'email-subscribers' ) : __( 'deactivated', 'email-subscribers' );

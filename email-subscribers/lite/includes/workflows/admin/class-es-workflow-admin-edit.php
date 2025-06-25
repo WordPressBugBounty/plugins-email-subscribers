@@ -110,25 +110,25 @@ class ES_Workflow_Admin_Edit {
  *
  * @since 5.3.6
  */
-public static function get_workflow_email_preview() {
-	check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+	public static function get_workflow_email_preview() {
+		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
-	$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
-	if ( ! $can_access_workflows ) {
-		return;
-	}
+		$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
+		if ( ! $can_access_workflows ) {
+			return;
+		}
 
-	$allowedtags = ig_es_allowed_html_tags_in_esc();
+		$allowedtags = ig_es_allowed_html_tags_in_esc();
 
-	$content  = ig_es_get_request_data( 'content', '', false );
-	$content  = wp_kses( $content, $allowedtags );
+		$content  = ig_es_get_request_data( 'content', '', false );
+		$content  = wp_kses( $content, $allowedtags );
 
-	$trigger  = sanitize_text_field( ig_es_get_request_data( 'trigger' ) );
-	$subject  = sanitize_text_field( ig_es_get_request_data( 'subject' ) );
-	$template = sanitize_text_field( ig_es_get_request_data( 'template' ) );
-	$heading  = sanitize_text_field( ig_es_get_request_data( 'heading' ) );
+		$trigger  = sanitize_text_field( ig_es_get_request_data( 'trigger' ) );
+		$subject  = sanitize_text_field( ig_es_get_request_data( 'subject' ) );
+		$template = sanitize_text_field( ig_es_get_request_data( 'template' ) );
+		$heading  = sanitize_text_field( ig_es_get_request_data( 'heading' ) );
 
-	$args = array(
+		$args = array(
 		'trigger'                    => $trigger, 
 		'action_name'                => 'ig_es_send_email',
 		'ig-es-send-to'              => '',
@@ -137,20 +137,20 @@ public static function get_workflow_email_preview() {
 		'ig-es-email-heading'        => esc_html( $heading ),
 		'ig-es-email-content'        => $content,
 		'ig-es-tracking-campaign-id' => ''
-	);
+		);
 
-	$response = array();
+		$response = array();
 
-	// Now call new function
-	$response['preview_html'] = ES_Workflows_Controller::generate_preview_html( $args );
-	$response['subject']      = $subject;
+		// Now call new function
+		$response['preview_html'] = ES_Workflows_Controller::generate_preview_html( $args );
+		$response['subject']      = $subject;
 
-	if ( ! empty( $response ) ) {
-		wp_send_json_success( $response );
-	} else {
-		wp_send_json_error();
+		if ( ! empty( $response ) ) {
+			wp_send_json_success( $response );
+		} else {
+			wp_send_json_error();
+		}
 	}
-}
 
 	/**
 	 * Method to get trigger data

@@ -93,7 +93,7 @@ class ES_Forms_Table extends ES_List_Table {
 				echo wp_kses_post( $this->edit_form( absint( $form ) ) );
 			} elseif ( 'duplicate_form' === $action ) {
 				$args = array();
-				$args['form_id']    = absint( ig_es_get_request_data( 'form',0 ) );
+				$args['form_id']    = absint( ig_es_get_request_data( 'form', 0 ) );
 				$duplicated_form_id = ES_Forms_Controller::duplicate_form( $args );
 				if ( !empty($duplicated_form_id) ) {
 					wp_redirect( admin_url( 'admin.php?page=es_forms' ) );
@@ -201,7 +201,7 @@ class ES_Forms_Table extends ES_List_Table {
 				<?php
 			}
 	}
-    //Code to be remove
+	//Code to be remove
 	public function validate_data( $data ) {
 
 		$editor_type = ! empty( $data['editor_type'] ) ? $data['editor_type'] : '';
@@ -277,7 +277,7 @@ class ES_Forms_Table extends ES_List_Table {
 
 		$this->prepare_list_form();
 	}
-    //Code to be remove
+	//Code to be remove
 	public function edit_form( $id ) {
 		global $wpdb;
 
@@ -290,7 +290,7 @@ class ES_Forms_Table extends ES_List_Table {
 				$submitted = ig_es_get_request_data( 'submitted' );
 
 				if ( 'submitted' === $submitted ) {
-                    $form_data['id'] = $id;
+					$form_data['id'] = $id;
 					$nonce     = ig_es_get_request_data( '_wpnonce' );
 					$form_data = ig_es_get_request_data( 'form_data', array(), false );
 					$lists     = ig_es_get_request_data( 'lists' );
@@ -560,7 +560,7 @@ class ES_Forms_Table extends ES_List_Table {
 		</div>
 		<?php
 	}
-    //Code to be remove
+	//Code to be remove
 	// public function save_form( $id, $data ) {
 
 	// 	global $wpdb;
@@ -710,7 +710,7 @@ class ES_Forms_Table extends ES_List_Table {
 
 		return $form_data;
 	}
-     //Code to be remove
+	 //Code to be remove
 	public static function get_form_data_from_body( $data ) {
 
 		$name          = ! empty( $data['name'] ) ? $data['name'] : '';
@@ -803,7 +803,7 @@ class ES_Forms_Table extends ES_List_Table {
 		'per_page'      => absint( $per_page ),
 		'page_number'   => absint( $page_number ),
 		'do_count_only' => $do_count_only,
-	     );
+		 );
 		return ES_Forms_Controller::get_forms($args);
 		
 	}

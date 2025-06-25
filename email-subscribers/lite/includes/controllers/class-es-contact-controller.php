@@ -32,7 +32,7 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 		public function register_hooks() {
 		}
 
-		public static function get_existing_contact_data( $id=0 ) {
+		public static function get_existing_contact_data( $id = 0 ) {
 			$contact_db = new ES_DB_Contacts();
 			$contact = $contact_db->get( $id );
 		
@@ -170,7 +170,7 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 				$contact['id']         = $id;
 
 				// Send welcome email
-			    self::maybe_send_welcome_email( $contact_data, $contact, $lists );
+				self::maybe_send_welcome_email( $contact_data, $contact, $lists );
 
 			} else {
 				$contact['id'] = $id;
@@ -189,13 +189,13 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 			);
 		}
 		
-		public static function update_contact($contact){
+		public static function update_contact( $contact) {
 			if ( ! empty( $contact['id'] ) ) {
 			  $id = $contact['id'];
 			  ES()->contacts_db->update_contact( $id, $contact );
 			}
 		}
-		public static function save_contact($contact){
+		public static function save_contact( $contact) {
 			return ES()->contacts_db->insert( $contact );
 		}
 	}

@@ -3182,7 +3182,8 @@ class ES_Common {
 			'{{post.full}}',
 			'{{post.cats}}',
 			'{{post.more_tag}}',
-			'{{post.image_url}}'
+			'{{post.image_url}}',
+			'{{post.id}}'
 		);
 		return apply_filters( 'ig_es_post_notification_tags', $post_notification_tags );
 	}

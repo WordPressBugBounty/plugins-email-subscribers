@@ -32,8 +32,8 @@ if ( ! class_exists( 'ES_Help_Info_Controller' ) ) {
 		public function register_hooks() {
 		}
 
-		public static function	get_other_plugins(){
-            $ig_install_url            = admin_url( 'plugin-install.php?s=icegram&tab=search&type=term' );
+		public static function	get_other_plugins() {
+			$ig_install_url            = admin_url( 'plugin-install.php?s=icegram&tab=search&type=term' );
 			$rainmaker_install_url     = admin_url( 'plugin-install.php?s=rainmaker&tab=search&type=term' );
 			$smart_manager_install_url = admin_url( 'plugin-install.php?s=smart+manager&tab=search&type=term' );
 			$tlwp_install_url          = admin_url( 'plugin-install.php?s=temporary+login+without+password&tab=search&type=term' );
@@ -112,7 +112,7 @@ if ( ! class_exists( 'ES_Help_Info_Controller' ) ) {
 			);
 
 		}
-		public static function	get_help_articles(){
+		public static function	get_help_articles() {
 
 			return array(
 				array(
@@ -153,11 +153,11 @@ if ( ! class_exists( 'ES_Help_Info_Controller' ) ) {
 			);
 
 		}
-		public static function	get_useful_articles(){
+		public static function	get_useful_articles() {
 			return ES_Common::get_useful_articles();
 		}
 
-		public static function	get_plugins(){
+		public static function	get_plugins() {
 			global $ig_es_tracker;
 			$active_plugins            = $ig_es_tracker::get_active_plugins();
 			$inactive_plugins          = $ig_es_tracker::get_inactive_plugins();

@@ -32,7 +32,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 		public function register_hooks() {
 		}
 
-		public static function process_list_export( $args=array() ) {
+		public static function process_list_export( $args = array() ) {
 			$status = trim( $args['status'] );
 			$selected_list_id = $args['selected_list_id'];
 		
@@ -41,7 +41,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 			self::output_CSV( $csv, $file_name );
 		}
 
-		public static function process_campaign_link_export( $args=array() ) {
+		public static function process_campaign_link_export( $args = array() ) {
 			$campaign_id = $args['campaign_id'];
 			$link_id     = $args['link_id'];
 		

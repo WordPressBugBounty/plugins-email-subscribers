@@ -737,7 +737,7 @@ if ( ! function_exists( 'ig_es_subscribe_to_plugin_deactivation_list' ) ) {
 		$email = $admin_email;
 		$name  = $admin_name;
 
-		switch( $data['feedback']['value'] ) {
+		switch ( $data['feedback']['value'] ) {
 			case 'i-am-switching-to-a-different-plugin':
 				$list = '46e63a445c57';
 				break;

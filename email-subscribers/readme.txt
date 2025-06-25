@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 5.8.7
+Stable tag: 5.8.8
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -322,12 +322,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.8.7 =
+= 5.8.8 =
 
-* Fix: Issue while editing/deleting duplicated campaigns [MAX]
-* Fix: Unable to change 'Subscriber list status' using the dropdown while editing contacts
+* New: Added {{post.id}} keyword for post notification and post digest campaigns
 
 == Changelog ==
+
+**5.8.8 (25.06.2025)**
+
+* New: Added {{post.id}} keyword for post notification and post digest campaigns
 
 **5.8.7 (18.06.2025)**
 

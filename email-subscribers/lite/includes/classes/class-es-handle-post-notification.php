@@ -261,6 +261,7 @@ class ES_Handle_Post_Notification {
 		$post_title    = get_the_title( $post );
 		$es_templ_body = str_replace( '{{POSTTITLE}}', $post_title, $es_templ_body );
 		$es_templ_body = str_replace( '{{post.title}}', $post_title, $es_templ_body );
+		$es_templ_body = str_replace( '{{post.id}}', $post_id, $es_templ_body );
 		$post_link     = get_permalink( $post_id );
 
 		// Size of {{POSTIMAGE}}

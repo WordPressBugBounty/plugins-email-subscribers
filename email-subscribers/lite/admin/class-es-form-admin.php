@@ -841,7 +841,7 @@ if ( ! class_exists( 'ES_Form_Admin' ) ) {
 		 *
 		 * @since 4.4.7
 		 */
-		        //This function to be removed.
+				//This function to be removed.
 		public function get_form_preview() {
 			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
