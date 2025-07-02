@@ -1,9 +1,14 @@
 <?php
-	$onboarding_step = IG_ES_Onboarding::get_onboarding_step();
-	$current_year    = gmdate( 'Y' );
-	$admin_email     = get_option( 'admin_email' );
-	$from_name       = get_option( 'ig_es_from_name' );
-	$from_email      = get_option( 'ig_es_from_email' );
+global $ig_es_tracker;
+$onboarding_step           = IG_ES_Onboarding::get_onboarding_step();
+$current_year              = gmdate( 'Y' );
+$admin_email               = get_option( 'admin_email' );
+$from_name                 = get_option( 'ig_es_from_name' );
+$from_email                = get_option( 'ig_es_from_email' );
+$mailer_plugin_onboarding_completed = false;
+if ( $ig_es_tracker::is_plugin_activated( 'icegram-mailer/icegram-mailer.php' ) && is_callable( 'Icegram_Mailer_Account', 'is_onboarding_completed' ) ) {
+	$mailer_plugin_onboarding_completed = Icegram_Mailer_Account::is_onboarding_completed();
+}
 ?>
 <!-- Start-IG-Code -->
 <div class="mx-auto mt-6 sm:mt-5">
@@ -115,68 +120,100 @@
 						  </div>
 						</div>
 					  </div>
-
-					  <div class="space-y-1 leading-5">
-						<h3 class="text-base font-medium text-gray-900 -mb-0.5"><?php echo esc_html__( 'Your preferences:', 'email-subscribers' ); ?></h3>
+						
 						<!-- Start-IG-Code -->
-						<?php if ( ! ES()->is_premium() ) { ?>
-							<div class="flex pt-1">
+						<?php
+						if ( ! $mailer_plugin_onboarding_completed ) {
+						?>
+						<div class="space-y-1 leading-5">
+							<h3 class="text-base font-medium text-gray-900 -mb-0.5"><?php echo esc_html__( 'Need to send email?', 'email-subscribers' ); ?></h3>
+							<div class="flex">
 								<div class="pt-1">
 									<input
-									id="es_allow_tracking"
+									id="ig_es_enable_mailer"
 									type="checkbox"
 									checked="checked"
 									class="w-4 h-4 transition duration-150 ease-in-out form-checkbox"
 									/>
 								</div>
 								<div class="pl-3">
-									<label for="es_allow_tracking" class="text-sm">
-									<?php
-										/* translators: %s. Plugin name. */
-										echo sprintf( esc_html__( 'Help us to improve %s by opting in to share non-sensitive plugin usage data. No personal data is tracked or stored.', 'email-subscribers' ), '<strong>Icegram Express</strong>' );
-									?>
+									<label for="ig_es_enable_mailer" class="text-sm">
+										<?php
+										echo esc_html__(
+											'Start sending for free and scale as you grow',
+											'email-subscribers'
+										);
+										?>
 									</label>
 								</div>
 							</div>
-						<?php } ?>
-
+						</div>
+						<?php
+						}
+						?>
 						<!-- End-IG-Code -->
-						<div class="flex">
-						  <div class="pt-1">
-							<input
-							  id="ig_es_enable_double_optin"
-							  type="checkbox"
-							  checked="checked"
-							  class="w-4 h-4 transition duration-150 ease-in-out form-checkbox"
-							/>
-						  </div>
-						  <div class="pl-3">
-							<label for="ig_es_enable_double_optin" class="text-sm">
-								<?php
-								echo esc_html__(
-									'Enable double opt-in (people have to click a confirmation
-		                      link in email before they\'re subscribed)',
-									'email-subscribers'
-								);
-								?>
-							</label>
-						  </div>
+
+						<div class="space-y-1 leading-5">
+							<h3 class="text-base font-medium text-gray-900 -mb-0.5"><?php echo esc_html__( 'Your preferences:', 'email-subscribers' ); ?></h3>
+							<!-- Start-IG-Code -->
+							<?php if ( ! ES()->is_premium() ) { ?>
+								<div class="flex pt-1">
+									<div class="pt-1">
+										<input
+										id="es_allow_tracking"
+										type="checkbox"
+										checked="checked"
+										class="w-4 h-4 transition duration-150 ease-in-out form-checkbox"
+										/>
+									</div>
+									<div class="pl-3">
+										<label for="es_allow_tracking" class="text-sm">
+										<?php
+											/* translators: %s. Plugin name. */
+											echo sprintf( esc_html__( 'Help us to improve %s by opting in to share non-sensitive plugin usage data. No personal data is tracked or stored.', 'email-subscribers' ), '<strong>Icegram Express</strong>' );
+										?>
+										</label>
+									</div>
+								</div>
+							<?php } ?>
+
+							<!-- End-IG-Code -->
+							<div class="flex">
+							<div class="pt-1">
+								<input
+								id="ig_es_enable_double_optin"
+								type="checkbox"
+								checked="checked"
+								class="w-4 h-4 transition duration-150 ease-in-out form-checkbox"
+								/>
+							</div>
+							<div class="pl-3">
+								<label for="ig_es_enable_double_optin" class="text-sm">
+									<?php
+									echo esc_html__(
+										'Enable double opt-in (people have to click a confirmation
+								link in email before they\'re subscribed)',
+										'email-subscribers'
+									);
+									?>
+								</label>
+							</div>
+							</div>
+							<div class="flex">
+							<div class="pt-1">
+								<input
+								id="ig_es_add_gdpr_consent"
+								type="checkbox"
+								class="w-4 h-4 transition duration-150 ease-in-out form-checkbox"
+								/>
+							</div>
+							<div class="pl-3">
+								<label for="ig_es_add_gdpr_consent" class="text-sm">
+									<?php echo esc_html__( 'Add GDPR consent in subscription forms', 'email-subscribers' ); ?>
+								</label>
+							</div>
+							</div>
 						</div>
-						<div class="flex">
-						  <div class="pt-1">
-							<input
-							  id="ig_es_add_gdpr_consent"
-							  type="checkbox"
-							  class="w-4 h-4 transition duration-150 ease-in-out form-checkbox"
-							/>
-						  </div>
-						  <div class="pl-3">
-							<label for="ig_es_add_gdpr_consent" class="text-sm">
-								<?php echo esc_html__( 'Add GDPR consent in subscription forms', 'email-subscribers' ); ?>
-							</label>
-						  </div>
-						</div>
-					  </div>
 					</div>
 					</form>
 				  </div>
@@ -260,6 +297,22 @@
 						  </p>
 						</li>
 
+						<li id="ig-es-onboard-configure_mailer_plugin" class="flex items-start space-x-3 group" style="display:none;">
+						  <div class="relative pt-1 flex items-center justify-center flex-shrink-0 w-5 h-5">
+							<span
+							  class="block w-2 h-2 transition duration-150 ease-in-out bg-gray-300 rounded-full group-hover:bg-gray-400 group-focus:bg-gray-400"
+							></span>
+						  </div>
+						  <p class="text-sm">
+								<?php
+								echo esc_html__(
+									'Installing Icegram Mailer',
+									'email-subscribers'
+								);
+								?>
+							</p>
+						</li>
+
 						<li id="ig-es-onboard-create_default_newsletter_broadcast" class="flex items-start space-x-3 group">
 						  <div
 							class="relative pt-1 flex items-center justify-center flex-shrink-0 w-5 h-5"
@@ -312,52 +365,6 @@
 							);
 							?>
 						  </p>
-						</li>
-						
-						<li id="ig-es-onboard-email-delivery" class="flex items-start space-x-3 group" style="display:none;">
-						  <div class="relative pt-1 flex items-center justify-center flex-shrink-0 w-5 h-5">
-							<span
-							  class="block w-2 h-2 transition duration-150 ease-in-out bg-gray-300 rounded-full group-hover:bg-gray-400 group-focus:bg-gray-400"
-							></span>
-						  </div>
-
-							<div>
-								<p class="text-sm"><span class="ig-es-mark"><?php echo esc_html__( 'Setting up Icegram email sending service', 'email-subscribers' ); ?></span></p>
-								<ul class="mt-3 space-y-2 font-normal sm:space-y-3" id="ig-es-onboard-email-delivery-tasks-list">
-								<li id="ig-es-onboard-create_ess_account" class="flex items-start space-x-3 group">
-									<div
-									class="relative pt-1 flex items-center justify-center flex-shrink-0 w-5 h-5"
-									>
-									<span
-										class="block w-2 h-2 transition duration-150 ease-in-out bg-gray-300 rounded-full group-hover:bg-gray-400 group-focus:bg-gray-400"
-									></span>
-									</div>
-									<p class="text-sm"><?php echo esc_html__( 'Creating your account', 'email-subscribers' ); ?></p>
-								</li>
-								<li id="ig-es-onboard-send_test_email" class="flex items-start space-x-3 group">
-									<div
-									class="relative pt-1 flex items-center justify-center flex-shrink-0 w-5 h-5"
-									>
-									<span
-										class="block w-2 h-2 transition duration-150 ease-in-out bg-gray-300 rounded-full group-hover:bg-gray-400 group-focus:bg-gray-400"
-									></span>
-									</div>
-									<p class="text-sm"><?php echo esc_html__( 'Sending a test email', 'email-subscribers' ); ?></p>
-								</li>
-								<li id="ig-es-onboard-confirm_email_delivery" class="flex items-start space-x-3 group">
-									<div
-									class="relative pt-1 flex items-center justify-center flex-shrink-0 w-5 h-5"
-									>
-									<span
-										class="block w-2 h-2 transition duration-150 ease-in-out bg-gray-300 rounded-full group-hover:bg-gray-400 group-focus:bg-gray-400"
-									></span>
-									</div>
-									<p class="text-sm">
-									<?php echo esc_html__( 'Confirming email delivery', 'email-subscribers' ); ?>
-									</p>
-								</li>
-								</ul>
-							</div>
 						</li>
 					</ul>
 					</div>

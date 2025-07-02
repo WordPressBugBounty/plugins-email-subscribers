@@ -6,7 +6,7 @@ Tags: email marketing, email subscribers, email newsletters, autoresponders, ema
 Requires at least: 3.9
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 5.8.8
+Stable tag: 5.8.9
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -322,11 +322,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.8.8 =
+= 5.8.9 =
 
-* New: Added {{post.id}} keyword for post notification and post digest campaigns
+* Update: Onboarding improvements
 
 == Changelog ==
+
+**5.8.9 (02.07.2025)**
+
+* Update: Onboarding improvements
 
 **5.8.8 (25.06.2025)**
 

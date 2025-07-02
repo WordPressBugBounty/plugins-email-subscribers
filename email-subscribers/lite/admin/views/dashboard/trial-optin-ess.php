@@ -99,7 +99,7 @@ if ( $show_trial_optin ) {
 				/* translators: 1. Anchor start tag 2. Anchor close tag */
 				'feature_second' => sprintf( __( ' %1$s%2$s%3$sIcegram Collect%4$s - easy forms and lead capture%5$s%6$s', 'email-subscribers' ), "<div class='flex'><img class='mr-2 h-6' src='https://ps.w.org/icegram-rainmaker/assets/icon-128x128.png' alt=''>", "<a class='text-gray-500 text-sm hover:text-black-600' href='https://www.icegram.com/collect/?utm_source=es&utm_medium=in_app&utm_campaign=dashboard_help' target='_blank'>", '<b>', '</b>', '</a>', '</div>' ),
 
-				'feature_third' => sprintf( __( ' %1$s%2$s%3$sDuplicate Pages and Posts%4$s - A Duplicate Pages and Posts Plugin is a tool for WordPress.%5$s%6$s', 'email-subscribers' ), "<div class='flex'><img class='mr-2 h-6' src='https://s.w.org/plugins/geopattern-icon/duplicate-post-page-copy-clone-wp.svg' alt=''>", "<a class='text-gray-500 text-sm hover:text-black-600' href='https://wordpress.org/plugins/duplicate-post-page-copy-clone-wp/' target='_blank'>", '<b>', '</b>', '</a>', '</div>' ),
+				'feature_third' => sprintf( __( ' %1$s%2$s%3$sDuplicate Pages and Posts%4$s - A Duplicate Pages and Posts Plugin is a tool for WordPress.%5$s%6$s', 'email-subscribers' ), "<div class='flex'><img class='mr-2 h-6' src='https://ps.w.org/duplicate-post-page-copy-clone-wp/assets/icon-256X256.png' alt=''>", "<a class='text-gray-500 text-sm hover:text-black-600' href='https://wordpress.org/plugins/duplicate-post-page-copy-clone-wp/' target='_blank'>", '<b>', '</b>', '</a>', '</div>' ),
 
 				
 			),

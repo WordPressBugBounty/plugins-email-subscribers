@@ -193,21 +193,74 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 			$step     = 2;
 			update_option( self::$onboarding_step_option, $step, $autoload );
 
-			/* List of ESS onbording tasks */
-			$ess_tasks_list = array (
-				'create_ess_account',
-				'set_sending_service_consent',
-				'send_test_email',
-				'confirm_email_delivery',
-				'complete_ess_onboarding',
+			/* List of IG Mailer onbording tasks */
+			$ig_mailer_tasks_list = array (
+				'configure_mailer_plugin',
 			);
 
 			/* This condition can merge ESS onboarding tasks to current tasks when user enable ESS */
-			if (ig_es_get_request_data('enable_ess', '') == 'yes') {
-				self::$all_onboarding_tasks['configuration_tasks'] = array_merge(self::$all_onboarding_tasks['configuration_tasks'], $ess_tasks_list);
+			if (ig_es_get_request_data('enable_mailer', '') == 'yes') {	
+
+				$existing_tasks = self::$all_onboarding_tasks['configuration_tasks'];
+
+				array_splice($existing_tasks, 3, 0, $ig_mailer_tasks_list);
+
+				self::$all_onboarding_tasks['configuration_tasks'] = $existing_tasks;
 			}
 
 			return $this->perform_onboarding_tasks( 'configuration_tasks' );
+		}
+
+		public function configure_mailer_plugin() {
+			$email_sending_service = ES_Service_Email_Sending::get_instance();
+
+			$response = $email_sending_service->install_mailer_plugin();
+			if ( isset( $response['success']) && false === $response['success'] ) {
+				return [ 'status' => 'error', 'message' => $response['message'] ?? esc_html__('Failed to install mailer plugin.', 'email-subscribers') ];
+			}
+
+			$response = $email_sending_service->activate_mailer_plugin();
+			if ( isset( $response['success']) && false === $response['success'] ) {
+				return [ 'status' => 'error', 'message' => $response['message'] ?? esc_html__('Failed to activate mailer plugin.', 'email-subscribers') ];
+			}
+
+			$response = self::create_ess_account();
+			if (is_wp_error($response)) {
+				return [ 'status' => 'error', 'message' => $response->get_error_message() ];
+			}
+			if ( isset( $response['status']) && 'error' === $response['status'] ) {
+				return [ 'status' => 'error', 'message' => $response['message'] ?? esc_html__('Failed to create email sending service account.', 'email-subscribers') ];
+			}
+
+			$response = self::set_sending_service_consent();
+			if ( isset( $response['status']) && 'error' === $response['status'] ) {
+				return [ 'status' => 'error', 'message' => $response['message'] ?? esc_html__('Failed to enable mailer plugin.', 'email-subscribers') ];
+			}
+
+			$response = self::send_test_email();
+			if ( isset( $response['status']) && 'error' === $response['status'] ) {
+				return [ 'status' => 'error', 'message' => $response['message'] ?? esc_html__('Failed to send test email.', 'email-subscribers') ];
+			}
+
+			// Add delay to allow email processing
+			sleep(3);
+
+			$response = self::confirm_email_delivery();
+			if (is_wp_error($response)) {
+				return [ 'status' => 'error', 'message' => $response->get_error_message() ];
+			}
+			if ( isset( $response['status']) && 'error' === $response['status'] ) {
+				return [ 'status' => 'error', 'message' => $response['message'] ?? esc_html__('Failed to confirm email delivery.', 'email-subscribers') ];
+			}
+
+			$response = self::complete_ess_onboarding();
+			if ( isset( $response['status']) && 'error' === $response['status'] ) {
+				return [ 'status' => 'error', 'message' => $response['message'] ?? esc_html__('Failed to complete mailer onboarding.', 'email-subscribers') ];
+			}
+
+			return [
+				'status'  => 'success',
+			];
 		}
 
 		/**
@@ -739,37 +792,88 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 			return $response;
 		}
 
-		public function create_ess_account() {
-			$es_service_email_sending = ES_Service_Email_Sending::get_instance();
-			$response = $es_service_email_sending->create_ess_account();
+		/**
+		 * Method to perform configuration and list, ES form, campaigns creation related operations in the onboarding
+		 *
+		 * @since 4.6.0
+		 */
+		public function ajax_perform_mailer_configuration_tasks() {
+			return $this->perform_onboarding_tasks( 'mailer_configuration_tasks' );
+		}
+
+
+		public static function create_ess_account() {
+			$response = array(
+				'status' => 'error',
+			);
+
+			if ( class_exists( 'Icegram_Mailer_Account' ) ) {
+				$ig_mailer = Icegram_Mailer_Account::get_instance();
+
+				if ( method_exists( $ig_mailer, 'create_ess_account' ) ) {
+					$response = $ig_mailer->create_ess_account();
+				}
+			}
 
 			return $response;
 		}
 
-		public function set_sending_service_consent() {
-			$es_service_email_sending = ES_Service_Email_Sending::get_instance();
-			$response = $es_service_email_sending->set_sending_service_consent();
+		public static function set_sending_service_consent() {
+			$response = array(
+				'status' => 'error',
+			);
+
+			if ( class_exists( 'Icegram_Mailer_Account' ) ) {
+				$ig_mailer = Icegram_Mailer_Account::get_instance();
+				if ( method_exists( $ig_mailer, 'set_sending_service_consent' ) ) {
+					$response = $ig_mailer->set_sending_service_consent();
+				}
+			}
 
 			return $response;
 		}
 
 		public function send_test_email() {
-			$es_service_email_sending = ES_Service_Email_Sending::get_instance();
-			$response = $es_service_email_sending->dispatch_emails_from_server();
+			$response = array(
+				'status' => 'error',
+			);
+
+			if ( class_exists( 'Icegram_Mailer_Account' ) ) {
+				$ig_mailer = Icegram_Mailer_Account::get_instance();
+				if ( method_exists( $ig_mailer, 'dispatch_emails_from_server' ) ) {
+					$response = $ig_mailer->dispatch_emails_from_server();
+				}
+			}
 
 			return $response;
 		}
 
-		public function confirm_email_delivery() {
-			$es_service_email_sending = ES_Service_Email_Sending::get_instance();
-			$response = $es_service_email_sending->check_test_email_on_server();
+		public static function confirm_email_delivery() {
+			$response = array(
+				'status' => 'error',
+			);
+			
+			if ( class_exists( 'Icegram_Mailer_Account' ) ) {
+				$ig_mailer = Icegram_Mailer_Account::get_instance();
+				if ( method_exists( $ig_mailer, 'check_test_email_on_server' ) ) {
+					$response = $ig_mailer->check_test_email_on_server();
+				}
+			}
 
 			return $response;
 		}
 
-		public function complete_ess_onboarding() {
-			$es_service_email_sending = ES_Service_Email_Sending::get_instance();
-			$response = $es_service_email_sending->ajax_complete_ess_onboarding();
+		public static function complete_ess_onboarding() {
+			$response = array(
+				'status' => 'error',
+			);
+
+			if ( class_exists( 'Icegram_Mailer_Account' ) ) {
+				$ig_mailer = Icegram_Mailer_Account::get_instance();
+				if ( method_exists( $ig_mailer, 'ajax_complete_ess_onboarding' ) ) {
+					$response = $ig_mailer->ajax_complete_ess_onboarding();
+				}
+			}
 
 			return $response;
 		}
@@ -1383,24 +1487,8 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 			}
 
 			$required_tasks_mapping = array(
-				'set_sending_service_consent' => array(
-					'create_ess_account',
-				),
-				'send_test_email' => array(
-					'set_sending_service_consent',
-				),
-				'confirm_email_delivery' => array(
-					'send_test_email',
-				),
-				'complete_ess_onboarding' => array(
-					'create_ess_account',
-				),
-
-				'check_test_email_on_server' => array(
-					'dispatch_emails_from_server',
-				),
-				'evaluate_email_delivery'    => array(
-					'check_test_email_on_server',
+				'mailer_configuration_tasks' => array(
+					'configure_mailer_plugin'
 				),
 			);
 

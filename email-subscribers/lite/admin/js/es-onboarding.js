@@ -22,7 +22,7 @@ jQuery(document).ready(function() {
 			let create_post_notification = jQuery('#es_post_notification_preference').is(':checked') ? 'yes': 'no';
 			let add_gdpr_consent         = jQuery('#ig_es_add_gdpr_consent').is(':checked') ? 'yes': 'no';
 			let enable_double_optin      = jQuery('#ig_es_enable_double_optin').is(':checked') ? 'yes': 'no';
-			let enable_ess               = jQuery('#ig_es_enable_ess').is(':checked') ? 'yes': 'no';
+			let enable_mailer               = jQuery('#ig_es_enable_mailer').is(':checked') ? 'yes': 'no';
 
 			let allow_tracking = '';
 			if (jQuery('#es_allow_tracking').length > 0) {
@@ -43,7 +43,7 @@ jQuery(document).ready(function() {
 					allow_tracking: allow_tracking,
 					add_gdpr_consent: add_gdpr_consent,
 					enable_double_optin: enable_double_optin,
-					enable_ess: enable_ess,
+					enable_mailer: enable_mailer,
 					security: ig_es_js_data.security
 				},
 				dataType: 'json',
@@ -68,8 +68,6 @@ jQuery(document).ready(function() {
 								},time_increament);
 							}
 						}
-
-						onboarding_functions.update_email_delivery_main_task_status();
 					}
 
 					jQuery(document).trigger('ig_es_perform_configuration_tasks_success');
@@ -199,17 +197,6 @@ jQuery(document).ready(function() {
 
 			jQuery.ajax(params);
 		},
-		update_email_delivery_main_task_status: function() {
-			setTimeout(function() {
-				let unsuccessful_tasks = jQuery('#ig-es-onboard-email-delivery-tasks-list li[data-status="error"]');
-				// Check if there are any unsuccessfull tasks related to email delivery i.e. having any errors.
-				if ( 0 === unsuccessful_tasks.length ) {
-					ig_es_change_onboard_task_status( 'ig-es-onboard-email-delivery', 'success');
-				}else{
-					ig_es_change_onboard_task_status( 'ig-es-onboard-email-delivery', 'error');
-				}
-			}, time_increament);
-		},
 		complete_onboarding: function() {
 			let name = jQuery('#ig-es-onboarding-final-steps-form #ig-es-sign-up-name').val();
 			let email = jQuery('#ig-es-onboarding-final-steps-form #ig-es-sign-up-email').val();
@@ -301,7 +288,6 @@ jQuery(document).ready(function() {
 			jQuery.ajax(params);
 		},
 		handle_functions_error_event: function() {
-			onboarding_functions.update_email_delivery_main_task_status();
 			setTimeout(function(){
 				let email_delivery_error_text = jQuery('#es_delivery_check_processed').data('error-text');
 				jQuery('#es_delivery_check_processed').text(email_delivery_error_text);
@@ -309,18 +295,22 @@ jQuery(document).ready(function() {
 		}
 	};
 
-	/* ESS checkbox event used for hide-show ESS section in onboarding step-2 */
-	jQuery('#ig_es_enable_ess').click(function(){
+	/* Mailer checkbox event used for hide-show ESS section in onboarding step-2 */
+	jQuery('#ig_es_enable_mailer').click(function(){
 		if (jQuery(this).is(':checked')) {
-			jQuery('#ig-es-onboard-email-delivery').show();
+			jQuery('#ig-es-onboard-configure_mailer_plugin').show();
 		} else {
-			jQuery('#ig-es-onboard-email-delivery').hide();
+			jQuery('#ig-es-onboard-configure_mailer_plugin').hide();
 		}
 	});
 
 	jQuery('#es-button-send').on( 'click', function() {
 	
 		if( jQuery("#es-send-email-form")[0].checkValidity() ) {
+			
+			if (jQuery('#ig_es_enable_mailer').is(':checked')) {
+				jQuery('#ig-es-onboard-configure_mailer_plugin').show();
+			}
 			// Handles problems with multiple clicks.
 			jQuery(this).off('click');
 			ig_es_start_processing_tasks_queue( 'perform_configuration_tasks' );
@@ -544,10 +534,6 @@ jQuery(document).ready(function() {
 					// Bind a function which will handle error on the queue processing.
 					jQuery(document).on( 'ig_es_' + onboarding_functions_queue[index - 1] + '_error', onboarding_functions.handle_functions_error_event);
 				}
-			}
-			// Attach the function to change status of main email delivery task to the success event of last onboarding function.
-			if( index === (onboarding_functions_queue.length - 1) ) {
-				jQuery(document).on( 'ig_es_' + onboarding_function + '_success', onboarding_functions.update_email_delivery_main_task_status );
 			}
 		});
 		if( onboarding_functions.hasOwnProperty( current_task ) && 'function' === typeof onboarding_functions[current_task] ) {
