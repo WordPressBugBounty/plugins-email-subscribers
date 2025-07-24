@@ -2,6 +2,21 @@
 $trial_block      = array();
 $show_trial_optin = !  ES()->trial->is_trial() && ! ES()->is_premium();
 $allowed_tags     = ig_es_allowed_html_tags_in_esc();
+$plan = ES()->get_plan();
+switch ($plan) {
+	case 'trial':
+		$plan = esc_html__( 'Trial', 'email-subscribers' );
+	case 'lite':
+		$plan = esc_html__( 'Starter' , 'email-subscribers' );
+	case 'pro':
+		$plan = esc_html__( 'Max', 'email-subscribers' );
+		break;
+	case 'starter':
+		$plan = esc_html__( 'Pro', 'email-subscribers' );
+		break;
+	default:
+		$plan = '';
+}
 if ( $show_trial_optin ) {
 	$trial_period_in_days = ES()->trial->get_trial_period( 'in_days' );
 
@@ -63,7 +78,6 @@ if ( $show_trial_optin ) {
 	$trial_period_in_days = ES()->trial->get_trial_period( 'in_days' );
 	$trial_expiry_date           = ES()->trial->get_trial_expiry_date();
 	$formatted_trial_expiry_date = ig_es_format_date_time( $trial_expiry_date );
-	$plan = ES()->get_plan();
 	$trial_block = array(
 		'trial-expired' => array(
 			/* translators: %d: Trial period in days */
@@ -74,7 +88,6 @@ if ( $show_trial_optin ) {
 		),
 	);
 } elseif (ES()->is_premium()) {
-	$plan = ES()->get_plan();
 	$trial_block = array(
 		'trial-expired' => array( 
 			'title' => sprintf( __( 'Icegram Express - %s', 'email-subscribers' ), $plan ),

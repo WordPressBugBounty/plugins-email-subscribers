@@ -1701,6 +1701,9 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 					'details' => esc_html__( 'Please share the reason', $this->plugin ),
 				),
 			);
+
+			$options = apply_filters( $this->plugin_abbr . '_deactivation_reasons', $options );
+			
 			?>
 			<div class="ig-deactivate-survey-modal" id="ig-deactivate-survey-<?php echo esc_js( $this->plugin ); ?>">
 				<div class="ig-deactivate-survey-wrap">
@@ -2035,7 +2038,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 				$result['message'] = $error_message;
 			}
 
-			do_action( $this->plugin_abbr.'_deactivation_feedback_submitted', $data );
+			do_action( $this->plugin_abbr . '_deactivation_feedback_submitted', $data );
 
 			die( json_encode( $result ) );
 		}

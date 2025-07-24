@@ -179,3 +179,23 @@ function ig_es_create_list_from_product( $product ) {
 
 	return $list_id;
 }
+
+function ig_es_create_list_from_event( $event_id ) {
+	$list_id = 0;
+
+	$event = get_post($event_id);
+
+	if ( $event instanceof WP_Post && 'event_listing' === $event->post_type ) {
+		$list_name = $event->post_title;
+		$list_slug = $event->post_name;
+
+		$list = ES()->lists_db->get_list_by_slug( $list_slug );
+		if ( ! empty( $list ) ) {
+			$list_id = $list['id'];
+		} else {
+			$list_id = ES()->lists_db->add_list( $list_name, $list_slug );
+		}
+	}
+
+	return $list_id;
+}

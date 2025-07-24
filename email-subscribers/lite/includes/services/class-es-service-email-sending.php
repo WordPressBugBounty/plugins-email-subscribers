@@ -1466,12 +1466,12 @@ class ES_Service_Email_Sending extends ES_Services {
 			<p class="mb-2">
 				<?php 
 				/* translators: 1: Mailer plugin anchor start tag 2: Mailer plugin anchor end tag */
-				echo sprintf( esc_html__( 'Tired of WordPress emails going to spam? Get reliable delivery with our newly launched %1$sIcegram Mailer%2$s plugin so you\'ll never miss an important notification again!', 'email-subscribers' ), '<a href="' . esc_url( $optin_url ) . '" target="_blank" class="text-indigo-600">', '</a>' ); 
+				echo sprintf( esc_html__( 'Global stats say 1 in 5 WordPress emails land in spam. %1$sIcegram Mailer%2$s gets them into the inbox reliably.🚀', 'email-subscribers' ), '<a href="' . esc_url( $optin_url ) . '" target="_blank" class="text-indigo-600">', '</a>' ); 
 				?>
 			</p>
 			<p>
 				<a href="<?php echo esc_url( admin_url( 'plugin-install.php?s=Icegram%2520Mailer%2520%25E2%2580%2593%2520Instant%252C%2520Dependable%252C%2520and%2520Easy%2520Email%2520Delivery&tab=search&type=term' ) ); ?>" target="_blank" id="ig-es-post-duplicator-promo-button">
-					<button class="primary">	<?php echo esc_html__('Get it now', 'email-subscribers'); ?>
+					<button class="primary">	<?php echo esc_html__('Start Sending Now', 'email-subscribers'); ?>
 					</button>
 				</a>
 			</p>

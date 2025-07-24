@@ -124,7 +124,7 @@ if ( $ig_es_tracker::is_plugin_activated( 'icegram-mailer/icegram-mailer.php' ) 
 						<!-- Start-IG-Code -->
 						<?php
 						if ( ! $mailer_plugin_onboarding_completed ) {
-						?>
+							?>
 						<div class="space-y-1 leading-5">
 							<h3 class="text-base font-medium text-gray-900 -mb-0.5"><?php echo esc_html__( 'Need to send email?', 'email-subscribers' ); ?></h3>
 							<div class="flex">

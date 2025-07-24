@@ -165,25 +165,9 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 				$sql .= $order_by_clause;
 				$sql .= " LIMIT {$offset}, {$per_page}";
 
-				$cache_key       = ES_Cache::generate_key( $sql );
-				$exists_in_cache = ES_Cache::is_exists( $cache_key, 'query' );
-
-				if ( ! $exists_in_cache ) {
-					$result = $wpbd->get_results( $sql, 'ARRAY_A' );
-					ES_Cache::set( $cache_key, $result, 'query' );
-				} else {
-					$result = ES_Cache::get( $cache_key, 'query' );
-				}
+				$result = $wpbd->get_results( $sql, 'ARRAY_A' );
 			} else {
-
-				$cache_key       = ES_Cache::generate_key( $sql );
-				$exists_in_cache = ES_Cache::is_exists( $cache_key, 'query' );
-				if ( ! $exists_in_cache ) {
-					$result = $wpbd->get_var( $sql );
-					ES_Cache::set( $cache_key, $result, 'query' );
-				} else {
-					$result = ES_Cache::get( $cache_key, 'query' );
-				}
+				$result = $wpbd->get_var( $sql );
 			}
 			return $result;
 		}

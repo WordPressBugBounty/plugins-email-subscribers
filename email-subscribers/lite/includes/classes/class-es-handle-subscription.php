@@ -578,10 +578,10 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 		public function get_messages( $message ) {
 			$ig_es_form_submission_success_message = get_option( 'ig_es_form_submission_success_message' );
 			$form_data 							   = ES()->forms_db->get_form_by_id( $this->form_id );
-			$settings  							   = ig_es_get_data( $form_data, 'settings', array() );
-
-			if ( ! empty( $settings ) ) {
-				$settings        = maybe_unserialize( $settings );
+			
+			if ( ! empty( $form_data['settings'] ) ) {
+				$settings        = maybe_unserialize( $form_data['settings'] );
+				
 				$success_message = ! empty( $settings['success_message'] ) ? $settings['success_message'] : '';
 			}
 
@@ -670,5 +670,6 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				}
 			}
 		}
+
 	}
 }
