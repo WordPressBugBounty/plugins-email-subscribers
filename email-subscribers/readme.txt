@@ -2,11 +2,11 @@
 Contributors: icegram, niravmehta, sandhyam, storeapps, Mansi Shah, kishanranawat, shubhanshukandani
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BMFRMVXQ87JWA&source=url
 Author URI: https://www.icegram.com/
-Tags: email subscribers, newsletters, subscription forms, post notifications, woocommerce email, email autoresponder
+Tags: email subscribers, newsletter, subscription form, post notifications, woocommerce email, email autoresponder
 Requires at least: 3.9
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 5.8.10
+Stable tag: 5.8.11
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -340,19 +340,19 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.8.10 =
+= 5.8.11 =
 
-* Enhancement: Option to add users to event-specific list whenever someone registers for an event in the WP Event Manager plugin [MAX]
-* Fix: Fixed an issue where form-specific success message was not showing after submission
-* Fix: Caching issue on the Audience page
+* New: Added Gutenberg block for showing archived campaigns [MAX]
 
 == Changelog ==
+
+**5.8.11 (07.08.2025)**
+
+* New: Added Gutenberg block for showing archived campaigns [MAX]
 
 **5.8.10 (24.07.2025)**
 
 * Enhancement: Option to add users to event-specific list whenever someone registers for an event in the WP Event Manager plugin [MAX]
-* Fix: Fixed an issue where form-specific success message was not showing after submission
-* Fix: Caching issue on the Audience page
 
 **5.8.9 (02.07.2025)**
 
@@ -364,7 +364,6 @@ Option 2:
 
 **5.8.7 (18.06.2025)**
 
-* Fix: Issue while editing/deleting duplicated campaigns [MAX]
 * Fix: Unable to change 'Subscriber list status' using the dropdown while editing contacts
 
 **5.8.6 (11.06.2025)**
@@ -386,7 +385,6 @@ Option 2:
 **5.8.2 (07.05.2025)**
 
 * Fix: Attachment issue when using Classic Editor for campaign emails
-* Fix: Layout issue on the Plugins page
 
 **5.8.1 (23.04.2025)**
 
@@ -418,7 +416,6 @@ Option 2:
 **5.7.56 (20.03.2025)**
 
 * Fix: Subscription confirmation error due to incorrect 'Content-Type' header on some sites
-* Fix: Open tracking is disabled in some cases when creating a campaign from a template
 
 **5.7.55 (12.03.2025)**
 
@@ -449,9 +446,6 @@ Option 2:
 
 * Enhancement: Improved default emails and messages content for subscription
 * Fix: Invalid CSS property 'container-background-color' in forms
-* Fix: Browser freezing issue when making changes in Drag-n-Drop editor in some cases
-* Fix: Fatal error while approving WooCommerce product reviews
-* Fix: PHP Warning "Array to string conversion"
 
 **5.7.49 (23.01.2025)**
 
@@ -460,7 +454,6 @@ Option 2:
 **5.7.48 (16.01.2025)**
 
 * Update: UI Improvements
-* Fix: Unsubscribe link issue in 'List-Unsubscribe' email header
 
 **5.7.47 (02.01.2025)**
 
@@ -480,9 +473,6 @@ Option 2:
 * Update: Tested up to WordPress 6.7.1
 * Enhancement: Subscription form responsiveness issue
 * Fix: XSS and SQL injection vulnerabilities [Thanks to Cleantalk team]
-* Fix: Subscribe link not working in User Unsubscribed workflow email
-* Fix: Name field was not syncing properly in Gravity form workflow [PRO]
-* Fix: Custom URL fields were not getting imported properly in some cases [MAX]
 
 **5.7.43 (13.11.2024)**
 
@@ -505,7 +495,6 @@ Option 2:
 **5.7.39 (30.10.2024)**
 
 * New: Added action to duplicate form
-* Fix: PHP warning undefined array key "first_form_body"
 
 **5.7.38 (28.10.2024)**
 
@@ -514,13 +503,10 @@ Option 2:
 **5.7.37 (24.10.2024)**
 
 * New: Added readymade form designs
-* Fix: PHP warning undefined array key "meta"
-* Fix: Email sending issue in Sendgrid when recipient email is invalid [MAX]
 
 **5.7.36 (10.10.2024)**
 
 * Enhancement: Reduce batch size for first two batches when sending campaigns
-* Fix: Fatal error on dashboard page
 
 **5.7.35 (25.09.2024)**
 
@@ -529,21 +515,17 @@ Option 2:
 **5.7.34 (19.09.2024)**
 
 * Update: Improved invalid email handling while sending emails in batches 
-* Fix: Email case-sensitivity issue in subscriptions
 
 **5.7.33 (12.09.2024)**
 
 * Update: Improved dashboard UI
-* Fix: Arbitrary shortcode execution vulnerability - CVE-2024-8254 [Thanks to Wordfence team]
 
 **5.7.32 (29.08.2024)**
 
 * New: Added option to export campaign reports in CSV [MAX]
-* Fix: Welcome/confirmation emails were not getting sent for subscribers added through REST API
 
 **5.7.31 (21.08.2024)**
 
-* Fix: Missing image block in Drag-n-Drop editor
 * Update: Added a confirmation popup to the campaign scheduling/sending flow
 
 **5.7.30 (14.08.2024)**
@@ -561,38 +543,27 @@ Option 2:
 
 **5.7.27 (15.07.2024)**
 
-* Fix: Campaign filters were not working correctly in a few cases
-* Fix: '{{LIST}}' tag is showing contact's all lists(including unsubscribed one) in few cases in welcome email
-* Fix: Missing authorization checks on creating REST API keys and contact bulk actions - CVE-2024-5703 [Thanks to Wordfence team]
 * Fix: Sequence messages not showing when the sequence campaign is inactive [MAX]
 
 **5.7.26 (26.06.2024)**
 
 * Fix: Broken UI when previewing campaign on Reports page in some cases
-* Fix: SQL injection vulnerability during unsubscription - CVE-2024-6172 [Thanks to Wordfence & Patchstack teams]
-* Fix: Fatal error when activating plugin from plugins' search page
 
 **5.7.25 (20.06.2024)**
 
 * Update: Improved campaign reports UI
-* Fix: Broken Dashboard UI
-* Fix: Sequence emails not triggering for imported users in some cases [MAX]
 
 **5.7.24 (12.06.2024)**
 
-* Fix: SQL injection vulnerability during subscription - CVE-2024-5756 [Thanks to Wordfence team]
 * Update: Improved dashboard UI
 
 **5.7.23 (06.06.2024)**
 
 * Fix: "Post image size" setting field was not displaying all registered image sizes
-* Fix: Paused campaign was getting sent to all subscribers while saving in some cases [PRO]
-* Fix: SQL injection vulnerability during contact import - CVE-2024-4845 [Thanks to Wordfence team]
 
 **5.7.22 (29.05.2024)**
 
 * Improvements: Enhanced the post notification setup process
-* Fix: Image upload issue while composing email in some cases
 
 **5.7.21.1 (23.05.2024)**
 
@@ -601,15 +572,10 @@ Option 2:
 **5.7.21 (22.05.2024)**
 
 * Improvements: New WordPress filter 'ig_es_validate_subscription' to enable custom subscription validation
-* Fix: Unauthenticated SQL injection vulnerability - CVE-2024-4295 [Thanks to Wordfence team]
-* Fix: Campaign title getting used in email subject for post notification campaigns
-* Fix: Issue while editing campaign title
-* Fix: Style issues with custom fields [MAX]
 
 **5.7.20 (09.05.2024)**
 
 * Improvements: Settings page UI improvements
-* Fix: Security vulnerabilities including SQL injection, PHP object injection, and missing authorization checks - CVE-2024-4010 [Thanks to Wordfence team]
 
 **5.7.19 (24.04.2024)**
 
@@ -619,14 +585,10 @@ Option 2:
 
 * Improvements: Performance & security improvements suggested by the Plugin Check (PCP) tool
 * Update: Tested up to WordPress 6.5.2
-* Fix: Unauthorized access vulnerability [Thanks to Wordfence team]
 
 **5.7.17 (12.04.2024)**
 
 * Fix: Unable to select campaign recipient rules in a few cases
-* Fix: Inline CSS not working in campaign preview [PRO]
-* Fix: Keywords were not reflected in the post-notification test email [MAX]
-* Fix: Broadcasts were not getting sent after re-editing
 
 **5.7.16 (03.04.2024)**
 
@@ -634,20 +596,15 @@ Option 2:
 
 **5.7.15 (27.03.2024)**
 
-* Fix: SQL vulnerability while importing contacts [Thanks to Wordfence team]
 * Improvements: Added KPIs to audience dashboard
 
 **5.7.14 (15.03.2024)**
 
-* Fix: Broken Access Control vulnerability for Workflows [Thanks to Patchstack team]
 * Improvements: Revamped dashboard for optimized view
 
 **5.7.13 (06.03.2024)**
 
 * New: Allow admin to manually confirm subscription through confirmation email link
-* Fix: Special characters issue in post notification emails
-* Fix: Custom field not updating when resubscribing
-* Fix: Drag-n-drop editor's blocks not updating when campaign type is changed in templates
 
 **5.7.12 (28.02.2024)**
 
@@ -656,7 +613,6 @@ Option 2:
 **5.7.11 (14.02.2024)**
 
 * Fix: Post notifications were not getting sent for campaigns created using the Drag-n-Drop editor
-* Fix: Unable to edit sequence campaigns [MAX]
 
 **5.7.10 (08.02.2024)**
 
@@ -665,31 +621,24 @@ Option 2:
 **5.7.9 (25.01.2024)**
 
 * Fix: Unsubscribe not working for Weekly summary email in few cases
-* Fix: Emails not sending for posts created with Yoast Duplicate Post plugin
-* Fix: Issue with typing 'n' key in Drag-n-Drop editor when Jetpack plugin is active
 
 **5.7.8 (17.01.2024)**
 
-* Improvements: Added 'Show block manager' toolbar option for the 'Add Posts' block in the Drag-n-Drop editor
-* Fix: Default subject and content were not set properly while creating a new campaign in some cases
-* Fix: Workflow emails not sending when using the Icegram email sending service with email tracking enabled
+* Improvements: Added 'Show block manager' toolbar option for the 'Add Posts' block in the Drag-n-Drop Editor
 
 **5.7.7 (10.01.2024)**
 
 * New: Show recipients' counts in campaigns
 * Improvements: Drag-n-Drop editor UI improvements
 * Update: PHP 8.2 compatibility
-* Fix: Fatal error when sending preview email in post digest [MAX]
 
 **5.7.6 (03.01.2024)**
 
 * Fix: Set tracking options according to plugin settings for new campaigns
-* Fix: Previous scheduled date/time not shown when editing the scheduled campaign
 
 **5.7.5 (28.12.2023)**
 
 * New: Added "Save as Template" option in campaigns
-* Fix: Email content not preserved when switching from Drag-n-Drop editor to Classic editor
 * Improvements: Disallow change in recipients after campaign has started sending
 
 **5.7.4 (19.12.2023)**
@@ -697,21 +646,15 @@ Option 2:
 * New: Added "Send Now" option for Post notification/Post digest campaigns [MAX]
 * Update: Tested up to WordPress 6.4.2
 * Update: Enhancements in campaign UI
-* Fix: Extra image tags getting added in the Campaign Classic editor
-* Fix: Incorrect post shown in post notification campaign preview
 
 **5.7.3 (29.11.2023)**
 
 * Update: Tested up to WordPress 6.4.1
 * Fix: Campaign content not saving in some cases when using Classic editor
-* Fix: Create New Template link not working on the Dashboard page
-* Fix: Inline text color issue in Drag-n-Drop editor
 
 **5.7.2 (14.11.2023)**
 
 * Fix: Fatal error when creating a new campaign using existing templates in PHP 8.0
-* Fix: Custom field keywords not working in emails
-* Fix: Emails were not in alphabetical order while sending
 
 **5.7.1 (10.11.2023)**
 
@@ -724,9 +667,6 @@ Option 2:
 **5.6.24 (11.10.2023)**
 
 * New: Added option to export subscribers who clicked on a link from the report [MAX]
-* Fix: Prevent directory traversal vulnerability [Thanks to Wordfence team]
-* Fix: Select list error for embedded forms [MAX]
-* Fix: Gmail authentication issue when Icegram sending service is enabled
 
 **5.6.23 (27.09.2023)**
 
@@ -735,9 +675,6 @@ Option 2:
 **5.6.22 (20.09.2023)**
 
 * New: Added keywords to show total contacts count, site URL, and site name in the DND form editor
-* Fix: Preheader not showing when sending campaign preview emails [MAX]
-* Fix: Error when sending workflow emails using Sendgrid [MAX]
-* Fix: Campaign gallery issue with WordPress 4.9
 
 **5.6.21 (06.09.2023)**
 
@@ -746,12 +683,10 @@ Option 2:
 **5.6.20 (30.08.2023)**
 
 * New: New workflow triggers for BuddyBoss user actions -  activated/suspended/unsuspended [MAX]
-* Fix: Fatal error on dashboard for admin notice
 
 **5.6.19 (23.08.2023)**
 
 * New: Compatibility with WooCommerce HPOS (High Performance Order Storage)
-* Fix: Remove click tracking for test emails [MAX]
 
 **5.6.18 (16.08.2023)**
 
@@ -769,37 +704,28 @@ Option 2:
 **5.6.15 (19.07.2023)**
 
 * Fix: While sending email from MailerSend the "To" email address contains the wrong email address [MAX]
-* Fix: PHP 7.4 warning while subscribing
-* Fix: PHP warning on the dashboard page
 
 **5.6.14 (12.07.2023)**
 
 * Update: Updated Action Scheduler Library to 5.4.0
 * Improvements: Improve post notification sending flow
-* Fix: Last name data missing in BuddyBoss importer [MAX]
-* Fix: Welcome email content getting overridden with new subscriber admin notification in few cases
 
 **5.6.13 (05.07.2023)**
 
 * Improvements: Include custom fields data in CSV while exporting contacts [MAX]
-* Fix: Issue with Access Control setting for campaigns [PRO]
-* Fix: Issue with Dran-n-Drop editor while editing templates
 
 **5.6.12 (28.06.2023)**
 
 * Fix: Keywords not working for workflow and sequence emails
-* Fix: Content added through custom code block not displaying in email [MAX]
 
 **5.6.11 (21.06.2023)**
 
 * Fix: Issue with sidebar positioning after adding Express form widget
-* Fix: Keyword for post categories not working as expected in email subject line
 
 **5.6.10 (14.06.2023)**
 
 * New: Option to update existing subscribers' data while importing
 * New: Option to add surveys in email campaigns using Drag and Drop builder [MAX]
-* Fix: Fatal error when sending emails through SMTP mailer in a few cases [PRO]
 * Improvements: SQL query optimization used for sending emails
 
 **5.6.9 (07.06.2023)**
@@ -810,47 +736,31 @@ Option 2:
 
 * Improvements: Option to enable Icegram sending service when email sending fails
 * Improvements: Blocked domain check while adding contacts through workflows
-* Fix: Incorrect email stats in Weekly summary email
-* Fix: Issue with custom field having special characters [MAX]
-* Fix: Trial optin issue on dashboard
 
 **5.6.7 (24.05.2023)**
 
 * New: Option to check email sending logs
-* Fix: Extra field in the subscription form when Otter – Gutenberg Blocks plugin is active 
 * Improvements: Small UI improvements
 
 **5.6.6 (17.05.2023)**
 
 * New: Optimize emails sending time based on subscriber's previous average email open time [MAX]
-* Fix: Extra label in the subscription form
-* Fix: Category reset issue in the post notification campaign
-* Fix: JavaScript error while setting template preview image
 
 **5.6.5 (09.05.2023)**
 
 * New: Send emails on subscriber birthdays/anniversaries [MAX]
 * New: Add preheader text to emails
-* Fix: Accessibility issue in the subscription form
-* Fix: Issue with email sending when using Sendgrid
 
 **5.6.4 (26.04.2023)**
 
 * New: Housekeeping option for campaigns [MAX]
-* Enhancement: Added link for checking ESPs sending limits in Email sending settings 
-* Fix: Post notification shortcode issue with Divi theme
-* Fix: Campaign sending to all recipients when no recipients selected
-* Fix: Form id in form redirection URL
+* Enhancement: Added link for checking ESPs sending limits in Email sending settings
 
 **5.6.3 (20.04.2023)**
-
 * New: Option to redirect subscribers after subscription
 * New: Weekly summary email
-* Fix: Duplicate posts issue in post digest notifications [MAX]
-* Fix: Database error when creating custom field [MAX]
 
 **5.6.2 (12.04.2023)**
-
 * New: Option to show custom success message per form
 * New: Import subscribers from BuddyBoss [MAX]
 
@@ -863,13 +773,10 @@ Option 2:
 
 * New: Introducing Icegram Email Sending Service - free 100 emails per day [Experimental]
 * New: Workflow rules for LearnDash LMS & Ultimate Members plugins [MAX]
-* Fix: Welcome email issue
-* Fix: Manage lists issue
 
 **5.5.15 (15.03.2023)**
 
 * Enhancement: Small UI improvements on campaigns page
-* Fix: Post digest duplicate notifications [MAX]
 
 **5.5.14 (08.03.2023)**
 
@@ -892,7 +799,6 @@ Option 2:
 **5.5.10 (01.02.2023)**
 
 * Fix: Autofill issue for email fields during onboarding
-* Fix: Duplicate hidden fields in subscription form
 
 **5.5.9 (25.01.2023)**
 
@@ -902,13 +808,9 @@ Option 2:
 **5.5.8 (18.01.2023)**
 
 * Enhancement: Show open stats on Reports page
-* Fix: Fatal error when using workflow rule for User role in MemberPress plugin's integration
 
 **5.5.7 (12.01.2023)**
 
-* Fix: Delete unconfirmed contacts cron not re-registering on plugin reactivation
-* Fix: Delete contacts' list data when deleting the list
-* Fix: The master list was not editable
 * Enhancement: Name field placeholder issue in subscription form
 
 **5.5.6 (04.01.2023)**
@@ -923,41 +825,31 @@ Option 2:
 **5.5.4 (21.12.2022)**
 
 * Fix: Preview was not working in post digest [MAX]
-* Fix: Comment/order checkout opt-in field setting not visible [PRO]
 
 **5.5.3 (14.12.2022)**
 
-Fix: CSV injection while exporting Subscribers
+* Fix: CSV injection while exporting Subscribers
 
 **5.5.2 (08.12.2022)**
 
 * New: Added option to automatically delete unconfirmed subscribers [PRO]
-* Fix: Incorrect remaining emails count show when sending campaigns manually
 
 **5.5.1 (01.12.2022)**
 
 * New: Added new styles for subscription forms [PRO]
-* Fix: Select list issue in form widget
-* Fix: Added permission check when getting contact counts on Audience export and Campaigns pages[Thanks to WPScan team]
 
 **5.5.0 (18.11.2022)**
 
 * New: Workflow action to update contact's custom field [MAX]
-* Fix: SQL vulnerability while getting list's contacts count [Thanks to WPScan team]
-* Fix: Style issue for Drag-and-Drop form fields
-* Fix: Sending issue with Sendinblue when subscribers' name data is not present [MAX]
 
 **5.4.19 (09.11.2022)**
 
 * New: Added Text, Image, and Heading blocks for Drag-and-Drop form editor
-* New: Added inline color picker in Drag-and-Drop campaign editor 
-* Fix: Style issue for checkbox setting fields in Drag-and-Drop editor
-* Fix: Remote templates were not loading due to database collation issues on some sites
+* New: Added inline color picker in Drag-and-Drop campaign editor
 
 **5.4.18 (02.11.2022)**
 
 * New: Rest API support for add/delete/edit subscriber
-* Fix: Gutenberg form block issue with ClassicPress plugin
 
 **5.4.17 (19.10.2022)**
 
@@ -981,35 +873,28 @@ Fix: CSV injection while exporting Subscribers
 **5.4.13 (22.09.2022)**
 
 * Enhancement: Bulk actions can now apply to all the contacts
-* Fix: Some keywords are not getting converted correctly in Amazon SES
 
 **5.4.12 (14.09.2022)**
 
 * Enhancement: Add title for list names on add contact screen
 * Enhancement: Improve error handling when email sending fails for some email addresses
-* Fix: Fatal error when getmypid function is disabled on hosts with PHP v8
-* Fix: Fatal error Fatal error: Uncaught TypeError: number_format() on dashboard
 
 **5.4.11 (07.09.2022)**
 
 * Enhancement: Simplified merge tag view for editor
-* Fix: Campaign preview not working in some cases
 
 **5.4.10 (01.09.2022)**
 
 * Enhancement: Added option to disable subscription API
-* Fix: Duplicate campaign scheduling issue[MAX]
 
 **5.4.9 (25.08.2022)**
 
 * Enhancement: Added failed status for campaign in case email delivery fails
 * Enhancement: Added workflow trigger for failed campaigns
-* Fix: Form fields were not rendering properly when viewed in popup[MAX]
 
 **5.4.8 (18.08.2022)**
 
 * New: Added unsubscribe reasons on dashboard [MAX]
-* Fix: Emails were not getting sent via Amazon SES for some cases [MAX]
 
 **5.4.7 (10.08.2022)**
 
@@ -1042,15 +927,10 @@ Fix: CSV injection while exporting Subscribers
 **5.4.2 (06.07.2022)**
 
 * New: Send different welcome/confirmation emails to subscribers based on their list
-* Fix: Some subscribers's emails getting excluded while sending emails[MAX]
 
 **5.4.1 (29.06.2022)**
 
 * Update: Better spam score checking
-* Fix: Custom HTML block in drag and drop editor not working properly 
-* Fix: Workflow not running on some setup
-* Fix: Optional parameter warning in PHP 8.1
-* Fix: Issue while creating a new campaign on some setup
 
 **5.4.0 (23.06.2022)**
 
@@ -1068,26 +948,14 @@ Fix: CSV injection while exporting Subscribers
 
 **5.3.16 (02.06.2022)**
 * Enhancement: Improved dashboard stats
-* Fix: Warning message when using Gmail/Yahoo email addresses in From email setting
-* Fix: Email sending issue with Amazon SES when subject contains emojis[MAX]
-* Fix: Duplicate post digest notifications[MAX]
-* Fix: Unsubscribe message getting inserted after HTML tag
-* Fix: Caching issue when editing campaign when Redis cache enable
-* Fix: PHP warning when subscription form is deleted from backend and form widget is active on frontend
-* Fix: Incorrect link tracking stats for campaigns created using Drag-n-Drop editor[PR0]
 
 **5.3.15 (18.05.2022)**
 
 * New: Advanced audience filters[MAX]
-* Fix: Template already exists issue on some setup using Amazon SES[MAX]
 
 **5.3.14 (11.05.2022)**
 
 * New: Automatic email list cleanup service[MAX]
-* Fix: Issue with Created at date while importing
-* Fix: Unsubscribe link not working when WooCommerce styling is selected in workflow emails
-* Fix: Issue with Drag and Drop campaign editor on some setup
-* Fix: Unable to subscribe with a Hotmail email address[MAX]
 
 **5.3.13 (27.04.2022)**
 
@@ -1097,49 +965,35 @@ Fix: CSV injection while exporting Subscribers
 **5.3.12 (21.04.2022)**
 
 * Fix: Incorrect name when registering through Ultimate Member plugin
-* Fix: Broadcast send now not working on sites having timezone before UTC
-* Fix: Security related issues [Thanks to WP team]
 
 **5.3.11 (12.04.2022)**
 
 * New: Now ES forms can be added to remote sites/pages via HTML code
-* Fix: Workflows are not getting saved in some cases
-* Fix: Security related issues [Thanks to WP team]
 
 **5.3.10 (07.04.2022)**
 
-* Fix: Security related issues [Thanks to WP team]
 * Enhancement: Small UI improvements
 
 **5.3.9 (30.03.2022)**
 
 * New: Added WooCommerce email template support in workflows
-* Fix: Template gallery not working with WordPress v4.9 and lower
 
 **5.3.8 (24.03.2022)**
 
 * New: Added predefined workflows
 * New: Email template gallery improvements
-* Fix: Sequence were not getting sent on time in some cases
-* Fix: Styling was not properly getting applied to the post excerpt in campaigns
 
 **5.3.7 (16.03.2022)**
 
 * New: Added preview for workflow emails
-* Fix: Duplicate drafts were getting created for campaigns in some cases
-* Fix: Custom post type were not getting saved in post notification campaigns
-* Fix: Encoding issues with pepipost email sending
 
 **5.3.6 (09.03.2022)**
 
 * New: Added support for fallback value for NAME and FIRSTNAME keywords
-* Fix: PHP warning on custom post type page
-* Fix: Welcome email issue with Rainmaker integration
 
 **5.3.5 (02.03.2022)**
 
 * New: Added ajax option for submission of forms
-* Fix: HTML Tags getting escaped from the form description
 * Update: Added support for two new regions(AF South 1 and EU South 1) in Amazon SES [MAX]
 
 **5.3.4 (24.02.2022)**
@@ -1151,13 +1005,11 @@ Fix: CSV injection while exporting Subscribers
 * New: Added template gallery for campaigns
 * New: Added {{POSTAUTHORAVATAR}} and {{POSTAUTHORAVATARLINK-ONLY}} keywords for Post Notification
 * New: Added option to send welcome/ confirmation email after importing of contacts
-* Fix: Improved security related to nonce validations [Thanks to WP team]
 
 **5.3.2 (09.02.2022)**
 
 * New: Send emails using Sendinblue [MAX]
 * New: Send emails using Mailjet [MAX]
-* Fix: Secured Icegram Express from reflected XSS vulnerability [Thanks to WPScan team]
 
 **5.3.1 (01.02.2022)**
 
@@ -1166,7 +1018,6 @@ Fix: CSV injection while exporting Subscribers
 **5.3.0 (01.02.2022)**
 
 * New: Added Drag and Drop editor in campaign section
-* Fix: Compatibility with Forminator version(1.15.9) [MAX]
 
 **5.2.0 (24.01.2022)**
 
@@ -1177,7 +1028,6 @@ Fix: CSV injection while exporting Subscribers
 * New: Added support for popup in forms
 * New: Added more blocks for drag and drop email builder - Video and Custom Code [MAX]
 * Update: Added selection of form for Gravity Forms, Ninja Forms, and Contact form 7 workflow integration[MAX]
-* Fix: Pepipost support for swedish characters
 
 **5.0.9 (12.01.2022)**
  
@@ -1187,8 +1037,6 @@ Fix: CSV injection while exporting Subscribers
 **5.0.8 (06.01.2022)**
 
 * New: Option to add attachments to workflow emails [MAX]
-* Fix: {{UNSUBSCRIBE-LINK}} not working in welcome emails in few cases
-* Fix: PHP warning undefined index 'ig-es-tracking-campaign-id' during onboarding/update
 
 **5.0.7 (31.12.2021)**
 
@@ -1205,7 +1053,6 @@ Fix: CSV injection while exporting Subscribers
 * New: Date filter for reports
 * Update: Amazon SES support for bounce handling
 * Update: Support for Amazon SES throttling 
-* Fix: Small UI fixes
 
 **5.0.4 (08.12.2021)**
 
@@ -1217,19 +1064,15 @@ Fix: CSV injection while exporting Subscribers
 
 * New: Send emails in customers timezone [MAX]
 * New: Tracking for workflows
-* Fix: UI fixes
 
 **5.0.2 (19.11.2021)**
 
 * Fix: Incorrect placeholder values in emails
-* Fix: Unable to send campaigns
 
 **5.0.1 (18.11.2021)**
 
 * Enhancement: Welcome and Confirmation email are now part of workflows
 * New: Preview email template in popup
-* Fix: Increase character limit in amazon SES
-* Fix: Prevent email sending while campaign is getting queued 
 
 **5.0.0 (10.11.2021)**
 
@@ -1240,7 +1083,6 @@ Fix: CSV injection while exporting Subscribers
 
 * New: Added {{POSTIMAGE-URL}} keyword for Post Notification
 * Update: Action Scheduler Library to 3.3.0
-* Fix: Amazon SES batch sending issue **[MAX]**
 
 **4.9.0 (26.10.2021)**
 
@@ -1253,14 +1095,12 @@ Fix: CSV injection while exporting Subscribers
 **4.8.5 (14.10.2021)**
 
 * Update: Support for Amazon SES batch email API **[MAX]**
-* Fix: PHP warning while saving contact through admin side
 
 **4.8.4 (07.10.2021)**
 
 * New: Custom fields support for contacts **[MAX]**
 * New: Add custom fields in subscription forms **[MAX]**
 * New: Map custom fields while importing contacts **[MAX]**
-* Fix: Fixed video thumbnail issue with Jetpack plugin
 
 **4.8.3 (29.09.2021)**
 
@@ -1272,23 +1112,17 @@ Fix: CSV injection while exporting Subscribers
 
 **4.8.1 (15.09.2021)**
 
-* Fix: Duplicate emails in few cases
 * Update: Tested up to WordPress 5.8.1
 
 **4.8.0 (08.09.2021)**
 
 * New: Weekly summary email **[MAX]**
 * New: Campaign unsubscribe count **[MAX]**
-* Fix: Long SQL query killed while sending to large number of emails on WP Engine host
-* Fix: CSS conflict on WordPress admin dashboard page
 
 **4.7.9 (02.09.2021)**
 
 * New: Added 'Total sent' column on the Reports page
 * Update: UX improvements
-* Fix: Incorrect sent and opened dates on campaign report on some setup
-* Fix: Campaign report migration issue from Icegram Express 3.5.16
-* Fix: Duplicate sequence emails **[MAX]**
 
 **4.7.8 (26.08.2021)**
 
@@ -1301,16 +1135,12 @@ Fix: CSV injection while exporting Subscribers
 * Update: Tested up to WordPress 5.8
 * Update: Improved campaign reports performance
 * Update: Improved handling of emails having internationalized domain name during import
-* Fix: Newline characters when previewing campaign reports
-* Fix: Database error when subscribing to another list and name field isn't present in the subscription form
 
 **4.7.6 (17.07.2021)**
 
 * New: Bulk resend confirmation emails **[MAX]**
 * New: Run Workflows on existing orders **[MAX]**
 * New: Search contacts by email on the Reports page **[MAX]**
-* Fix: Incorrect form action URL when the subscription form is shown on the blog page
-* Fix: 'es_subbox' function not working
 
 **4.7.5.1 (16.06.2021)**
 
@@ -1326,14 +1156,10 @@ Fix: CSV injection while exporting Subscribers
 
 **4.7.4 (27.05.2021)**
 
-* Fix: Localization/internationalization issue
 * Update: Improved UI/IX
 
 **4.7.3 (19.05.2021)**
 
-* Fix: Formatting of broadcast test email not matching with actual campaign email **[MAX]**
-* Fix: JavaScript errors on the broadcast screen when a visual mode is disabled for classic editor
-* Fix: Incorrect campaign start date on the reports page
 * Fix: Fixing incorrect count of imported users in the log message when CSV contains duplicate emails
 * Update: Improved email template preview
 * Update: Improved campaign report UI
@@ -1349,9 +1175,6 @@ Fix: CSV injection while exporting Subscribers
 
 * New: Send emails using Postmark batch API **[MAX]**
 * Update: Improved dashboard UI
-* Fix: Post digest category issue [MAX]
-* Fix: Garbage characters in few cases when an email containing HTML entities is sent using Pepipost
-* Fix: Ajax call on every page load
 
 **4.7.0 (05.04.2021)**
 
@@ -1367,7 +1190,6 @@ Fix: CSV injection while exporting Subscribers
 
 * New: Campaign rules to filter recipients while sending sequence emails **[MAX]**
 * Update: Tested up to WordPress 5.7
-* Fix: Invalid date and time for campaign reports activity table
 
 **4.6.12.1 (05.03.2021)**
 
@@ -1390,7 +1212,6 @@ Fix: CSV injection while exporting Subscribers
 * New: New workflow trigger for YITH WooCommerce Wishlist [MAX]
 * New: Added additional stats on campaigns reports dashboard
 * Update: Disable IP tracking in lite version by default to make GDPR compliant
-* Fix: Database vulnerability
 
 **4.6.9 (05.02.2021)**
 
@@ -1410,13 +1231,11 @@ Fix: CSV injection while exporting Subscribers
 * New: Add attachments to broadcast and sequence campaigns [MAX]
 * New: Send emails using Amazon SES [MAX]
 * Update: Improved campaign report UI
-* Fix: Invalid nonce issue due to caching while subscribing
 
 **4.6.6 (14.01.2021)**
 
 * New: Now, able to map fields while importing
 * Update: Improved UI
-* Fix: YouTube video embedding issue
 
 **4.6.5 (22.12.2020)**
 
@@ -1430,8 +1249,6 @@ Fix: CSV injection while exporting Subscribers
 * New: Added {{POSTMORETAG}} keyword for Post Notification
 * New: New workflow trigger for WooCommerce order creation [MAX]
 * New: Added option to select multiple lists while importing subscribers [MAX]
-* Fix: Import not working for existing subscribers
-* Fix: Duplicate email issue in few edge cases
 
 **4.6.3 (09.11.2020)**
 
@@ -1447,7 +1264,6 @@ Fix: CSV injection while exporting Subscribers
 **4.6.1 (19.10.2020)**
 
 * New: UI improvements
-* Fix: Status change issue after sending broadcast
 
 **4.6.0 (25.09.2020)**
 
@@ -1456,9 +1272,6 @@ Fix: CSV injection while exporting Subscribers
 * Update: Improved onboarding
 * Update: User subscription on selected lists only in double opt-in (instead of all list)
 * Update: Added option to remove "Powered By Icegram" link
-* Fix: Deactivation feedback popup issue
-* Fix: Migration issue from Icegram Express 3.1.3
-* Fix: Bulk actions issue for large number of list items
 
 **4.5.6 (09.09.2020)**
 
@@ -1471,37 +1284,29 @@ Fix: CSV injection while exporting Subscribers
 
 * Update: Improve onboarding
 * New: Sync name field value from WP Form [MAX]
-* Fix: WP Form workflow related issue [MAX]
 
 **4.5.4 (27.08.2020)**
 
 * Update: Compatible with WordPress 5.5
-* Fix: SMTP mailer warning with WordPress 5.5
-* Fix: Import Contact issue
 
 **4.5.3 (30.07.2020)**
 
 * New: Add Reply-To Email Address field for Broadcast
 * New: Improve WooCommerce integration by adding more WooCommerce specific workflows [MAX]
 * Update: Change Sequence Message status on change of parent status
-* Fix: Load PRO email templates when upgrading from Free to PRO
 
 **4.5.2 (23.07.2020)**
 
 * New: Added Seqeuence/ Autoresponder Reports
-* Fix: Sequence Open/ Click tracking issue
-* Fix: Empty Post Digest send issue if no Posts published
 
 **4.5.1 (16.07.2020)**
 
 * New: Added Advance Campaign Reports like Country info, Browser Info, Device Info, Mail Client Info [MAX]
-* Fix: Post Digest issues [MAX]
 * Update: Performance Improvements.
 
 **4.5.0.1 (09.07.2020)**
 
 * Fix: Duplicate campaign creation
-* Fix: Post Digest Keywords issue [MAX]
 
 **4.5.0 (07.07.2020)**
 
@@ -1522,8 +1327,6 @@ Fix: CSV injection while exporting Subscribers
 * Update: Redirect to forms list page after creating a form
 * Update: YouTube video embedding issue
 * Update: Action Scheduler Library to 3.1.6
-* Fix: {{POSTLINK-ONLY}} keyword issue
-* Fix: Post Digest issue [MAX]
 
 **4.4.8 (22.05.2020)**
 
@@ -1542,7 +1345,6 @@ Fix: CSV injection while exporting Subscribers
 * New: Added campaign level UTM tracking [MAX]
 * Update: Use date formate which set in WordPress
 * Update: UI improvements
-* Fix: Import/ Export issues
 
 **4.4.6 (23.04.2020)**
 
@@ -1551,15 +1353,10 @@ Fix: CSV injection while exporting Subscribers
 * Update: Improved manage lists UI
 * Update: Improved Export contacts UI
 * Update: Show date based on the format set in WordPress settings
-* Fix: Import contact issue
-* Fix: "Continue Reading" link doesn't work in Post Notifications
-* Fix: Audience lists stick to the bottom
 
 **4.4.5 (15.04.2020)**
 
 * Update: Improved Import & Export contacts UI
-* Fix: Importing contacts progress stays at 0%
-* Fix: Test email send acknowledgment was not showing
 
 **4.4.4 (10.04.2020)**
 
@@ -1571,19 +1368,11 @@ Fix: CSV injection while exporting Subscribers
 * Update: Improved Workflows
 * Update: Improved UI/ UX
 * Update: Compatibility check with WordPress 5.4
-* Fix: Fatal Error: Cannot Redeclare ig_es_may_activate_on_blog
-* Fix: Email Templates scroll issue
 
 **4.4.2 (26.03.2020)**
 
 * Update: Improved Help & Info page
 * Update: Improved Active Contacts Growth based on cumulative contacts
-* Fix: Migration issue
-* Fix: Campaign was sent while previewing campaign
-* Fix: Empty campaign body if any error occurred
-* Fix: Optimize images
-* Fix: Campaigns list stick to the bottom of the page
-* Fix: PHP Warning during installation on multisite
 
 **4.4.1.1 (12.03.2020)**
 
@@ -1592,8 +1381,6 @@ Fix: CSV injection while exporting Subscribers
 **4.4.1 (12.03.2020)**
 
 * New: Added Icegram Express Workflows
-* Fix: Export contacts issue
-* Fix: Subscribe people without list selection
 
 **4.4.0 (03.03.2020)**
 
