@@ -6,7 +6,7 @@ Tags: email subscribers, newsletter, subscription form, post notifications, wooc
 Requires at least: 3.9
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 5.8.11
+Stable tag: 5.8.12
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -15,8 +15,9 @@ Add subscription forms on the website and send newsletters & automatically send 
 
 == Description ==
 
-**Icegram Express** makes email marketing simple and effective. You can easily add subscription forms, send beautiful newsletters with a drag & drop editor, and easily schedule follow-ups without any technical barriers.
-Perfect for bloggers, businesses, and online stores, this plugin helps you engage your audience and achieve real results with powerful email marketing tools inside WordPress.
+**Icegram Express** makes email marketing simple and effective.
+This powerful WordPress email marketing plugin lets you grow your list with subscription forms, send beautiful newsletters, and automate follow-ups without any coding required.
+Perfect for bloggers, small businesses, and online stores, it's the all-in-one email marketing solution to engage subscribers, boost conversions, and build lasting relationships right inside WordPress.
 
 == Overview ==
 
@@ -340,11 +341,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.8.11 =
+= 5.8.12 =
 
-* New: Added Gutenberg block for showing archived campaigns [MAX]
+* New: Added REST API to get subscribers' data
 
 == Changelog ==
+
+**5.8.12 (13.08.2025)**
+
+* New: Added REST API to get subscribers' data
 
 **5.8.11 (07.08.2025)**
 

@@ -47,6 +47,12 @@ if ( ! class_exists( 'ES_Rest_Api_Handler' ) ) {
 				'callback' => array( __CLASS__, 'delete_subscribers' ),
 				'permission_callback' => array( __CLASS__, 'check_permission' )
 			]);
+
+			register_rest_route( 'email-subscribers/v1', '/subscribers', [
+				'methods'  => WP_REST_Server::READABLE,
+				'callback' => array( __CLASS__, 'get_subscribers' ),
+				'permission_callback' => array( __CLASS__, 'check_permission' )
+			]);
 		}
 
 		/**
@@ -470,6 +476,37 @@ if ( ! class_exists( 'ES_Rest_Api_Handler' ) ) {
 				}                 
 			}
 
+		}
+
+		/**
+		 * Get paginated subscribers
+		 */
+		public static function get_subscribers( $request ) {
+			$params = $request->get_json_params();
+			$page_number =  isset( $params['page_number'] ) ? intval( $params['page_number'] ) : 1;
+			$per_page = isset( $params['per_page'] ) ? intval( $params['per_page'] ) : 20;
+			$order_by = isset( $params['order_by'] ) ? sanitize_text_field( $params['order_by'] ) : '';
+			$order = isset( $params['order'] ) ? sanitize_text_field( $params['order'] ) : '';
+			$search =  isset( $params['search'] ) ? sanitize_text_field( $params['search'] ) : '';
+			$status = isset( $params['status'] ) ? sanitize_text_field( $params['status'] ) : '';
+			$list_id = isset( $params['list_id'] ) ? absint( $params['list_id'] ) : '';
+
+			$args = array(
+				'order_by'      => sanitize_sql_orderby( $order_by ),
+				'order'         => $order,
+				'search'        => $search,
+				'per_page'      => absint( $per_page ),
+				'page_number'   => absint( $page_number ),
+				'do_count_only' => false,
+				'filter_by_list_id' => $list_id,
+				'filter_by_status' => $status,
+			);
+			$subscribers = ES_Contacts_Controller::get_subscribers($args);
+			
+			return new WP_REST_Response([
+				'success' => true,
+				'subscribers' => $subscribers,
+			], 200);
 		}
 	}
 	
