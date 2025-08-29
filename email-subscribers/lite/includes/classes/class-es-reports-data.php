@@ -162,6 +162,48 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			return $data;
 		}
 
+		/**
+		 * Get contacts monthly growth
+		 *
+		 * @param int $months
+		 *
+		 * @return array
+		 *
+		 * @since 4.4.0
+		 */
+		public static function get_contacts_growth_monthly( $months = 12 ) {
+
+			$contacts = ES()->contacts_db->get_total_contacts_by_date();
+
+			$start_date = gmdate( 'Y-m-01', strtotime( '-' . $months . ' months' ) );
+			$total = ES()->contacts_db->get_total_subscribed_contacts_before_days(
+				( $months * 30 )
+			);
+
+			$data = array();
+
+			for ( $i = $months; $i >= 0; $i-- ) {
+				$month_key = gmdate( 'Y-m', strtotime( '-' . $i . ' months' ) );
+
+				$month_start = gmdate( 'Y-m-01', strtotime( $month_key . '-01' ) );
+				$month_end   = gmdate( 'Y-m-t', strtotime( $month_key . '-01' ) );
+
+				$count = 0;
+				foreach ( $contacts as $date => $cnt ) {
+					if ( $date >= $month_start && $date <= $month_end ) {
+						$count += $cnt;
+					}
+				}
+
+				$total += $count;
+
+				$data[ $month_key ] = $total;
+			}
+
+			return $data;
+		}
+
+
 
 		/**
 		 * Get contacts growth percentage
@@ -220,7 +262,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 		 *
 		 * @since 4.4.0
 		 */
-		public static function get_dashboard_reports_data( $page, $override_cache = false, $args = array(), $campaign_count = 3 ) {
+		public static function get_dashboard_reports_data( $page, $override_cache = false, $args = array(), $campaign_count = 5 ) {
 
 			/**
 			 * - Get Total Contacts
@@ -232,7 +274,8 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			 * - Total Message Sent in last 60 days
 			 * - Avg. Email Click rate
 			 */
-			$cache_key = 'dashboard_reports_data';
+			$cache_key    = 'dashboard_reports_data';
+			$args['days'] = ! empty( $args['days'] ) ? $args['days'] : 7;
 
 			if ( ! $override_cache ) {
 
@@ -252,7 +295,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			$total_links_clicks = $actions_counts['clicked'];
 			$total_message_sent = $actions_counts['sent'];
 			$total_unsubscribed = $actions_counts['unsubscribed'];
-			$contacts_growth    = self::get_contacts_growth();
+			$contacts_growth    = self::get_contacts_growth_monthly();
 
 			$avg_open_rate = 0;
 			if ( $total_message_sent > 0 ) {
@@ -381,21 +424,30 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 
 			global $wpdb;
 
-			$campaigns = ES_DB_Mailing_Queue::get_recent_campaigns( $total_campaigns );
+			$campaign_args = array(
+				'order_by_column' => 'ID',
+				'limit'           => '5',
+				'order'           => 'DESC',
+				'include_types' => array(
+					IG_CAMPAIGN_TYPE_POST_NOTIFICATION,
+					IG_CAMPAIGN_TYPE_POST_DIGEST,
+					IG_CAMPAIGN_TYPE_NEWSLETTER
+				),
+			);
+			$campaigns = ES()->campaigns_db->get_campaigns( $campaign_args );
 			
 			$campaigns_data = array();
 			if ( ! empty( $campaigns ) && count( $campaigns ) > 0 ) {
 
 				foreach ( $campaigns as $key => $campaign ) {
 
-					$message_id  = $campaign['id'];
-					$campaign_id = $campaign['campaign_id'];
+					$campaign_id = $campaign['id'];
 
 					if ( 0 === $campaign_id ) {
 						continue;
 					}
 				// phpcs:disable
-					$results = $wpdb->get_results( $wpdb->prepare( "SELECT type, count(DISTINCT (contact_id) ) as total FROM {$wpdb->prefix}ig_actions WHERE message_id = %d AND campaign_id = %d GROUP BY type", $message_id, $campaign_id ), ARRAY_A );
+					$results = $wpdb->get_results( $wpdb->prepare( "SELECT type, count(DISTINCT (contact_id) ) as total FROM {$wpdb->prefix}ig_actions WHERE campaign_id = %d GROUP BY type", $campaign_id ), ARRAY_A );
 				// phpcs:enable	
 					$stats     = array();
 					$type      = '';
@@ -457,12 +509,9 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 						$type = __( 'Post Digest', 'email-subscribers' );
 					}
 
-					$start_at  = gmdate( 'd F', strtotime( $campaign['start_at'] ) );
-					$finish_at = gmdate( 'd F', strtotime( $campaign['finish_at'] ) );
-
 					$campaigns_data[ $key ]                         = $stats;
+					$campaigns_data[ $key ]['id']                = $campaign['id'];
 					$campaigns_data[ $key ]['title']                = $campaign['subject'];
-					$campaigns_data[ $key ]['hash']                 = $campaign['hash'];
 					$campaigns_data[ $key ]['status']               = $campaign['status'];
 					$campaigns_data[ $key ]['campaign_type']        = $campaign_type;
 					$campaigns_data[ $key ]['type']                 = $type;
@@ -470,8 +519,6 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 					$campaigns_data[ $key ]['campaign_opens_rate']  = round( $campaign_opens_rate );
 					$campaigns_data[ $key ]['campaign_clicks_rate'] = round( $campaign_clicks_rate );
 					$campaigns_data[ $key ]['campaign_losts_rate']  = round( $campaign_losts_rate );
-					$campaigns_data[ $key ]['start_at']             = $start_at;
-					$campaigns_data[ $key ]['finish_at']            = $finish_at;
 				}
 			}
 			$data['campaigns'] = $campaigns_data;

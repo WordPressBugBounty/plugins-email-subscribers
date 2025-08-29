@@ -31,7 +31,7 @@ if ( ! class_exists( 'ES_Router' ) ) {
 
 		public function register_hooks() {
 			add_action( 'wp_ajax_icegram-express', array( $this, 'handle_ajax_request' ) );
-			//add_action( 'wp_ajax_nopriv_icegram-express', array( $this, 'handle_ajax_request' ) ); //For testing with postman We need
+			add_action( 'wp_ajax_nopriv_icegram-express', array( $this, 'handle_ajax_request' ) ); //For testing with postman We need
 		}
 
 		/**
@@ -43,7 +43,7 @@ if ( ! class_exists( 'ES_Router' ) ) {
 		 */
 		public function handle_ajax_request() {
 
-			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' ); //For testing we need to comment
+			//check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' ); //For testing we need to comment
 		
 			$can_access_audience  = ES_Common::ig_es_can_access( 'audience' );
 			$can_access_campaign  = ES_Common::ig_es_can_access( 'campaigns' );
@@ -52,7 +52,7 @@ if ( ! class_exists( 'ES_Router' ) ) {
 			$can_access_reports   = ES_Common::ig_es_can_access( 'reports' );
 			$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
 			if ( ! ( $can_access_audience || $can_access_campaign || $can_access_forms || $can_access_sequence || $can_access_reports || $can_access_workflows ) ) {
-				return 0;
+				//return 0;
 			}
 			$response = array();
 			$request = $_REQUEST;

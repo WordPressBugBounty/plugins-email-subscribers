@@ -380,6 +380,18 @@ class Email_Subscribers_Admin {
 			wp_enqueue_script( 'frappe-js', plugin_dir_url( __FILE__ ) . 'js/frappe-charts.min.iife.js', array( 'jquery' ), '1.5.2', false );
 		}
 
+		if ( ( 'es_dashboard' === $page && IG_ES_Onboarding::is_onboarding_completed() ) || 'es_pricing' === $page ) {
+			wp_register_script( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/index.js', array( 'react', 'react-dom' ), $this->version, true );
+			wp_localize_script( 'es-shadcn-dashboard', 'icegramExpressAdminData', array(
+				'apiUrl' => admin_url( 'admin-ajax.php' ),
+				'baseUrl' => ES_PLUGIN_URL . 'lite/admin/shadcn-frontend',
+				'security'    => wp_create_nonce( 'ig-es-admin-ajax-nonce' ),
+			) );
+			wp_register_style( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/index.css', array(), $this->version );
+			wp_enqueue_script( 'es-shadcn-dashboard' );
+			wp_enqueue_style( 'es-shadcn-dashboard' );
+		}
+
 	}
 
 	public function remove_submenu() {
@@ -2049,9 +2061,9 @@ class Email_Subscribers_Admin {
 	public function register_gutenberg_editor() {
 		 register_post_type('ig_es_campaign', array(
 		'label'         => 'ES Campaigns',
-		'public'        => true,
+		'public'        => false,
 		'show_ui'       => true,
-		'publicly_queryable' => true,
+		'publicly_queryable' => false, //prevents direct URL access
 		'show_in_menu'  => false, // Hides it from default WP menu
 		'supports'      => ['title', 'editor'],
 		'show_in_rest'  => true, 

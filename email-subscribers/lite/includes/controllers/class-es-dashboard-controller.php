@@ -9,11 +9,9 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 	 */
 	class ES_Dashboard_Controller {
 
-		// class instance
 		public static $instance;
 		public static $api_instance = null;
 
-		// class constructor
 		public function __construct() {
 			$this->init();
 		}
@@ -33,24 +31,48 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 		public function register_hooks() {
 		}
 
-		public static function get_subscribers_stats( $args = array() ) {
+		public static function get_subscribers_stats( $data = array() ) {
 			
-			$page           = isset( $args['page'] ) ? $args['page'] : 'es_dashboard';
-			$days           = isset( $args['days'] ) ? $args['days'] : '';
-			$list_id        = isset( $args['list_id'] ) ? $args['list_id'] : '';
-			$override_cache = isset( $args['override_cache'] ) ? $args['override_cache'] : true;
+			if ( is_string( $data ) ) {
+				$decoded_data = json_decode( $data, true );
+				if ( $decoded_data ) {
+					$data = $decoded_data;
+				}
+			}
+			
+			$page           = '';
+			$days           = '';
+			$list_id        = '';
+			$override_cache = true;
+			
+			if ( isset( $data['page'] ) || isset( $data['days'] ) || isset( $data['list_id'] ) ) {
+				$page           = isset( $data['page'] ) ? $data['page'] : 'es_dashboard';
+				$days           = isset( $data['days'] ) ? $data['days'] : '';
+				$list_id        = isset( $data['list_id'] ) ? $data['list_id'] : '';
+				$override_cache = isset( $data['override_cache'] ) ? $data['override_cache'] : true;
+			} 
+			
+			if ( empty( $days ) || ! is_numeric( $days ) ) {
+				$days = 7;
+			} else {
+				$days = intval( $days );
+			}
+			
+			if ( ! empty( $list_id ) && ! is_numeric( $list_id ) ) {
+				$list_id = '';
+			}
 
 			$reports_args = array(
 				'list_id' => $list_id,
 				'days'    => $days,
 			);
 			
-			$reports_data   = ES_Reports_Data::get_dashboard_reports_data( $page, $override_cache, $reports_args  );
+			
+			$reports_data = ES_Reports_Data::get_dashboard_reports_data( $page, $override_cache, $reports_args );
 			return $reports_data;
 		}
 
 		public static function get_dashboard_data( $args ) {
-
 			$dashboard_kpi = ES_Reports_Data::get_dashboard_reports_data( 'es_dashboard', true, $args );
 			
 			$campaign_args = array(
@@ -66,24 +88,215 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 			
 			$audience_activity = self::get_audience_activities();
 		
-			// Forms
 			$forms_args = array(
 				'order_by_column' => 'ID',
-				'limit'           => '2',
+				'limit'           => '5',
 				'order'           => 'DESC',
 			);
 			$forms = ES()->forms_db->get_forms( $forms_args );
-		
-			// Lists
+
+			if ( ! empty( $forms ) ) {
+				foreach ( $forms as &$form ) {
+				$form_id = ! empty( $form['id'] ) ? intval( $form['id'] ) : 0;
+
+				$form['subscriber_count'] = ES()->contacts_db->get_total_contacts_by_form_id( $form_id, 0 );
+
+				$settings = ! empty( $form['settings'] ) ? maybe_unserialize( $form['settings'] ) : [];
+
+				$list_ids = [];
+					if ( ! empty( $settings['lists'] ) ) {
+						$list_ids = is_array( $settings['lists'] ) ? $settings['lists'] : [ intval( $settings['lists'] ) ];
+					}
+
+				$list_names = [];
+					if ( ! empty( $list_ids ) ) {
+						foreach ( $list_ids as $list_id ) {
+							$list_names[] = ES()->lists_db->get_list_name_by_id( $list_id );
+						}
+					}
+
+				$form['list_names'] = ! empty( $list_names ) ? implode( ', ', $list_names ) : '';
+				}
+
+			}
+
 			$lists = array_slice( array_reverse( ES()->lists_db->get_lists() ), 0, 2 );
-		
-			return array(
+			$workflows = ES()->workflows_db->get_workflows();
+			
+			$icegram_plugins = self::get_icegram_plugins_info();
+			
+			$plan = ES()->get_plan();
+			return array(	
 				'campaigns'         => $campaigns,
 				'audience_activity' => $audience_activity,
 				'forms'             => $forms,
 				'lists'             => $lists,
 				'dashboard_kpi'     => $dashboard_kpi,
+				'plan'              => $plan,
+				'icegram_plugins'   => $icegram_plugins,
 			);
+		}
+		
+		public static function create_dashboard_workflow( $data = array() ) {		
+			// Get data from request if not passed directly
+			if ( empty( $data ) ) {
+				$data = ig_es_get_request_data( 'data', array(), false );
+			}
+			
+			// Handle if data is JSON string
+			if ( is_string( $data ) ) {
+				$decoded = json_decode( $data, true );
+				if ( $decoded ) {
+					$data = $decoded;
+				}
+			}
+			
+			$workflow_type = isset( $data['workflow_type'] ) ? sanitize_text_field( $data['workflow_type'] ) : '';
+			
+			
+			// Check for abandoned cart email - requires pro plan
+			if ('abandoned-cart-email' === $workflow_type  ||  'abandoned-cart' === $workflow_type ) {
+				$is_pro = ES()->is_pro();
+				$plan = ES()->get_plan();
+				
+				if ( ! $is_pro ) {
+					return array(
+						'success' => false,
+						'message' => __( 'Abandoned cart email workflow requires a Pro plan. Please upgrade to access this feature.', 'email-subscribers' ),
+						'action' => 'redirect_to_pricing',
+						'requires_upgrade' => true,
+						'current_plan' => $plan,
+						'pricing_url' => admin_url( 'admin.php?page=es_pricing' ),
+						'workflow_type' => $workflow_type
+					);
+				}
+			}
+			
+			$workflow_gallery_map = array(
+				'welcome-email' => 'welcome-email',
+				'confirmation-email' => 'confirmation-email',
+				'unsubscribe-email' => 'unsubscribe-email',
+				'abandoned-cart-email' => 'abandoned-cart-basic-email',
+				'abandoned-cart' => 'abandoned-cart-basic-email',
+			);
+			
+			if ( empty( $workflow_type ) || ! isset( $workflow_gallery_map[ $workflow_type ] ) ) {
+				return array(
+					'success' => false,
+					'message' => __( 'Invalid workflow type.', 'email-subscribers' )
+				);
+			}
+			
+			$gallery_item_name = $workflow_gallery_map[ $workflow_type ];
+			
+			// Create workflow
+			$args = array( 'item_name' => $gallery_item_name );
+			$workflow_id = ES_Workflows_Controller::create_workflow_from_gallery_item( $args );
+			
+			if ( ! $workflow_id ) {
+				return array(
+					'success' => false,
+					'message' => __( 'Failed to create workflow. Please try again.', 'email-subscribers' )
+				);
+			}
+			
+			// Convert to integer and verify
+			$workflow_id = intval( $workflow_id );
+			
+			// Verify workflow was created
+			$workflow_from_db = ES()->workflows_db->get_workflow( $workflow_id );
+			
+			if ( ! $workflow_from_db ) {
+				return array(
+					'success' => false,
+					'message' => __( 'Workflow was not created properly.', 'email-subscribers' )
+				);
+			}
+			
+			// Ensure we have the correct ID from database
+			$db_workflow_id = isset( $workflow_from_db['id'] ) ? intval( $workflow_from_db['id'] ) : $workflow_id;
+			if ( $db_workflow_id !== $workflow_id ) {
+				$workflow_id = $db_workflow_id;
+			}
+			
+			$edit_url = admin_url( "admin.php?page=es_workflows&action=edit&id={$workflow_id}" );
+			
+			// Get workflow display name
+			$workflow_names = array(
+				'welcome-email' => __( 'Welcome Email', 'email-subscribers' ),
+				'confirmation-email' => __( 'Confirmation Email', 'email-subscribers' ),
+				'unsubscribe-email' => __( 'Unsubscribe Email', 'email-subscribers' ),
+				'abandoned-cart-email' => __( 'Abandoned Cart Email', 'email-subscribers' ),
+				'abandoned-cart' => __( 'Abandoned Cart Email', 'email-subscribers' ),
+			);
+			$workflow_display_name = isset( $workflow_names[ $workflow_type ] ) ? $workflow_names[ $workflow_type ] : __( 'Workflow', 'email-subscribers' );
+			
+			// Return success response
+			$success_response = array(
+				'success' => true,
+				'workflow_id' => intval( $workflow_id ),
+				'edit_url' => $edit_url,
+				/* translators: %s: workflow display name */
+				'message' => sprintf( __( '%s workflow created successfully!', 'email-subscribers' ), $workflow_display_name )
+			);
+			return $success_response;
+		}
+		
+		public static function get_icegram_plugins_info() {
+			global $ig_es_tracker;
+			
+			// Get the admin URL base
+			$admin_url_base = admin_url();
+			
+			$icegram_plugins = array(
+				'icegram-mailer/icegram-mailer.php' => array(
+					'name' => __( 'Icegram Mailer', 'email-subscribers' ),
+					'description' => __( 'Use our built-in service, Mailer, for stress-free email delivery. No SMTP, no tech setup required. Send emails that actually reach inboxes.', 'email-subscribers' ),
+					'plugin_url' => 'https://wordpress.org/plugins/icegram-mailer/',
+					'install_url' => $admin_url_base . 'plugin-install.php?s=icegram%2520mailer&tab=search&type=term',
+					'activate_url' => wp_nonce_url( $admin_url_base . 'plugins.php?action=activate&plugin=icegram-mailer/icegram-mailer.php', 'activate-plugin_icegram-mailer/icegram-mailer.php' ),
+				),
+				'icegram/icegram.php' => array(
+					'name' => __( 'Icegram Engage', 'email-subscribers' ),
+					'description' => __( 'The best WP popup plugin that creates a popup. Customize popup, target popups to show offers, email signups, social buttons, etc and increase conversions on your website.', 'email-subscribers' ),
+					'plugin_url' => 'https://wordpress.org/plugins/icegram/',
+					'install_url' => $admin_url_base . 'plugin-install.php?s=icegram&tab=search&type=term',
+					'activate_url' => wp_nonce_url( $admin_url_base . 'plugins.php?action=activate&plugin=icegram/icegram.php', 'activate-plugin_icegram/icegram.php' ),
+				),
+				'icegram-rainmaker/icegram-rainmaker.php' => array(
+					'name' => __( 'Icegram Collect', 'email-subscribers' ),
+					'description' => __( 'Get readymade contact forms, email subscription forms and custom forms for your website. Choose from beautiful templates and get started within seconds', 'email-subscribers' ),
+					'plugin_url' => 'https://wordpress.org/plugins/icegram-rainmaker/',
+					'install_url' => $admin_url_base . 'plugin-install.php?s=rainmaker&tab=search&type=term',
+					'activate_url' => wp_nonce_url( $admin_url_base . 'plugins.php?action=activate&plugin=icegram-rainmaker/icegram-rainmaker.php', 'activate-plugin_icegram-rainmaker/icegram-rainmaker.php' ),
+				),
+			);
+			
+			$active_plugins = $ig_es_tracker::get_active_plugins();
+			$all_plugins = $ig_es_tracker::get_plugins( 'all', true );
+			
+			$plugins_info = array();
+			
+			foreach ( $icegram_plugins as $plugin_slug => $plugin_data ) {
+				$is_installed = $ig_es_tracker::is_plugin_installed( $plugin_slug );
+				$is_active = $ig_es_tracker::is_plugin_activated( $plugin_slug );
+				
+				$plugins_info[] = array(
+					'slug' => $plugin_slug,
+					'name' => $plugin_data['name'],
+					'description' => $plugin_data['description'],
+					'plugin_url' => $plugin_data['plugin_url'],
+					'is_installed' => $is_installed,
+					'is_active' => $is_active,
+					'install_url' => $plugin_data['install_url'],
+					'activate_url' => $plugin_data['activate_url'],
+					'status_text' => $is_active ? __( 'Active', 'email-subscribers' ) : ( $is_installed ? __( 'Installed', 'email-subscribers' ) : __( 'Not Installed', 'email-subscribers' ) ),
+					'action_text' => $is_active ? __( 'Active', 'email-subscribers' ) : ( $is_installed ? __( 'Activate', 'email-subscribers' ) : __( 'Install', 'email-subscribers' ) ),
+					'action_url' => $is_active ? '' : ( $is_installed ? $plugin_data['activate_url'] : $plugin_data['install_url'] ),
+				);
+			}
+			
+			return $plugins_info;
 		}
 		
 		public static function get_audience_activities() {

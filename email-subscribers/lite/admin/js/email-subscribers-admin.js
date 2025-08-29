@@ -3577,7 +3577,7 @@
 			});
 		});
 
-		
+		jQuery('.toplevel_page_es_dashboard a[href="admin.php?page=es_pricing"]').attr('href', 'admin.php?page=es_pricing#pricing');	
 	});
 
 	function ig_es_uc_first(string){

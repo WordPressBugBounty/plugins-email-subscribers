@@ -62,7 +62,6 @@ class ES_Workflow_Admin_Edit {
 
 		add_action( 'ig_es_workflow_inserted', array( __CLASS__, 'update_optin_email_wp_option' ), 10, 2 );
 		add_action( 'ig_es_workflow_updated', array( __CLASS__, 'update_optin_email_wp_option' ), 10, 2 );
-
 		add_action( 'ig_es_after_campaign_status_updated', array( __CLASS__, 'update_campaign_workflow_status' ), 10, 2 );
 
 		add_action( 'wp_ajax_ig_es_get_workflow_email_preview', array( __CLASS__, 'get_workflow_email_preview' ) );
