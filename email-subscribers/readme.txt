@@ -6,7 +6,7 @@ Tags: email subscribers, newsletter, subscription form, post notifications, wooc
 Requires at least: 3.9
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 5.9.0
+Stable tag: 5.9.1
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -341,11 +341,15 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.0 =
+= 5.9.1 =
 
-* New: Revamped new dashboard with - better navigation, AI suggestions, helpful stats
+* Fix: Issue related to access to different dashboards from the main dashboard
 
 == Changelog ==
+
+**5.9.1 (29.08.2025)**
+
+* Fix: Issue related to access to different dashboards from the main dashboard
 
 **5.9.0 (29.08.2025)**
 
