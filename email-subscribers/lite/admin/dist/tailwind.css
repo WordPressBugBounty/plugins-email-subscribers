@@ -5500,10 +5500,13 @@ table td
 :is(.es-import-option,#ig_es_mailer_settings-field-row,#icegram-mailer-info) .select2-selection__choice__remove {
       border-width: 0px !important;
   }
-.icegram-express_page_es_gallery #wpcontent,.icegram-express_page_es_campaigns #wpcontent,.icegram-express_page_es_subscribers #wpcontent,.icegram-express_page_es_lists #wpcontent,.icegram-express_page_es_forms #wpcontent,.icegram-express_page_es_custom_fields #wpcontent,.icegram-express_page_es_settings #wpcontent,.toplevel_page_es_dashboard #wpcontent,.icegram-express_page_es_reports #wpcontent{
+.icegram-express_page_es_gallery #wpcontent,.icegram-express_page_es_campaigns #wpcontent,.icegram-express_page_es_subscribers #wpcontent,.icegram-express_page_es_lists #wpcontent,.icegram-express_page_es_forms #wpcontent,.icegram-express_page_es_custom_fields #wpcontent,.icegram-express_page_es_settings #wpcontent,.icegram-express_page_es_reports #wpcontent{
   padding-left: 0;
   background-color: white;
  }
+.toplevel_page_es_dashboard #wpcontent {
+    padding-left: 0;
+  }
 .wp-core-ui select {
     background-image: url('data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e') !important;
     background-position: right 0.5rem center !important;

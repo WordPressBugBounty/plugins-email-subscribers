@@ -122,6 +122,14 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 
 			$lists = array_slice( array_reverse( ES()->lists_db->get_lists() ), 0, 2 );
 			$workflows = ES()->workflows_db->get_workflows();
+
+			
+			$onboarding_tasks_status = array(
+				'sendFirstCampaign' => ! empty( $campaigns ) ? 'yes' : 'no',
+				'importContacts' => ! empty( $dashboard_kpi['total_subscribers'] ) && $dashboard_kpi['total_subscribers'] > 0 ? 'yes' : 'no',
+				'createSubscriptionFormDone' => ! empty( $forms ) ? 'yes' : 'no',
+				'createWorkflowDone' => ! empty( $workflows ) ? 'yes' : 'no'
+			);
 			
 			$icegram_plugins = self::get_icegram_plugins_info();
 			
@@ -134,6 +142,7 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 				'dashboard_kpi'     => $dashboard_kpi,
 				'plan'              => $plan,
 				'icegram_plugins'   => $icegram_plugins,
+				'onboarding_tasks_status' => $onboarding_tasks_status
 			);
 		}
 		
@@ -389,6 +398,106 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 			$campaign['total_email_sent'] = $total_email_sent;
 
 			return $campaign;
+		}
+
+		/**
+		 * Save onboarding step to WordPress options
+		 *
+		 * @param array $data
+		 * @return array
+		 */
+		public static function save_onboarding_step( $data = array() ) {
+			if ( is_string( $data ) ) {
+				$decoded_data = json_decode( $data, true );
+				if ( $decoded_data ) {
+					$data = $decoded_data;
+				}
+			}
+
+			$step_name = isset( $data['step_name'] ) ? sanitize_text_field( $data['step_name'] ) : '';
+			$value = isset( $data['value'] ) ? sanitize_text_field( $data['value'] ) : 'no';
+
+			if ( empty( $step_name ) ) {
+				return array(
+					'success' => false,
+					'message' => 'Step name is required'
+				);
+			}
+
+			// Define valid step names
+			$valid_steps = array(
+				'sendFirstCampaign',
+				'importContacts', 
+				'createSubscriptionForm',
+				'createWorkflow'
+			);
+
+			if ( ! in_array( $step_name, $valid_steps ) ) {
+				return array(
+					'success' => false,
+					'message' => 'Invalid step name'
+				);
+			}
+
+			// Save to WordPress options with prefix
+			$option_name = 'ig_es_onboarding_' . $step_name;
+			$updated = update_option( $option_name, $value, false );
+
+			return array(
+				'success' => true,
+				'message' => 'Onboarding step saved successfully',
+				'data' => array(
+					'step' => $step_name,
+					'value' => $value
+				)
+			);
+		}
+
+		/**
+		 * Get all onboarding steps from WordPress options
+		 *
+		 * @return array
+		 */
+		public static function get_onboarding_steps() {
+			$steps = array(
+				'sendFirstCampaign' => 'sendFirstCampaign',
+				'importContacts' => 'importContacts',
+				'createWorkflow' => 'createWorkflow',
+				'createSubscriptionForm' => 'createSubscriptionForm'
+			);
+
+			$campaign_args = array(
+				'status'          => array(
+					IG_ES_CAMPAIGN_STATUS_IN_ACTIVE,
+					IG_ES_CAMPAIGN_STATUS_ACTIVE,
+				),
+				'order_by_column' => 'ID',
+				'limit'           => '5',
+				'order'           => 'DESC',
+			);
+			$campaigns = ES()->campaigns_db->get_campaigns( $campaign_args );
+
+			$forms_args = array(
+				'order_by_column' => 'ID',
+				'limit'           => '5',
+				'order'           => 'DESC',
+			);
+			$forms = ES()->forms_db->get_forms( $forms_args );
+
+			$workflows = ES()->workflows_db->get_workflows();
+			$imported_contacts_count = ES()->contacts_db->get_contacts_count_by_source( 'import' );
+
+			$onboarding_data = array(
+				'sendFirstCampaign' => ! empty( $campaigns ),
+				'importContacts' => $imported_contacts_count > 0,
+				'createSubscriptionForm' => ! empty( $forms ),
+				'createWorkflow' => ! empty( $workflows )
+			);
+
+			return array(
+				'success' => true,
+				'data' => $onboarding_data
+			);
 		}
 	
 	}

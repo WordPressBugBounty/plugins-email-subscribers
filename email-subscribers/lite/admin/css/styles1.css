@@ -1468,11 +1468,17 @@ table td
   @apply float-right border-0 relative !important;
 }
 
-.icegram-express_page_es_gallery, .icegram-express_page_es_campaigns, .icegram-express_page_es_subscribers, .icegram-express_page_es_lists, .icegram-express_page_es_forms, .icegram-express_page_es_custom_fields, .icegram-express_page_es_settings, .toplevel_page_es_dashboard, .icegram-express_page_es_reports {
+.icegram-express_page_es_gallery, .icegram-express_page_es_campaigns, .icegram-express_page_es_subscribers, .icegram-express_page_es_lists, .icegram-express_page_es_forms, .icegram-express_page_es_custom_fields, .icegram-express_page_es_settings, .icegram-express_page_es_reports {
  #wpcontent{
   padding-left: 0;
   background-color: white;
  } 
+}
+
+.toplevel_page_es_dashboard {
+  #wpcontent {
+    padding-left: 0;
+  }
 }
 
 .wp-core-ui select {

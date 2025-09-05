@@ -381,13 +381,19 @@ class Email_Subscribers_Admin {
 		}
 
 		if ( ( 'es_dashboard' === $page && IG_ES_Onboarding::is_onboarding_completed() ) || 'es_pricing' === $page ) {
-			wp_register_script( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/index.js', array( 'react', 'react-dom' ), $this->version, true );
+			wp_register_script( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/dist/index.js', array(), $this->version, true );
+			$current_user = wp_get_current_user();
 			wp_localize_script( 'es-shadcn-dashboard', 'icegramExpressAdminData', array(
 				'apiUrl' => admin_url( 'admin-ajax.php' ),
-				'baseUrl' => ES_PLUGIN_URL . 'lite/admin/shadcn-frontend',
+				'baseUrl' => ES_PLUGIN_URL . 'lite/admin/shadcn-frontend/dist/',
 				'security'    => wp_create_nonce( 'ig-es-admin-ajax-nonce' ),
+				'currentUser' => array(
+					'displayName' => $current_user->display_name,
+					'firstName' => $current_user->first_name,
+					'lastName' => $current_user->last_name,
+				),
 			) );
-			wp_register_style( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/index.css', array(), $this->version );
+			wp_register_style( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/dist/index.css', array(), $this->version );
 			wp_enqueue_script( 'es-shadcn-dashboard' );
 			wp_enqueue_style( 'es-shadcn-dashboard' );
 		}

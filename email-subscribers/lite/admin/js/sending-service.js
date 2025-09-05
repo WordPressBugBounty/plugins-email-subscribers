@@ -21,6 +21,9 @@ jQuery(document).ready(function() {
 				ig_es_change_onboard_task_status( task_html_elem, 'in-progress' );
 			}, time_increament);
 
+			// Update button to processing state
+			jQuery('#ig-es-complete-ess-onboarding .button-text').text('Processing...');
+
 			let params = {
 				type: 'POST',
 				url: ajaxurl,
@@ -148,11 +151,27 @@ jQuery(document).ready(function() {
 		}
 	};
 
-	jQuery('#ig-ess-optin-cta').on( 'click', function(e) {
+	jQuery(document).on( 'click', '#ig-ess-optin-cta', function(e) {
 		e.preventDefault();
 		jQuery('#sending-service-benefits').hide();
 		jQuery('#sending-service-onboarding-tasks-list').show();
+		
+		// Update header text for Step 2
+		jQuery('#popup-header-text').text('Setting up Icegram Mailer');
+		jQuery('#popup-subtitle-text').text('Excellent! Activating Icegram mailer plugin, usually takes less than a minute.');
+		
+		// Switch buttons
+		jQuery('#ig-es-popup-footer-section').hide();
+		jQuery('#ig-ess-optin-cta').hide();
+		jQuery('#ig-es-complete-ess-onboarding').show();
+		
 		ig_es_start_processing_tasks_queue( 'perform_installation_tasks' );
+	});
+
+	// Add event handler for successful task completion
+	jQuery(document).on('ig_es_perform_activation_tasks_success', function(){
+		jQuery('#ig-es-complete-ess-onboarding').removeClass('opacity-50 pointer-events-none');
+		jQuery('#ig-es-complete-ess-onboarding .button-text').text('Continue');
 	});
 
 	// Variable to hold order of onboarding tasks to be performed.
@@ -172,19 +191,19 @@ jQuery(document).ready(function() {
 
 		jQuery('#' + id).attr('data-status', status);
 		if ( 'in-progress' === status) {
-	  		task_icon.replaceWith('<div class="relative pt-1 flex items-center justify-center flex-shrink-0 w-5 h-5"><span class="animate-ping absolute w-4 h-4 bg-indigo-200 rounded-full"></span><span class="relative block w-2 h-2 bg-indigo-700 rounded-full"></span></div>');
-	  		task_list_message.removeClass().addClass('text-indigo-800 text-sm');
+	  		task_icon.replaceWith('<div class="relative flex items-center justify-center flex-shrink-0 w-4 h-4"><div class="animate-spin rounded-full h-4 w-4 border-2 border-[#5e19cf] border-t-transparent"></div></div>');
+	  		task_list_message.removeClass().addClass('font-[\'Inter\'] font-medium text-[14px] text-neutral-950 leading-[20px]');
 		}
 
 		if( 'success' === status ) {
-			task_icon.replaceWith('<div class="relative flex items-center justify-center flex-shrink-0 w-5 h-5"><svg class="mt-1 w-full h-full text-indigo-700 transition duration-150 ease-in-out group-hover:text-indigo-600 group-focus:text-indigo-600" viewBox="0 0 20 20" fill="currentColor" ><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" ></path> </svg></div>');
-			task_list_message.removeClass().addClass('text-gray-800 text-sm');
+			task_icon.replaceWith('<div class="relative flex items-center justify-center flex-shrink-0 w-4 h-4"><svg class="w-4 h-4" viewBox="0 0 16 16" fill="none"><path d="M13.3333 4L6 11.3333L2.66667 8" stroke="#5e19cf" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></div>');
+			task_list_message.removeClass().addClass('font-[\'Inter\'] font-medium text-[14px] text-neutral-950 leading-[20px]');
 		}
 
 		if( 'error' === status ) {
-			task_icon.replaceWith('<div class="relative flex items-center justify-center flex-shrink-0 w-5 h-5"><svg class="mt-1 w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>');
+			task_icon.replaceWith('<div class="relative flex items-center justify-center flex-shrink-0 w-4 h-4"><svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>');
 			if( '' === message ){
-				task_list_message.removeClass().addClass('text-gray-700 font-normal text-sm');
+				task_list_message.removeClass().addClass('font-[\'Inter\'] font-medium text-[14px] text-red-600 leading-[20px]');
 			} else {
 				alert( message );
 			}

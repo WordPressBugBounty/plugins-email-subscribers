@@ -1196,4 +1196,16 @@ class ES_DB_Contacts extends ES_DB {
 		
 		return $contact_details;
 	}
+
+	// Get contacts count by source
+	public function get_contacts_count_by_source( $source = '' ) {
+		global $wpdb;
+
+		$source = esc_sql( $source );
+
+		$query = "SELECT COUNT(*) FROM {$wpdb->prefix}ig_contacts WHERE source = %s";
+		$count = $wpdb->get_var( $wpdb->prepare( $query, $source ) );
+
+		return intval( $count );
+	}
 }
