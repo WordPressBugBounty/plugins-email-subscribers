@@ -85,12 +85,19 @@ class ES_DB_Contacts extends ES_DB {
 		$custom_field_data = ES()->custom_fields_db->get_custom_fields();
 		$custom_field_cols = array();
 		if ( count( $custom_field_data ) > 0 ) {
+			// Get actual table columns to verify column existence
+			global $wpdb;
+			$actual_columns = $wpdb->get_col( "SHOW COLUMNS FROM {$this->table_name}" );
+			
 			foreach ($custom_field_data as $key => $data) {
-				$type = '%s';
-				if ( isset( $data[ 'type' ] ) && 'number' === $data[ 'type' ] ) {
-					$type = '%d';
+				// Only include custom fields that actually exist as database columns
+				if ( in_array( $data['slug'], $actual_columns ) ) {
+					$type = '%s';
+					if ( isset( $data[ 'type' ] ) && 'number' === $data[ 'type' ] ) {
+						$type = '%d';
+					}
+					$custom_field_cols[$data['slug']] = $type;
 				}
-				$custom_field_cols[$data['slug']] = $type;
 			}
 		}
 

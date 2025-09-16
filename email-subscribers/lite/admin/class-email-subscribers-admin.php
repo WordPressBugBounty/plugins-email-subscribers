@@ -387,6 +387,7 @@ class Email_Subscribers_Admin {
 				'apiUrl' => admin_url( 'admin-ajax.php' ),
 				'baseUrl' => ES_PLUGIN_URL . 'lite/admin/shadcn-frontend/dist/',
 				'security'    => wp_create_nonce( 'ig-es-admin-ajax-nonce' ),
+				'plan' => ES()->get_plan(),
 				'currentUser' => array(
 					'displayName' => $current_user->display_name,
 					'firstName' => $current_user->first_name,
@@ -418,6 +419,8 @@ class Email_Subscribers_Admin {
 
 		$accessible_sub_menus = ES_Common::ig_es_get_accessible_sub_menus();
 
+        $main_menu_url = admin_url( '/admin.php?page=es_dashboard' );
+		
 		if ( count( $accessible_sub_menus ) > 0 ) {
 
 			$menu_title = ES()->get_admin_menu_title();
@@ -446,7 +449,9 @@ class Email_Subscribers_Admin {
 
 		if ( in_array( 'forms', $accessible_sub_menus ) ) {
 			// Add Forms Submenu
-			$hook = add_submenu_page( 'es_dashboard', __( 'Forms', 'email-subscribers' ), __( 'Forms', 'email-subscribers' ), 'edit_posts', 'es_forms', array( $this, 'render_forms' ) );
+			add_submenu_page( 'es_dashboard', __( 'Forms', 'email-subscribers' ), __( 'Forms', 'email-subscribers' ), 'edit_posts', $main_menu_url . '#forms', null );
+			// TODO: Remove old form page screen after all forms created using DnD or classic editor are migrated to new UI 
+			$hook = add_submenu_page( 'es_dashboard', null, null, 'edit_posts', 'es_forms', array( $this, 'render_forms' ) );
 			add_action( "load-$hook", array( 'ES_Forms_Table', 'screen_options' ) );
 		}
 
@@ -718,6 +723,15 @@ class Email_Subscribers_Admin {
 	public function load_preview() {
 		$preview = ES_Templates_Table::get_instance();
 		$preview->es_template_preview_callback();
+	}
+
+	/**
+	 * Load Shortcode Test Page
+	 * 
+	 * @since 5.8.0
+	 */
+	public function load_shortcode_test() {
+		include ES_PLUGIN_DIR . 'lite/admin/views/shortcode-test.php';
 	}
 
 	/**

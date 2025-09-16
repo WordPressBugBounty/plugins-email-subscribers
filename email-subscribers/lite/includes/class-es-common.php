@@ -1994,6 +1994,26 @@ class ES_Common {
 
 				$settings = maybe_unserialize( $settings );
 
+				// Check if this is a WYSIWYG form (editor_type = wysiwyg)
+				if ( isset( $settings['editor_type'] ) && 'wysiwyg' === $settings['editor_type'] ) {
+					// For WYSIWYG forms, check the body for captcha fields
+					$body = ig_es_get_data( $form_data, 'body', '' );
+					if ( ! empty( $body ) ) {
+						$body_fields = json_decode( $body, true );
+						if ( is_array( $body_fields ) ) {
+							foreach ( $body_fields as $field ) {
+								if ( isset( $field['type'] ) && $field['type'] === 'captcha' && 
+									 isset( $field['enabled'] ) && $field['enabled'] ) {
+									return 'yes';
+								}
+							}
+						}
+					}
+					// If no captcha field found in WYSIWYG form, return 'no'
+					return 'no';
+				}
+
+				// For legacy forms, check the settings
 				if ( isset( $settings['captcha'] ) ) {
 					return empty( $settings['captcha'] ) ? 'no' : $settings['captcha'];
 				}

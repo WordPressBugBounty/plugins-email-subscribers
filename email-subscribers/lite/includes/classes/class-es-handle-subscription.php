@@ -143,25 +143,23 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 		 */
 		private $from_rainmaker = false;
 
-		/**
-		 * ES_Handle_Subscription constructor.
-		 *
-		 * @param bool $from_rainmaker
-		 *
-		 * @since 4.0.0
-		 */
-		public function __construct( $from_rainmaker = false ) {
-			if ( defined( 'DOING_AJAX' ) && ( true === DOING_AJAX ) ) {
-				add_action( 'wp_ajax_es_add_subscriber', array( $this, 'process_ajax_request' ), 10 );
-				add_action( 'wp_ajax_nopriv_es_add_subscriber', array( $this, 'process_ajax_request' ), 10 );
-			}
-
-			$this->from_rainmaker = $from_rainmaker;
-
-			$this->handle_subscription();
+	/**
+	 * ES_Handle_Subscription constructor.
+	 *
+	 * @param bool $from_rainmaker
+	 *
+	 * @since 4.0.0
+	 */
+	public function __construct( $from_rainmaker = false ) {
+		if ( defined( 'DOING_AJAX' ) && ( true === DOING_AJAX ) ) {
+			add_action( 'wp_ajax_es_add_subscriber', array( $this, 'process_ajax_request' ), 10 );
+			add_action( 'wp_ajax_nopriv_es_add_subscriber', array( $this, 'process_ajax_request' ), 10 );
 		}
 
-		/**
+		$this->from_rainmaker = $from_rainmaker;
+
+		$this->handle_subscription();
+	}		/**
 		 * Process form submission via ajax call
 		 */
 		public function process_ajax_request() {
@@ -173,6 +171,29 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 
 			if ( ! empty( $es_subscribe ) ) {
 				defined( 'IG_ES_RETURN_HANDLE_RESPONSE' ) || define( 'IG_ES_RETURN_HANDLE_RESPONSE', true );
+				
+				// Check if this is a WYSIWYG form submission
+				$form_id = ! empty( $_POST['esfpx_form_id'] ) ? (int) $_POST['esfpx_form_id'] : 0;
+				if ( $form_id ) {
+					$form = ES()->forms_db->get_form_by_id( $form_id );
+					if ( $form ) {
+						$settings = ! empty( $form['settings'] ) ? maybe_unserialize( $form['settings'] ) : array();
+						$editor_type = ! empty( $settings['editor_type'] ) ? $settings['editor_type'] : '';
+						
+						// If it's a WYSIWYG form, transform the data and use standard processor
+						if ( 'wysiwyg' === $editor_type ) {
+							error_log('DEBUG: AJAX WYSIWYG form detected, transforming data...');
+							$transformed_data = $this->transform_wysiwyg_form_data( wp_unslash( $_POST ), $form_id );
+							error_log('DEBUG: Data transformed, calling process_request...');
+							$response = $this->process_request( $transformed_data );
+							error_log('DEBUG: AJAX response: ' . print_r($response, true));
+							$response = $this->do_response( $response );
+							wp_send_json( $response );
+							return;
+						}
+					}
+				}
+				
 				$response = $this->process_request( wp_unslash( $_POST ) );
 			} else {
 				$response = array( 'status' => 'ERROR', 'message' => 'es_unexpected_error_notice', );
@@ -264,6 +285,50 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				$this->list_hashes    = isset( $form_data['esfpx_lists'] ) ? $form_data['esfpx_lists'] : array();
 				$this->es_nonce       = isset( $form_data['esfpx_es-subscribe'] ) ? trim( $form_data['esfpx_es-subscribe'] ) : '';
 				$this->form_id        = isset( $form_data['esfpx_form_id'] ) ? trim( $form_data['esfpx_form_id'] ) : 0;
+
+
+			
+				// Merge frontend selected lists with backend configured lists
+				if ( ! empty( $this->form_id ) ) {
+					$form = ES()->forms_db->get_form_by_id( $this->form_id );
+					if ( $form && ! empty( $form['settings'] ) ) {
+						$settings = maybe_unserialize( $form['settings'] );
+						
+						// Support both new and old settings format
+						$backend_list_ids = array();
+						if ( ! empty( $settings['lists'] ) && is_array( $settings['lists'] ) ) {
+							$backend_list_ids = array_map( 'intval', $settings['lists'] );
+						} elseif ( ! empty( $settings['lists'] ) && is_numeric( $settings['lists'] ) ) {
+							$backend_list_ids = array( intval( $settings['lists'] ) );
+						}
+						
+						if ( ! empty( $backend_list_ids ) ) {
+							$backend_lists = ES()->lists_db->get_lists_by_id( $backend_list_ids );
+							$backend_list_hashes = array();
+							
+							if ( ! empty( $backend_lists ) ) {
+								foreach ( $backend_lists as $list ) {
+									if ( ! empty( $list['hash'] ) ) {
+										$backend_list_hashes[] = $list['hash'];
+									}
+								}
+							}
+							
+							// Merge frontend and backend list hashes
+							if ( empty( $this->list_hashes ) ) {
+								$this->list_hashes = $backend_list_hashes;
+							} else {
+								$this->list_hashes = array_unique( array_merge( $this->list_hashes, $backend_list_hashes ) );
+							}
+						} else {
+							// No backend lists configured - using frontend lists only
+						}
+					} else {
+						// No form settings found
+					}
+				} else {
+					// No form ID provided
+				}
 				$this->reference_site = isset( $form_data['esfpx_reference_site'] ) ? esc_url_raw( $form_data['esfpx_reference_site'] ) : null;
 				$this->es_optin_type  = get_option( 'ig_es_optin_type' );
 				$this->guid           = ES_Common::generate_guid();
@@ -474,8 +539,9 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 		public function do_response( $response ) {
 
 			$message                  = isset( $response['message'] ) ? $response['message'] : '';
-			$response['message_text'] = '';
-			if ( ! empty( $message ) ) {
+			
+			// Only set message_text if it's not already set (preserve form-specific messages)
+			if ( empty( $response['message_text'] ) && ! empty( $message ) ) {
 				$response['message_text'] = $this->get_messages( $message );
 			}
 
@@ -563,6 +629,130 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 
 			return $es_response;
 		}
+
+		/**
+		 * Transform WYSIWYG form data to standard format
+		 * 
+		 * @param array $form_data Original form data
+		 * @param int $form_id Form ID
+		 * 
+		 * @return array Transformed form data
+		 * 
+		 * @since 5.8.0
+		 */
+		private function transform_wysiwyg_form_data( $form_data, $form_id ) {
+			error_log('DEBUG: transform_wysiwyg_form_data called with form_id: ' . $form_id);
+			error_log('DEBUG: Original form data keys: ' . implode(', ', array_keys($form_data)));
+			$transformed_data = $form_data;
+			
+			// Ensure required fields
+			if ( empty( $transformed_data['esfpx_es_hp_email'] ) ) {
+				$transformed_data['esfpx_es_hp_email'] = '';
+			}
+			
+			if ( empty( $transformed_data['es'] ) ) {
+				$transformed_data['es'] = 'subscribe';
+			}
+			
+			// Get form settings for success message handling
+			$form = ES()->forms_db->get_form_by_id( $form_id );
+			if ( $form ) {
+				$settings = ! empty( $form['settings'] ) ? maybe_unserialize( $form['settings'] ) : array();
+				
+				// Store form-specific success message for later use
+				if ( ! empty( $settings['success_message'] ) ) {
+					$transformed_data['_wysiwyg_success_message'] = $settings['success_message'];
+				}
+			}
+			
+			// Handle custom fields transformation
+			$custom_fields_data = ES()->custom_fields_db->get_custom_fields();
+			$custom_field_map = array();
+			if ( ! empty( $custom_fields_data ) ) {
+				foreach ( $custom_fields_data as $field ) {
+					$custom_field_map[ $field['id'] ] = $field['slug'];
+				}
+			}
+			
+			// Standard fields that should be preserved as-is
+			$standard_fields = array( 'esfpx_name', 'esfpx_email', 'esfpx_lists', 'esfpx_form_id', 'esfpx_es_form_identifier', 'esfpx_es_email_page', 'esfpx_es_email_page_url', 'esfpx_status', 'esfpx_es-subscribe', 'esfpx_es_hp_email', 'esfpx_es_captcha', 'esfpx_es_captcha_key', 'es', 'action' );
+			
+			// Core reserved field names that should never be treated as custom fields
+			$reserved_field_names = array( 'list', 'lists', 'email', 'name', 'firstName', 'lastName', 'captcha', 'gdpr', 'submit' );
+			
+			foreach ( $form_data as $key => $value ) {
+				if ( strpos( $key, 'esfpx_custom_' ) === 0 ) {
+					// Handle explicit custom fields (esfpx_custom_20, esfpx_custom_21, etc.)
+					$custom_field_id = str_replace( 'esfpx_custom_', '', $key );
+					
+					// Map ID to slug if available
+					if ( isset( $custom_field_map[ $custom_field_id ] ) ) {
+						$custom_field_slug = $custom_field_map[ $custom_field_id ];
+						$transformed_data['es_custom_field[' . $custom_field_slug . ']'] = $value;
+					} else {
+						// Fallback to cf_ID format if slug not found
+						$transformed_data['es_custom_field[cf_' . $custom_field_id . ']'] = $value;
+					}
+					
+					// Remove the original key to avoid conflicts
+					unset( $transformed_data[ $key ] );
+				} elseif ( strpos( $key, 'esfpx_' ) === 0 && ! in_array( $key, $standard_fields ) ) {
+					// Handle other esfpx_ fields that aren't standard
+					$field_name = str_replace( 'esfpx_', '', $key );
+					
+					// Skip core reserved field names
+					if ( in_array( $field_name, $reserved_field_names ) ) {
+						// For list field specifically, handle as list selection
+						if ( 'list' === $field_name ) {
+							$list_values = is_array( $value ) ? $value : array( $value );
+							
+							if ( ! isset( $transformed_data['esfpx_lists'] ) ) {
+								$transformed_data['esfpx_lists'] = array();
+							}
+							
+							foreach ( $list_values as $list_value ) {
+								if ( ! empty( $list_value ) ) {
+									// Convert list ID/name to hash
+									if ( is_numeric( $list_value ) ) {
+										$lists = ES()->lists_db->get_lists_by_id( $list_value );
+										if ( ! empty( $lists[0]['hash'] ) ) {
+											$transformed_data['esfpx_lists'][] = $lists[0]['hash'];
+										}
+									} else {
+										$list_data = ES()->lists_db->get_list_by_name( $list_value );
+										if ( ! empty( $list_data['hash'] ) ) {
+											$transformed_data['esfpx_lists'][] = $list_data['hash'];
+										}
+									}
+								}
+							}
+							unset( $transformed_data[ $key ] );
+						}
+						continue;
+					}
+					
+					// Look for a custom field with this name
+					$found_slug = null;
+					foreach ( $custom_fields_data as $field ) {
+						if ( $field['slug'] === $field_name || $field['label'] === $field_name ) {
+							$found_slug = $field['slug'];
+							break;
+						}
+					}
+					
+					if ( $found_slug ) {
+						$transformed_data['es_custom_field[' . $found_slug . ']'] = $value;
+					} else {
+						$transformed_data['es_custom_field[' . $field_name . ']'] = $value;
+					}
+					
+					unset( $transformed_data[ $key ] );
+				}
+			}
+			
+			error_log('DEBUG: Transformed data keys: ' . implode(', ', array_keys($transformed_data)));
+			return $transformed_data;
+		}
 				
 		/**
 		 * Get Message description based on message
@@ -578,10 +768,10 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 		public function get_messages( $message ) {
 			$ig_es_form_submission_success_message = get_option( 'ig_es_form_submission_success_message' );
 			$form_data 							   = ES()->forms_db->get_form_by_id( $this->form_id );
+			$success_message 					   = ''; // Initialize to empty string
 			
 			if ( ! empty( $form_data['settings'] ) ) {
 				$settings        = maybe_unserialize( $form_data['settings'] );
-				
 				$success_message = ! empty( $settings['success_message'] ) ? $settings['success_message'] : '';
 			}
 
@@ -599,7 +789,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				'es_no_list_selected'         => __( 'Please select the list', 'email-subscribers' ),
 				'es_invalid_captcha'          => __( 'Invalid Captcha', 'email-subscribers' ),
 			);
-
+			
 			$messages = apply_filters( 'ig_es_subscription_messages', $messages );
 
 			if ( ! empty( $messages ) ) {
@@ -648,7 +838,6 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 						'esfpx_lists'       => $lists_hash,
 						'form_type'         => 'external',
 					);
-
 					$response = $this->process_request( $form_data );
 					wp_send_json( $response );
 				}
@@ -659,14 +848,37 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 			if ( ! $doing_ajax ) {
 				$es_action = ig_es_get_post_data( 'es' );				
 				if ( ! empty( $es_action ) && 'subscribe' === $es_action ) {
-					// Store the response, so that it can be shown while outputting the subscription form HTML.
-					$response = $this->process_request();
-					if ( ! empty ( $response['redirection_url'] ) ) {
-						wp_redirect( $response['redirection_url'] );
-						exit;
-					} 
-
-					ES_Shortcode::$response = $response;
+					// Check if this is a WYSIWYG form submission
+					$form_id = ig_es_get_post_data( 'esfpx_form_id' );
+					if ( ! empty( $form_id ) ) {
+						$form = ES()->forms_db->get_form_by_id( $form_id );
+						if ( $form ) {
+							$settings = ! empty( $form['settings'] ) ? maybe_unserialize( $form['settings'] ) : array();
+							$editor_type = ! empty( $settings['editor_type'] ) ? $settings['editor_type'] : '';
+							
+							// If it's a WYSIWYG form, transform the data and use standard processor
+							if ( 'wysiwyg' === $editor_type ) {
+								error_log('DEBUG: Non-AJAX WYSIWYG form detected, transforming data...');
+								$transformed_data = $this->transform_wysiwyg_form_data( wp_unslash( $_POST ), $form_id );
+								error_log('DEBUG: Data transformed, calling process_request...');
+								$response = $this->process_request( $transformed_data );
+								error_log('DEBUG: Non-AJAX response: ' . print_r($response, true));
+								if ( ! empty( $response['redirection_url'] ) ) {
+									wp_redirect( $response['redirection_url'] );
+									exit;
+								}
+								ES_Shortcode::$response = $response;
+								return;
+							}
+						}
+					}
+					
+				// Store the response, so that it can be shown while outputting the subscription form HTML.
+				$response = $this->process_request();
+				if ( ! empty( $response['redirection_url'] ) ) {
+					wp_redirect( $response['redirection_url'] );
+					exit;
+				}					ES_Shortcode::$response = $response;
 				}
 			}
 		}

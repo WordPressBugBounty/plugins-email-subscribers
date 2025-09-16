@@ -59,7 +59,6 @@ export const folderIcon = adminData.baseUrl + "/images/folder-icon.svg";
 export const playIcon = adminData.baseUrl + "/images/play-icon.svg";
 export const blogBg1 = adminData.baseUrl + "/images/blog-bg-1.png";
 export const blogBg2 = adminData.baseUrl + "/images/blog-bg-2.png";
-export const tutorialVideoBg = adminData.baseUrl + "/images/tutorial-video-bg.png";
 export const tutorialVideoOverlay = adminData.baseUrl + "/images/tutorial-video-overlay.png";
 
 // Figma-extracted icons
@@ -82,7 +81,7 @@ export const chevronRightIconFigma = adminData.baseUrl + "/images/chevron-right-
 
 // Video tutorial card assets
 export const videoTutorialBg = adminData.baseUrl + "/images/video-tutorial-bg.png";
-export const videoTutorialOverlay = adminData.baseUrl + "/images/video-tutorial-overlay.png";
+export const videoTutorialOverlay = adminData.baseUrl + "/images/video-tutorial-overlay.jpg";
 export const playButtonIcon = adminData.baseUrl + "/images/play-button-icon.svg";
 
 // Forms tutorial card assets (Figma extracted)

@@ -439,6 +439,7 @@ abstract class ES_DB {
 		// Reorder $column_formats to match the order of columns given in $data
 		$data_keys      = array_keys( $data );
 		$column_formats = array_merge( array_flip( $data_keys ), $column_formats );
+
 // phpcs:disable
 		$wpdb->insert( $this->table_name, $data, $column_formats );
 		// phpcs:enable

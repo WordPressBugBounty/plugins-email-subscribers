@@ -307,7 +307,7 @@ class ES_Forms_Table extends ES_List_Table {
 						$this->prepare_list_form( null, $form_data );
 						return;
 					} else {
-						$form_url = admin_url( 'admin.php?page=es_forms&action=form_updated' );
+						$form_url = admin_url( 'admin.php?page=es_dashboard#forms' );
 						wp_safe_redirect( $form_url );
 						exit();
 					}
@@ -718,6 +718,15 @@ class ES_Forms_Table extends ES_List_Table {
 		$af_id         = ! empty( $data['af_id'] ) ? $data['af_id'] : '';
 		$body_data     = maybe_unserialize( $data['body'] );
 		$settings_data = maybe_unserialize( $data['settings'] );
+		$styles_data   = maybe_unserialize( $data['styles'] );
+		
+		// Handle JSON body data for new WYSIWYG forms
+		if ( is_string( $body_data ) && ! empty( $body_data ) ) {
+			$decoded_json = json_decode( $body_data, true );
+			if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded_json ) ) {
+				$body_data = $decoded_json;
+			}
+		}
 
 		$desc          = ! empty( $settings_data['desc'] ) ? $settings_data['desc'] : '';
 		$form_version  = ! empty( $settings_data['form_version'] ) ? $settings_data['form_version'] : '0.1';
@@ -751,15 +760,17 @@ class ES_Forms_Table extends ES_List_Table {
 				'editor_type'          => $editor_type,
 			);
 	
-			foreach ( $body_data as $d ) {
-				if ( 'name' === $d['id'] ) {
-					$form_data['name_visible']      = ( true === $d['params']['show'] ) ? 'yes' : '';
-					$form_data['name_required']     = ( true === $d['params']['required'] ) ? 'yes' : '';
-					$form_data['name_label']        = ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
-					$form_data['name_place_holder'] = ! empty( $d['params']['place_holder'] ) ? $d['params']['place_holder'] : '';
-				} elseif ( 'lists' === $d['id'] ) {
-					$form_data['list_label']  	= ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
-					$form_data['list_visible']  = ( true === $d['params']['show'] ) ? 'yes' : '';
+			// Ensure body_data is an array before iterating
+			if ( is_array( $body_data ) ) {
+				foreach ( $body_data as $d ) {
+					if ( 'name' === $d['id'] ) {
+						$form_data['name_visible']      = ( true === $d['params']['show'] ) ? 'yes' : '';
+						$form_data['name_required']     = ( true === $d['params']['required'] ) ? 'yes' : '';
+						$form_data['name_label']        = ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
+						$form_data['name_place_holder'] = ! empty( $d['params']['place_holder'] ) ? $d['params']['place_holder'] : '';
+					} elseif ( 'lists' === $d['id'] ) {
+						$form_data['list_label']  	= ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
+						$form_data['list_visible']  = ( true === $d['params']['show'] ) ? 'yes' : '';
 					$form_data['list_required'] = ( true === $d['params']['required'] ) ? 'yes' : '';
 					$form_data['lists']         = ! empty( $d['params']['values'] ) ? $d['params']['values'] : array();
 				} elseif ( 'email' === $d['id'] ) {
@@ -771,6 +782,7 @@ class ES_Forms_Table extends ES_List_Table {
 					$form_data['custom_fields'][] = $d;
 				}
 			}
+			}
 			$form_data = apply_filters('ig_es_form_fields_data', $form_data, $settings_data, $body_data);
 		} else {
 			$form_data = array(
@@ -780,6 +792,7 @@ class ES_Forms_Table extends ES_List_Table {
 				'af_id'             => $af_id,
 				'form_version'      => $form_version,
 				'settings'			=> $settings_data,
+				'styles'			=> $styles_data,
 			);
 		}
 

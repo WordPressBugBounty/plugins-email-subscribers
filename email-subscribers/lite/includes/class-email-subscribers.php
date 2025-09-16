@@ -846,6 +846,9 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/public/class-email-subscribers-public.php',
 				'lite/admin/partials/admin-header.php',
 				'lite/public/partials/class-es-shortcode.php',
+				
+				// WYSIWYG Form Handler
+				'lite/includes/class-es-wysiwyg-form-handler.php',
 
 				// Start-IG-Code.
 				// Backward Compatibility.
@@ -1017,6 +1020,8 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 
 				'lite/includes/controllers/class-es-form-controller.php',
 				'lite/includes/controllers/class-es-forms-controller.php',
+				'lite/includes/controllers/class-es-lists-controller.php',
+				'lite/includes/controllers/class-es-custom-fields-controller.php',
 
 				'lite/includes/controllers/class-es-contact-controller.php',
 				'lite/includes/controllers/class-es-contacts-controller.php',

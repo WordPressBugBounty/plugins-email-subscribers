@@ -8,34 +8,31 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * ES_DB_Custom_Fields class
  *
- *@since 4.8.4
+ * @since 4.8.4
  */
 class ES_DB_Custom_Fields extends ES_DB {
-	
+
 	/**
 	 * Table name
-	 * 
+	 *
 	 * @since 4.8.4
 	 * @var string
-	 *
 	 */
 	public $table_name;
 
 	/**
 	 * Table DB version
-	 * 
+	 *
 	 * @since 4.8.4
 	 * @var string
-	 *
 	 */
 	public $version;
 
 	/**
 	 * Table primary key column name
-	 * 
+	 *
 	 * @since 4.8.4
 	 * @var string
-	 *
 	 */
 	public $primary_key;
 
@@ -65,26 +62,28 @@ class ES_DB_Custom_Fields extends ES_DB {
 	 */
 	public function get_columns() {
 		return array(
-			'id'         => '%d',
-			'slug'       => '%s',
-			'label'      => '%s',
-			'type'   	 => '%s',
-			'meta'    	 => '%s',
+			'id'    => '%d',
+			'slug'  => '%s',
+			'label' => '%s',
+			'type'  => '%s',
+			'meta'  => '%s',
 		);
 	}
 
 	/**
 	 * Get default column values
 	 *
+	 * @return array
+	 *
 	 * @since 4.8.4
 	 */
 	public function get_column_defaults() {
 		return array(
-			'id'         => null,
-			'slug'       => null,
-			'label'      => null,
-			'type'   	 => null,
-			'meta'    	 => null,
+			'id'    => null,
+			'slug'  => null,
+			'label' => null,
+			'type'  => null,
+			'meta'  => null,
 		);
 	}
 
@@ -99,6 +98,13 @@ class ES_DB_Custom_Fields extends ES_DB {
 		return $this->get_all();
 	}
 
+	/**
+	 * Get custom date fields
+	 *
+	 * @return array|object|null
+	 *
+	 * @since 4.8.4
+	 */
 	public function get_custom_date_fields() {
 		$where_condition = "type = 'date'";
 		return ES()->custom_fields_db->get_by_conditions( $where_condition );
@@ -107,7 +113,7 @@ class ES_DB_Custom_Fields extends ES_DB {
 	/**
 	 * Add Custom Field
 	 *
-	 * @param $data
+	 * @param array $data Field data.
 	 *
 	 * @return int
 	 *
@@ -120,8 +126,8 @@ class ES_DB_Custom_Fields extends ES_DB {
 	/**
 	 * Update Custom Field
 	 *
-	 * @param int $row_id
-	 * @param array $data
+	 * @param int   $row_id Row ID.
+	 * @param array $data   Field data.
 	 *
 	 * @return bool|void
 	 *

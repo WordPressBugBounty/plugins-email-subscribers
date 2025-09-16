@@ -157,9 +157,9 @@ jQuery(document).ready(function() {
 		jQuery('#sending-service-onboarding-tasks-list').show();
 		
 		// Update header text for Step 2
-		jQuery('#popup-header-text').text('Setting up Icegram Mailer');
-		jQuery('#popup-subtitle-text').text('Excellent! Activating Icegram mailer plugin, usually takes less than a minute.');
-		
+		jQuery('#popup-header-text').text(__('Setting up Icegram Mailer', 'email-subscribers'));
+		jQuery('#popup-subtitle-text').text(__('Excellent! Activating Icegram mailer plugin, usually takes less than a minute.', 'email-subscribers'));
+
 		// Switch buttons
 		jQuery('#ig-es-popup-footer-section').hide();
 		jQuery('#ig-ess-optin-cta').hide();

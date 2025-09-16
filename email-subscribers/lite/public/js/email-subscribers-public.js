@@ -119,8 +119,14 @@
                 form.find('.es_submit_button').attr('disabled', true);
             },
             success: function (response) {
+                // Handle WordPress AJAX response format
+                var actualResponse = response;
+                if (response.success !== undefined && response.data !== undefined) {
+                    actualResponse = response.data;
+                }
+                
                 if (!is_ig) {
-                    if (response && typeof response.status !== 'undefined' && response.status === "SUCCESS") {
+                    if (actualResponse && typeof actualResponse.status !== 'undefined' && actualResponse.status === "SUCCESS") {
                         form.slideUp('slow');
                         form.hide();
                     } else {
@@ -128,8 +134,8 @@
                     }
                 }
                 form.find('.es_submit_button').attr('disabled', false);
-                jQuery(window).trigger('es.send_response', [form, response]);
-                handleResponse(response, form);
+                jQuery(window).trigger('es.send_response', [form, actualResponse]);
+                handleResponse(actualResponse, form);
             },
             error: function (err) {
                 form.find('#spinner-image').hide();
