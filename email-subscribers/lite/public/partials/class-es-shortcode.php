@@ -1002,12 +1002,25 @@ class ES_Shortcode {
 		
 		$field_value = ! empty( $field['value'] ) ? $field['value'] : '';
 		
+		// Check if this is a custom field - use explicit property or ID pattern as fallback
+		// Support custom_ prefix for custom fields
+		$is_custom_field = ! empty( $field['is_custom_field'] ) || 
+						   ( ! empty( $field_id ) && strpos( $field_id, 'custom_' ) === 0 );
+		
 		// Get submitted value if available
 		$submitted_value = '';
 		if ( 'email' === $field_id ) {
 			$submitted_value = ! empty( $submitted_data['email'] ) ? $submitted_data['email'] : $field_value;
+		} elseif ( $is_custom_field ) {
+			// For custom fields, check es_custom_field array
+			$custom_field_key = 'es_custom_field';
+			if ( ! empty( $submitted_data[ $custom_field_key ] ) && ! empty( $submitted_data[ $custom_field_key ][ $field_id ] ) ) {
+				$submitted_value = $submitted_data[ $custom_field_key ][ $field_id ];
+			} else {
+				$submitted_value = $field_value;
+			}
 		} else {
-			// For all other fields (including custom fields), use field-specific submitted data
+			// For regular form fields, use esfpx_ prefix
 			$field_name = 'esfpx_' . $field_id;
 			if ( ! empty( $submitted_data[ $field_name ] ) ) {
 				$submitted_value = $submitted_data[ $field_name ];
@@ -1067,21 +1080,53 @@ class ES_Shortcode {
 					break;
 					
 				case 'text':
-					$html = self::get_text_field_html( $field_id, $field_label, $field_placeholder, $field_required, $submitted_value );
+					$field_args = array(
+						'field_id' => $field_id,
+						'label' => $field_label,
+						'placeholder' => $field_placeholder,
+						'required' => $field_required,
+						'value' => $submitted_value,
+						'is_custom_field' => $is_custom_field
+					);
+					$html = self::get_text_field_html( $field_args );
 					break;
 				
 				case 'number':
-					$html = self::get_number_field_html( $field_id, $field_label, $field_placeholder, $field_required, $submitted_value );
+					$field_args = array(
+						'field_id' => $field_id,
+						'label' => $field_label,
+						'placeholder' => $field_placeholder,
+						'required' => $field_required,
+						'value' => $submitted_value,
+						'is_custom_field' => $is_custom_field
+					);
+					$html = self::get_number_field_html( $field_args );
 					break;
 				
 				case 'textarea':
-					$html = self::get_textarea_field_html( $field_id, $field_label, $field_placeholder, $field_required, $submitted_value );
+					$field_args = array(
+						'field_id' => $field_id,
+						'label' => $field_label,
+						'placeholder' => $field_placeholder,
+						'required' => $field_required,
+						'value' => $submitted_value,
+						'is_custom_field' => $is_custom_field
+					);
+					$html = self::get_textarea_field_html( $field_args );
 					break;
 				
 				case 'select':
 				case 'dropdown': // Handle dropdown as alias for select
 					$options = ! empty( $field['options'] ) ? $field['options'] : array();
-					$html = self::get_select_field_html( $field_id, $field_label, $options, $field_required, $submitted_value );
+					$field_args = array(
+						'field_id' => $field_id,
+						'label' => $field_label,
+						'options' => $options,
+						'required' => $field_required,
+						'value' => $submitted_value,
+						'is_custom_field' => $is_custom_field
+					);
+					$html = self::get_select_field_html( $field_args );
 					break;
 				
 				case 'checkbox':
@@ -1089,21 +1134,53 @@ class ES_Shortcode {
 						// Handle GDPR checkbox separately in main function
 						break;
 					}
-					$html = self::get_checkbox_field_html( $field_id, $field_label, $field_required, $submitted_value );
+					$field_args = array(
+						'field_id' => $field_id,
+						'label' => $field_label,
+						'required' => $field_required,
+						'value' => $submitted_value,
+						'is_custom_field' => $is_custom_field
+					);
+					$html = self::get_checkbox_field_html( $field_args );
 					break;
 				
 				case 'radio':
 					$options = ! empty( $field['options'] ) ? $field['options'] : array();
-					$html = self::get_radio_field_html( $field_id, $field_label, $options, $field_required, $submitted_value );
+					$field_args = array(
+						'field_id' => $field_id,
+						'label' => $field_label,
+						'options' => $options,
+						'required' => $field_required,
+						'value' => $submitted_value,
+						'is_custom_field' => $is_custom_field
+					);
+					$html = self::get_radio_field_html( $field_args );
 					break;
 				
 				case 'date':
-					$html = self::get_date_field_html( $field_id, $field_label, $field_placeholder, $field_required, $submitted_value );
+					$field_args = array(
+						'field_id' => $field_id,
+						'label' => $field_label,
+						'placeholder' => $field_placeholder,
+						'required' => $field_required,
+						'value' => $submitted_value,
+						'is_custom_field' => $is_custom_field
+					);
+					$html = self::get_date_field_html( $field_args );
 					break;
 				
 				case 'firstName':
 				case 'lastName':
-					$html = self::get_text_field_html( 'name', $field_label, $field_placeholder, $field_required, $submitted_value );
+					// firstName and lastName are not custom fields, so pass false
+					$field_args = array(
+						'field_id' => 'name',
+						'label' => $field_label,
+						'placeholder' => $field_placeholder,
+						'required' => $field_required,
+						'value' => $submitted_value,
+						'is_custom_field' => false
+					);
+					$html = self::get_text_field_html( $field_args );
 					break;
 				
 				case 'list':
@@ -1113,7 +1190,15 @@ class ES_Shortcode {
 					break;
 				
 				default:
-					$html = self::get_text_field_html( $field_id, $field_label, $field_placeholder, $field_required, $submitted_value );
+					$field_args = array(
+						'field_id' => $field_id,
+						'label' => $field_label,
+						'placeholder' => $field_placeholder,
+						'required' => $field_required,
+						'value' => $submitted_value,
+						'is_custom_field' => $is_custom_field
+					);
+					$html = self::get_text_field_html( $field_args );
 					break;
 			}
 		}
@@ -1124,22 +1209,43 @@ class ES_Shortcode {
 	/**
 	 * Get text field HTML for new forms
 	 *
-	 * @param string $field_id Field ID
-	 * @param string $label Field label
-	 * @param string $placeholder Field placeholder
-	 * @param bool   $required Whether field is required
-	 * @param string $value Field value
+	 * @param array $args {
+	 *     Field arguments.
+	 *     @type string $field_id Field ID
+	 *     @type string $label Field label
+	 *     @type string $placeholder Field placeholder
+	 *     @type bool   $required Whether field is required
+	 *     @type string $value Field value
+	 *     @type bool   $is_custom_field Whether this is a custom field
+	 * }
 	 *
 	 * @return string
 	 */
-	public static function get_text_field_html( $field_id, $label, $placeholder, $required = false, $value = '' ) {
-		$required_attr = $required ? 'required="required"' : '';
-		$required_mark = $required ? '*' : '';
-		$field_name = 'esfpx_' . $field_id;
+	public static function get_text_field_html( $args ) {
+		$defaults = array(
+			'field_id' => '',
+			'label' => '',
+			'placeholder' => '',
+			'required' => false,
+			'value' => '',
+			'is_custom_field' => false
+		);
+		
+		$args = wp_parse_args( $args, $defaults );
+		
+		$required_attr = $args['required'] ? 'required="required"' : '';
+		$required_mark = $args['required'] ? '*' : '';
+		
+		// Generate correct field name based on field type
+		if ( $args['is_custom_field'] ) {
+			$field_name = 'es_custom_field[' . $args['field_id'] . ']';
+		} else {
+			$field_name = 'esfpx_' . $args['field_id'];
+		}
 		
 		$html = '<div class="es-field-wrap ig-es-form-field">';
-		$html .= '<label class="es-field-label">' . esc_html( $label ) . $required_mark . '<br/>';
-		$html .= '<input type="text" name="' . esc_attr( $field_name ) . '" class="ig_es_form_field_text ig-es-form-input" placeholder="' . esc_attr( $placeholder ) . '" value="' . esc_attr( $value ) . '" ' . $required_attr . ' />';
+		$html .= '<label class="es-field-label">' . esc_html( $args['label'] ) . $required_mark . '<br/>';
+		$html .= '<input type="text" name="' . esc_attr( $field_name ) . '" class="ig_es_form_field_text ig-es-form-input" placeholder="' . esc_attr( $args['placeholder'] ) . '" value="' . esc_attr( $args['value'] ) . '" ' . $required_attr . ' />';
 		$html .= '</label>';
 		$html .= '</div>';
 		
@@ -1149,22 +1255,43 @@ class ES_Shortcode {
 	/**
 	 * Get textarea field HTML for new forms
 	 *
-	 * @param string $field_id Field ID
-	 * @param string $label Field label
-	 * @param string $placeholder Field placeholder
-	 * @param bool   $required Whether field is required
-	 * @param string $value Field value
+	 * @param array $args {
+	 *     Field arguments.
+	 *     @type string $field_id Field ID
+	 *     @type string $label Field label
+	 *     @type string $placeholder Field placeholder
+	 *     @type bool   $required Whether field is required
+	 *     @type string $value Field value
+	 *     @type bool   $is_custom_field Whether this is a custom field
+	 * }
 	 *
 	 * @return string
 	 */
-	public static function get_textarea_field_html( $field_id, $label, $placeholder, $required = false, $value = '' ) {
-		$required_attr = $required ? 'required="required"' : '';
-		$required_mark = $required ? '*' : '';
-		$field_name = 'esfpx_' . $field_id;
+	public static function get_textarea_field_html( $args ) {
+		$defaults = array(
+			'field_id' => '',
+			'label' => '',
+			'placeholder' => '',
+			'required' => false,
+			'value' => '',
+			'is_custom_field' => false
+		);
+		
+		$args = wp_parse_args( $args, $defaults );
+		
+		$required_attr = $args['required'] ? 'required="required"' : '';
+		$required_mark = $args['required'] ? '*' : '';
+		
+		// Generate correct field name based on field type
+		if ( $args['is_custom_field'] ) {
+			$field_name = 'es_custom_field[' . $args['field_id'] . ']';
+		} else {
+			$field_name = 'esfpx_' . $args['field_id'];
+		}
 		
 		$html = '<div class="es-field-wrap ig-es-form-field">';
-		$html .= '<label class="es-field-label">' . esc_html( $label ) . $required_mark . '<br/>';
-		$html .= '<textarea name="' . esc_attr( $field_name ) . '" class="ig_es_form_field_textarea ig-es-form-input" placeholder="' . esc_attr( $placeholder ) . '" ' . $required_attr . '>' . esc_textarea( $value ) . '</textarea>';
+		$html .= '<label class="es-field-label">' . esc_html( $args['label'] ) . $required_mark . '<br/>';
+		$html .= '<textarea name="' . esc_attr( $field_name ) . '" class="ig_es_form_field_textarea ig-es-form-input" placeholder="' . esc_attr( $args['placeholder'] ) . '" ' . $required_attr . '>' . esc_textarea( $args['value'] ) . '</textarea>';
 		$html .= '</label>';
 		$html .= '</div>';
 		
@@ -1174,22 +1301,43 @@ class ES_Shortcode {
 	/**
 	 * Get number field HTML for new forms
 	 *
-	 * @param string $field_id Field ID
-	 * @param string $label Field label
-	 * @param string $placeholder Field placeholder
-	 * @param bool   $required Whether field is required
-	 * @param string $value Field value
+	 * @param array $args {
+	 *     Field arguments.
+	 *     @type string $field_id Field ID
+	 *     @type string $label Field label
+	 *     @type string $placeholder Field placeholder
+	 *     @type bool   $required Whether field is required
+	 *     @type string $value Field value
+	 *     @type bool   $is_custom_field Whether this is a custom field
+	 * }
 	 *
 	 * @return string
 	 */
-	public static function get_number_field_html( $field_id, $label, $placeholder, $required = false, $value = '' ) {
-		$required_attr = $required ? 'required="required"' : '';
-		$required_mark = $required ? '*' : '';
-		$field_name = 'esfpx_' . $field_id;
+	public static function get_number_field_html( $args ) {
+		$defaults = array(
+			'field_id' => '',
+			'label' => '',
+			'placeholder' => '',
+			'required' => false,
+			'value' => '',
+			'is_custom_field' => false
+		);
+		
+		$args = wp_parse_args( $args, $defaults );
+		
+		$required_attr = $args['required'] ? 'required="required"' : '';
+		$required_mark = $args['required'] ? '*' : '';
+		
+		// Generate correct field name based on field type
+		if ( $args['is_custom_field'] ) {
+			$field_name = 'es_custom_field[' . $args['field_id'] . ']';
+		} else {
+			$field_name = 'esfpx_' . $args['field_id'];
+		}
 		
 		$html = '<div class="es-field-wrap ig-es-form-field">';
-		$html .= '<label class="es-field-label">' . esc_html( $label ) . $required_mark . '<br/>';
-		$html .= '<input type="number" name="' . esc_attr( $field_name ) . '" class="ig_es_form_field_number ig-es-form-input" placeholder="' . esc_attr( $placeholder ) . '" value="' . esc_attr( $value ) . '" ' . $required_attr . ' />';
+		$html .= '<label class="es-field-label">' . esc_html( $args['label'] ) . $required_mark . '<br/>';
+		$html .= '<input type="number" name="' . esc_attr( $field_name ) . '" class="ig_es_form_field_number ig-es-form-input" placeholder="' . esc_attr( $args['placeholder'] ) . '" value="' . esc_attr( $args['value'] ) . '" ' . $required_attr . ' />';
 		$html .= '</label>';
 		$html .= '</div>';
 		
@@ -1199,22 +1347,43 @@ class ES_Shortcode {
 	/**
 	 * Get date field HTML for new forms
 	 *
-	 * @param string $field_id Field ID
-	 * @param string $label Field label
-	 * @param string $placeholder Field placeholder
-	 * @param bool   $required Whether field is required
-	 * @param string $value Field value
+	 * @param array $args {
+	 *     Field arguments.
+	 *     @type string $field_id Field ID
+	 *     @type string $label Field label
+	 *     @type string $placeholder Field placeholder (not used for date fields)
+	 *     @type bool   $required Whether field is required
+	 *     @type string $value Field value
+	 *     @type bool   $is_custom_field Whether this is a custom field
+	 * }
 	 *
 	 * @return string
 	 */
-	public static function get_date_field_html( $field_id, $label, $placeholder, $required = false, $value = '' ) {
-		$required_attr = $required ? 'required="required"' : '';
-		$required_mark = $required ? '*' : '';
-		$field_name = 'esfpx_' . $field_id;
+	public static function get_date_field_html( $args ) {
+		$defaults = array(
+			'field_id' => '',
+			'label' => '',
+			'placeholder' => '',
+			'required' => false,
+			'value' => '',
+			'is_custom_field' => false
+		);
+		
+		$args = wp_parse_args( $args, $defaults );
+		
+		$required_attr = $args['required'] ? 'required="required"' : '';
+		$required_mark = $args['required'] ? '*' : '';
+		
+		// Generate correct field name based on field type
+		if ( $args['is_custom_field'] ) {
+			$field_name = 'es_custom_field[' . $args['field_id'] . ']';
+		} else {
+			$field_name = 'esfpx_' . $args['field_id'];
+		}
 		
 		$html = '<div class="es-field-wrap ig-es-form-field">';
-		$html .= '<label class="es-field-label">' . esc_html( $label ) . $required_mark . '<br/>';
-		$html .= '<input type="date" name="' . esc_attr( $field_name ) . '" class="ig_es_form_field_date ig-es-form-input" value="' . esc_attr( $value ) . '" ' . $required_attr . ' />';
+		$html .= '<label class="es-field-label">' . esc_html( $args['label'] ) . $required_mark . '<br/>';
+		$html .= '<input type="date" name="' . esc_attr( $field_name ) . '" class="ig_es_form_field_date ig-es-form-input" value="' . esc_attr( $args['value'] ) . '" ' . $required_attr . ' />';
 		$html .= '</label>';
 		$html .= '</div>';
 		
@@ -1224,33 +1393,54 @@ class ES_Shortcode {
 	/**
 	 * Get select field HTML for new forms
 	 *
-	 * @param string $field_id Field ID
-	 * @param string $label Field label
-	 * @param array  $options Select options
-	 * @param bool   $required Whether field is required
-	 * @param string $value Field value
+	 * @param array $args {
+	 *     Field arguments.
+	 *     @type string $field_id Field ID
+	 *     @type string $label Field label
+	 *     @type array  $options Select options
+	 *     @type bool   $required Whether field is required
+	 *     @type string $value Field value
+	 *     @type bool   $is_custom_field Whether this is a custom field
+	 * }
 	 *
 	 * @return string
 	 */
-	public static function get_select_field_html( $field_id, $label, $options, $required = false, $value = '' ) {
-		$required_attr = $required ? 'required="required"' : '';
-		$required_mark = $required ? '*' : '';
-		$field_name = 'esfpx_' . $field_id;
+	public static function get_select_field_html( $args ) {
+		$defaults = array(
+			'field_id' => '',
+			'label' => '',
+			'options' => array(),
+			'required' => false,
+			'value' => '',
+			'is_custom_field' => false
+		);
+		
+		$args = wp_parse_args( $args, $defaults );
+		
+		$required_attr = $args['required'] ? 'required="required"' : '';
+		$required_mark = $args['required'] ? '*' : '';
+		
+		// Generate correct field name based on field type
+		if ( $args['is_custom_field'] ) {
+			$field_name = 'es_custom_field[' . $args['field_id'] . ']';
+		} else {
+			$field_name = 'esfpx_' . $args['field_id'];
+		}
 		
 		$html = '<div class="es-field-wrap">';
-		$html .= '<label>' . esc_html( $label ) . $required_mark . '<br/>';
+		$html .= '<label>' . esc_html( $args['label'] ) . $required_mark . '<br/>';
 		$html .= '<select name="' . esc_attr( $field_name ) . '" class="ig_es_form_field_select" ' . $required_attr . '>';
 		$html .= '<option value="">Select an option</option>';
 		
-		if ( is_array( $options ) ) {
-			foreach ( $options as $option ) {
+		if ( is_array( $args['options'] ) ) {
+			foreach ( $args['options'] as $option ) {
 				if ( is_array( $option ) && isset( $option['text'] ) ) {
 					$option_value = isset( $option['id'] ) ? $option['id'] : $option['text'];
 					$option_text = $option['text'];
-					$selected = ( $value == $option_value || $value == $option_text ) ? 'selected="selected"' : '';
+					$selected = ( $args['value'] == $option_value || $args['value'] == $option_text ) ? 'selected="selected"' : '';
 					$html .= '<option value="' . esc_attr( $option_value ) . '" ' . $selected . '>' . esc_html( $option_text ) . '</option>';
 				} elseif ( is_string( $option ) ) {
-					$selected = ( $value == $option ) ? 'selected="selected"' : '';
+					$selected = ( $args['value'] == $option ) ? 'selected="selected"' : '';
 					$html .= '<option value="' . esc_attr( $option ) . '" ' . $selected . '>' . esc_html( $option ) . '</option>';
 				}
 			}
@@ -1266,22 +1456,43 @@ class ES_Shortcode {
 	/**
 	 * Get checkbox field HTML for new forms
 	 *
-	 * @param string $field_id Field ID
-	 * @param string $label Field label
-	 * @param bool   $required Whether field is required
-	 * @param mixed  $value Field value
+	 * @param array $args {
+	 *     Field arguments.
+	 *     @type string $field_id Field ID
+	 *     @type string $label Field label
+	 *     @type bool   $required Whether field is required
+	 *     @type mixed  $value Field value
+	 *     @type bool   $is_custom_field Whether this is a custom field
+	 * }
 	 *
 	 * @return string
 	 */
-	public static function get_checkbox_field_html( $field_id, $label, $required = false, $value = '' ) {
-		$required_attr = $required ? 'required="required"' : '';
-		$field_name = 'esfpx_' . $field_id;
-		$checked = ( true === $value || 'true' === $value || '1' === $value ) ? 'checked="checked"' : '';
+	public static function get_checkbox_field_html( $args ) {
+		$defaults = array(
+			'field_id' => '',
+			'label' => '',
+			'required' => false,
+			'value' => '',
+			'is_custom_field' => false
+		);
+		
+		$args = wp_parse_args( $args, $defaults );
+		
+		$required_attr = $args['required'] ? 'required="required"' : '';
+		
+		// Generate correct field name based on field type
+		if ( $args['is_custom_field'] ) {
+			$field_name = 'es_custom_field[' . $args['field_id'] . ']';
+		} else {
+			$field_name = 'esfpx_' . $args['field_id'];
+		}
+		
+		$checked = ( true === $args['value'] || 'true' === $args['value'] || '1' === $args['value'] ) ? 'checked="checked"' : '';
 		
 		$html = '<div class="es-field-wrap">';
 		$html .= '<label style="display: inline">';
 		$html .= '<input type="checkbox" name="' . esc_attr( $field_name ) . '" value="true" ' . $checked . ' ' . $required_attr . ' />&nbsp;';
-		$html .= esc_html( $label );
+		$html .= esc_html( $args['label'] );
 		$html .= '</label>';
 		$html .= '</div>';
 		
@@ -1291,35 +1502,56 @@ class ES_Shortcode {
 	/**
 	 * Get radio field HTML for new forms
 	 *
-	 * @param string $field_id Field ID
-	 * @param string $label Field label
-	 * @param array  $options Radio options
-	 * @param bool   $required Whether field is required
-	 * @param string $value Field value
+	 * @param array $args {
+	 *     Field arguments.
+	 *     @type string $field_id Field ID
+	 *     @type string $label Field label
+	 *     @type array  $options Radio options
+	 *     @type bool   $required Whether field is required
+	 *     @type string $value Field value
+	 *     @type bool   $is_custom_field Whether this is a custom field
+	 * }
 	 *
 	 * @return string
 	 */
-	public static function get_radio_field_html( $field_id, $label, $options, $required = false, $value = '' ) {
-		$required_attr = $required ? 'required="required"' : '';
-		$required_mark = $required ? '*' : '';
-		$field_name = 'esfpx_' . $field_id;
+	public static function get_radio_field_html( $args ) {
+		$defaults = array(
+			'field_id' => '',
+			'label' => '',
+			'options' => array(),
+			'required' => false,
+			'value' => '',
+			'is_custom_field' => false
+		);
+		
+		$args = wp_parse_args( $args, $defaults );
+		
+		$required_attr = $args['required'] ? 'required="required"' : '';
+		$required_mark = $args['required'] ? '*' : '';
+		
+		// Generate correct field name based on field type
+		if ( $args['is_custom_field'] ) {
+			$field_name = 'es_custom_field[' . $args['field_id'] . ']';
+		} else {
+			$field_name = 'esfpx_' . $args['field_id'];
+		}
 		
 		$html = '<div class="es-field-wrap">';
 		$html .= '<fieldset>';
-		$html .= '<legend>' . esc_html( $label ) . $required_mark . '</legend>';
+		$html .= '<legend>' . esc_html( $args['label'] ) . $required_mark . '</legend>';
 		
-		if ( is_array( $options ) ) {
-			foreach ( $options as $option ) {
+		if ( is_array( $args['options'] ) ) {
+			foreach ( $args['options'] as $option ) {
 				if ( is_array( $option ) && isset( $option['text'] ) ) {
 					$option_value = isset( $option['id'] ) ? $option['id'] : $option['text'];
 					$option_text = $option['text'];
-					$checked = ( $value == $option_value || $value == $option_text ) ? 'checked="checked"' : '';
+					$checked = ( $args['value'] == $option_value || $args['value'] == $option_text ) ? 'checked="checked"' : '';
 					$html .= '<label style="display: block; margin: 5px 0;">';
 					$html .= '<input type="radio" name="' . esc_attr( $field_name ) . '" value="' . esc_attr( $option_value ) . '" ' . $checked . ' ' . $required_attr . ' />&nbsp;';
 					$html .= esc_html( $option_text );
 					$html .= '</label>';
 				} elseif ( is_string( $option ) ) {
-					$checked = ( $value == $option ) ? 'checked="checked"' : '';
+					$checked = ( $args['value'] == $option ) ? 'checked="checked"' : '';
 					$html .= '<label style="display: block; margin: 5px 0;">';
 					$html .= '<input type="radio" name="' . esc_attr( $field_name ) . '" value="' . esc_attr( $option ) . '" ' . $checked . ' ' . $required_attr . ' />&nbsp;';
 					$html .= esc_html( $option );
@@ -1391,6 +1623,12 @@ class ES_Shortcode {
 		if ( self::is_posted() ) {
 			$data['name'] = ig_es_get_post_data( 'esfpx_name' );
 			$data['email'] = ig_es_get_post_data( 'esfpx_email' );
+			
+			// Handle custom fields
+			$custom_field_data = ig_es_get_post_data( 'es_custom_field' );
+			if ( ! empty( $custom_field_data ) && is_array( $custom_field_data ) ) {
+				$data['es_custom_field'] = $custom_field_data;
+			}
 			
 			// Handle logged in user prefill
 		} elseif ( is_user_logged_in() ) {

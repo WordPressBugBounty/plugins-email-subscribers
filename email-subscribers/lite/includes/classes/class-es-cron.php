@@ -47,19 +47,19 @@ class ES_Cron {
 	 */
 	public function update( $hourly_only = false ) {
 
-		// Schedule Main Cron
-		if ( ! wp_next_scheduled( 'ig_es_cron' ) ) {
+		$wp_cron_enabled   = $this->is_wp_cron_enable();
+		$wp_cron_scheduled = wp_next_scheduled( 'ig_es_cron' );
+		// Schedule main ig_es_cron WordPress Cron if WP Cron is enabled from settings and cron not already scheduled
+		if ( $wp_cron_enabled && ! $wp_cron_scheduled ) {
 			wp_schedule_event( strtotime( 'midnight' ) - 300, 'hourly', 'ig_es_cron' );
-
 			return true;
 		} elseif ( $hourly_only ) {
 			return false;
 		}
 
-		// Don't want to use WP_CRON?
-		if ( ! $this->is_wp_cron_enable() ) {
+		// Clear WP Cron if not enabled
+		if ( ! $wp_cron_enabled && $wp_cron_scheduled ) {
 			$this->clear();
-
 			return true;
 		}
 
@@ -117,7 +117,6 @@ class ES_Cron {
 	public function schedule() {
 
 		global $ig_es_tracker;
-		$sending_service = new ES_Service_Email_Sending();
 
 		// Add worker only once
 		if ( ! wp_next_scheduled( 'ig_es_cron_auto_responder' ) ) {
@@ -175,6 +174,7 @@ class ES_Cron {
 	 * @since 4.3.1
 	 */
 	public function clear() {
+
 		wp_clear_scheduled_hook( 'ig_es_cron' );
 		wp_clear_scheduled_hook( 'ig_es_cron_worker' );
 		wp_clear_scheduled_hook( 'ig_es_cron_auto_responder' );

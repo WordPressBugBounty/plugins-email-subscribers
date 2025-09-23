@@ -380,18 +380,20 @@ class Email_Subscribers_Admin {
 			wp_enqueue_script( 'frappe-js', plugin_dir_url( __FILE__ ) . 'js/frappe-charts.min.iife.js', array( 'jquery' ), '1.5.2', false );
 		}
 
-		if ( ( 'es_dashboard' === $page && IG_ES_Onboarding::is_onboarding_completed() ) || 'es_pricing' === $page ) {
+		if ( 'es_dashboard' === $page  || 'es_pricing' === $page ) {
 			wp_register_script( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/dist/index.js', array(), $this->version, true );
 			$current_user = wp_get_current_user();
 			wp_localize_script( 'es-shadcn-dashboard', 'icegramExpressAdminData', array(
 				'apiUrl' => admin_url( 'admin-ajax.php' ),
 				'baseUrl' => ES_PLUGIN_URL . 'lite/admin/shadcn-frontend/dist/',
+				'onboardingdata' => get_option('ig_es_onboarding_complete', 'no'),
 				'security'    => wp_create_nonce( 'ig-es-admin-ajax-nonce' ),
 				'plan' => ES()->get_plan(),
 				'currentUser' => array(
 					'displayName' => $current_user->display_name,
 					'firstName' => $current_user->first_name,
 					'lastName' => $current_user->last_name,
+					'email' => $current_user->user_email,
 				),
 			) );
 			wp_register_style( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/dist/index.css', array(), $this->version );
@@ -790,13 +792,13 @@ class Email_Subscribers_Admin {
 		$ig_es_db_update_history  = ES_Common::get_ig_option( 'db_update_history', array() );
 		$ig_es_4015_db_updated_at = ( is_array( $ig_es_db_update_history ) && isset( $ig_es_db_update_history['4.0.15'] ) ) ? $ig_es_db_update_history['4.0.15'] : false;
 
-		$is_sa_option_exists = get_option( 'current_sa_email_subscribers_db_version', false );
-		$onboarding_status   = get_option( 'ig_es_onboarding_complete', 'no' );
-		if ( ! $is_sa_option_exists && ! $ig_es_4015_db_updated_at && 'yes' !== $onboarding_status ) {
-			$this->show_onboarding();
-		} else {
+		// $is_sa_option_exists = get_option( 'current_sa_email_subscribers_db_version', false );
+		// $onboarding_status   = get_option( 'ig_es_onboarding_complete', 'no' );
+		// if ( ! $is_sa_option_exists && ! $ig_es_4015_db_updated_at && 'yes' !== $onboarding_status ) {
+		// 	//$this->show_onboarding();
+		// } else {
 			$this->show_dashboard();
-		}
+		//}
 	}
 
 	/**

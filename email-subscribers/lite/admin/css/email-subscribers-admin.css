@@ -3383,3 +3383,20 @@ body.icegram-express_page_es_forms #wpcontent {
     align-items: center;
     justify-content: center;
 }
+
+.toplevel_page_es_dashboard #wpcontent {
+	padding-left: 0;
+}
+
+.toplevel_page_es_dashboard #wpbody-content {
+	padding: 0;
+}
+
+.toplevel_page_es_onboarding {
+	overflow-y: hidden;
+}
+
+
+ul#adminmenu li#toplevel_page_es_dashboard ul li:nth-child(6){
+   display:none;
+}

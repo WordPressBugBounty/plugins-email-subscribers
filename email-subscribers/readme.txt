@@ -6,7 +6,7 @@ Tags: email subscribers, newsletter, subscription form, post notifications, wooc
 Requires at least: 3.9
 Tested up to: 6.8
 Requires PHP: 7.0
-Stable tag: 5.9.3
+Stable tag: 5.9.4
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -341,15 +341,23 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.3 =
+= 5.9.4 =
 
-New: Enhanced Forms Dashboard – Choose from ready-made templates or build forms step by step.
+* New: Simplified onboarding so you can focus on what matters most
+* Improvements: Prevented unnecessary cron job scheduling when WordPress cron is disabled in the plugin settings
+* Update: Resolved "Toolset Forms" plugin conflict when sending campaigns with attachments
 
 == Changelog ==
 
+**5.9.4 (23.09.2025)**
+
+* New: Simplified onboarding so you can focus on what matters most
+* Improvements: Prevented unnecessary cron job scheduling when WordPress cron is disabled in the plugin settings
+* Update: Resolved "Toolset Forms" plugin conflict when sending campaigns with attachments
+
 **5.9.3 (16.09.2025)**
 
-New: Enhanced Forms Dashboard – Choose from ready-made templates or build forms step by step.
+* New: Enhanced Forms Dashboard – Choose from ready-made templates or build forms step by step.
 
 **5.9.2 (05.09.2025)**
 

@@ -182,11 +182,8 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 						
 						// If it's a WYSIWYG form, transform the data and use standard processor
 						if ( 'wysiwyg' === $editor_type ) {
-							error_log('DEBUG: AJAX WYSIWYG form detected, transforming data...');
 							$transformed_data = $this->transform_wysiwyg_form_data( wp_unslash( $_POST ), $form_id );
-							error_log('DEBUG: Data transformed, calling process_request...');
 							$response = $this->process_request( $transformed_data );
-							error_log('DEBUG: AJAX response: ' . print_r($response, true));
 							$response = $this->do_response( $response );
 							wp_send_json( $response );
 							return;
@@ -641,8 +638,6 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 		 * @since 5.8.0
 		 */
 		private function transform_wysiwyg_form_data( $form_data, $form_id ) {
-			error_log('DEBUG: transform_wysiwyg_form_data called with form_id: ' . $form_id);
-			error_log('DEBUG: Original form data keys: ' . implode(', ', array_keys($form_data)));
 			$transformed_data = $form_data;
 			
 			// Ensure required fields
@@ -665,92 +660,6 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				}
 			}
 			
-			// Handle custom fields transformation
-			$custom_fields_data = ES()->custom_fields_db->get_custom_fields();
-			$custom_field_map = array();
-			if ( ! empty( $custom_fields_data ) ) {
-				foreach ( $custom_fields_data as $field ) {
-					$custom_field_map[ $field['id'] ] = $field['slug'];
-				}
-			}
-			
-			// Standard fields that should be preserved as-is
-			$standard_fields = array( 'esfpx_name', 'esfpx_email', 'esfpx_lists', 'esfpx_form_id', 'esfpx_es_form_identifier', 'esfpx_es_email_page', 'esfpx_es_email_page_url', 'esfpx_status', 'esfpx_es-subscribe', 'esfpx_es_hp_email', 'esfpx_es_captcha', 'esfpx_es_captcha_key', 'es', 'action' );
-			
-			// Core reserved field names that should never be treated as custom fields
-			$reserved_field_names = array( 'list', 'lists', 'email', 'name', 'firstName', 'lastName', 'captcha', 'gdpr', 'submit' );
-			
-			foreach ( $form_data as $key => $value ) {
-				if ( strpos( $key, 'esfpx_custom_' ) === 0 ) {
-					// Handle explicit custom fields (esfpx_custom_20, esfpx_custom_21, etc.)
-					$custom_field_id = str_replace( 'esfpx_custom_', '', $key );
-					
-					// Map ID to slug if available
-					if ( isset( $custom_field_map[ $custom_field_id ] ) ) {
-						$custom_field_slug = $custom_field_map[ $custom_field_id ];
-						$transformed_data['es_custom_field[' . $custom_field_slug . ']'] = $value;
-					} else {
-						// Fallback to cf_ID format if slug not found
-						$transformed_data['es_custom_field[cf_' . $custom_field_id . ']'] = $value;
-					}
-					
-					// Remove the original key to avoid conflicts
-					unset( $transformed_data[ $key ] );
-				} elseif ( strpos( $key, 'esfpx_' ) === 0 && ! in_array( $key, $standard_fields ) ) {
-					// Handle other esfpx_ fields that aren't standard
-					$field_name = str_replace( 'esfpx_', '', $key );
-					
-					// Skip core reserved field names
-					if ( in_array( $field_name, $reserved_field_names ) ) {
-						// For list field specifically, handle as list selection
-						if ( 'list' === $field_name ) {
-							$list_values = is_array( $value ) ? $value : array( $value );
-							
-							if ( ! isset( $transformed_data['esfpx_lists'] ) ) {
-								$transformed_data['esfpx_lists'] = array();
-							}
-							
-							foreach ( $list_values as $list_value ) {
-								if ( ! empty( $list_value ) ) {
-									// Convert list ID/name to hash
-									if ( is_numeric( $list_value ) ) {
-										$lists = ES()->lists_db->get_lists_by_id( $list_value );
-										if ( ! empty( $lists[0]['hash'] ) ) {
-											$transformed_data['esfpx_lists'][] = $lists[0]['hash'];
-										}
-									} else {
-										$list_data = ES()->lists_db->get_list_by_name( $list_value );
-										if ( ! empty( $list_data['hash'] ) ) {
-											$transformed_data['esfpx_lists'][] = $list_data['hash'];
-										}
-									}
-								}
-							}
-							unset( $transformed_data[ $key ] );
-						}
-						continue;
-					}
-					
-					// Look for a custom field with this name
-					$found_slug = null;
-					foreach ( $custom_fields_data as $field ) {
-						if ( $field['slug'] === $field_name || $field['label'] === $field_name ) {
-							$found_slug = $field['slug'];
-							break;
-						}
-					}
-					
-					if ( $found_slug ) {
-						$transformed_data['es_custom_field[' . $found_slug . ']'] = $value;
-					} else {
-						$transformed_data['es_custom_field[' . $field_name . ']'] = $value;
-					}
-					
-					unset( $transformed_data[ $key ] );
-				}
-			}
-			
-			error_log('DEBUG: Transformed data keys: ' . implode(', ', array_keys($transformed_data)));
 			return $transformed_data;
 		}
 				
@@ -858,11 +767,8 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 							
 							// If it's a WYSIWYG form, transform the data and use standard processor
 							if ( 'wysiwyg' === $editor_type ) {
-								error_log('DEBUG: Non-AJAX WYSIWYG form detected, transforming data...');
 								$transformed_data = $this->transform_wysiwyg_form_data( wp_unslash( $_POST ), $form_id );
-								error_log('DEBUG: Data transformed, calling process_request...');
 								$response = $this->process_request( $transformed_data );
-								error_log('DEBUG: Non-AJAX response: ' . print_r($response, true));
 								if ( ! empty( $response['redirection_url'] ) ) {
 									wp_redirect( $response['redirection_url'] );
 									exit;

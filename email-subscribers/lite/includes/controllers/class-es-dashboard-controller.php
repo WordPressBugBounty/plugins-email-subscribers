@@ -499,7 +499,7 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 				'data' => $onboarding_data
 			);
 		}
-	
+		
 	}
 
 }

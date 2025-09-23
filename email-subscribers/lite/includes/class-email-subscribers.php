@@ -1031,6 +1031,8 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 
 				'lite/includes/controllers/class-es-dashboard-controller.php',
 
+				'lite/includes/controllers/class-es-onboarding-controller.php',
+
 				'lite/includes/controllers/class-es-settings-controller.php',
 
 				'lite/includes/controllers/class-es-workflows-controller.php',

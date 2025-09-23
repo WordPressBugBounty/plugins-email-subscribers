@@ -574,8 +574,9 @@ return $form_data;
 				$form_data['email_place_holder'] = ! empty( $d['params']['place_holder'] ) ? $d['params']['place_holder'] : '';
 			} elseif ( 'submit' === $d['id'] ) {
 				$form_data['button_label'] = ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
-				} elseif ( !empty( $d['is_custom_field'] ) ) {
-			$form_data['custom_fields'][] = $d;
+			} elseif ( !empty( $d['is_custom_field'] ) || ( !empty( $d['id'] ) && ( strpos( $d['id'], 'es_custom_' ) === 0 || strpos( $d['id'], 'custom_' ) === 0 ) ) ) {
+				// Handle custom fields - either marked with is_custom_field property or with ID starting with 'es_custom_' or 'custom_' (legacy)
+				$form_data['custom_fields'][] = $d;
 				}
 				}
 				
@@ -654,6 +655,17 @@ return $form_data;
 
 		public static function sanitize_data( $form_data ) {
 
+			// Handle settings - check if it's a serialized string or an array
+			$settings_is_serialized = false;
+			if ( isset( $form_data['settings'] ) && is_string( $form_data['settings'] ) ) {
+				// Try to unserialize settings if it's a string
+				$unserialized_settings = @unserialize( $form_data['settings'] );
+				if ( $unserialized_settings !== false ) {
+					$form_data['settings'] = $unserialized_settings;
+					$settings_is_serialized = true;
+				}
+			}
+
 			if ( isset( $form_data['settings']['dnd_editor_css'] ) ) {
 				$form_data['settings']['dnd_editor_css'] = wp_strip_all_tags( $form_data['settings']['dnd_editor_css'] );
 			}
@@ -681,6 +693,11 @@ return $form_data;
 			}
 		
 			$form_data['settings']['dnd_editor_data'] = wp_json_encode( $dnd_editor_data );
+		
+			// If settings were originally serialized, serialize them back
+			if ( $settings_is_serialized ) {
+				$form_data['settings'] = serialize( $form_data['settings'] );
+			}
 		
 			return $form_data;
 		}

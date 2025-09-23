@@ -10,7 +10,7 @@ class ES_Drag_And_Drop_Editor {
 	public static $instance;
 
 	public function __construct() {
-		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
+		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ), 0 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 	}
 
