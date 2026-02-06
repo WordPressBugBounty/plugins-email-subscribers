@@ -224,11 +224,11 @@ class ES_Admin_Notices {
 					}
 				}
 
-				// Halloween 2024 offer
-				if ( 'offer_bfcm_2024' === $option_name ) {
-					$redirect_url = 'https://www.icegram.com/express/pricing/?utm_source=in_app&utm_medium=es_banner&utm_campaign=offer_bfcm_2024';
+				// BFCM 2025 offer
+				if ( 'offer_bfcm_2025' === $option_name ) {
+					$redirect_url = 'https://www.icegram.com/express/pricing/?utm_source=in_app&utm_medium=es_banner&utm_campaign=offer_bfcm_2025';
 					if ( ES()->is_pro() ) {
-						$redirect_url = 'https://www.icegram.com/?utm_source=in_app&utm_medium=es_banner&utm_campaign=offer_bfcm_2024';
+						$redirect_url = 'https://www.icegram.com/?utm_source=in_app&utm_medium=es_banner&utm_campaign=offer_bfcm_2025';
 					}
 
 					header( "Location: {$redirect_url}" );

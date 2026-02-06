@@ -215,7 +215,7 @@ class IG_ES_DB_WC_Guest extends ES_DB {
 			if ( ! empty( $queue ) ) {
 
 				if ( isset( $queue['meta'] ) ) {
-					$meta = maybe_unserialize( $queue['meta'] );
+					$meta = ig_es_maybe_unserialize( $queue['meta'] );
 
 					// If $meta is an empty or isn't an array, then convert it to an array before adding data to it.
 					if ( empty( $meta ) || ! is_array( $meta ) ) {

@@ -184,84 +184,8 @@ class ES_Contacts_Table extends ES_List_Table {
 	 */
 	public function render() {
 		?>
-		<div class="font-sans">
-
+		<div id="root"></div>
 		<?php
-		$bulk_action = ig_es_get_request_data( 'bulk_action' );
-		if ( 'bulk_list_update' === $bulk_action ) {
-			$bulk_message      = __( 'Contact(s) moved to list successfully!', 'email-subscribers' );
-			$bulk_message_type = 'success';
-		} elseif ( 'bulk_status_update' === $bulk_action ) {
-			$bulk_message      = __( 'Contact(s) status changed successfully!', 'email-subscribers' );
-			$bulk_message_type = 'success';
-		} elseif ( 'bulk_send_confirmation_email' === $bulk_action ) {
-			$bulk_message      = __( 'Confirmation emails queued successfully and will be sent shortly.', 'email-subscribers' );
-			$bulk_message_type = 'success';
-		} elseif ( 'bulk_list_add' === $bulk_action ) {
-			$bulk_message      = __( 'Contact(s) added to list successfully!', 'email-subscribers' );
-			$bulk_message_type = 'success';
-		} elseif ( 'bulk_delete' === $bulk_action ) {
-			$bulk_message      = __( 'Contact(s) deleted successfully!', 'email-subscribers' );
-			$bulk_message_type = 'success';
-		}
-
-		if ( ! empty( $bulk_message ) ) {
-			ES_Common::show_message( $bulk_message, $bulk_message_type );
-		}
-		?>
-
-		<?php
-
-		$action = ig_es_get_request_data( 'action' );
-		if ( 'import' === $action ) {
-			$this->load_import();
-		} elseif ( 'export' === $action ) {
-			$this->load_export();
-		} elseif ( 'new' === $action || 'edit' === $action ) {
-			$contact_id = absint( ig_es_get_request_data( 'subscriber' ) );
-			$this->save_contact( $contact_id );
-		} elseif ( 'sync' === $action ) {
-			update_option( 'ig_es_show_sync_tab', 'no' ); // yes/no
-			$this->load_sync();
-		} else {
-			//Display sticky header
-			$this->render_header();
-
-			//Display Subscriber activities and top 5 subscriber countries
-			$this->get_contacts_reports();
-			?>
-			<div id="poststuff" class="es-audience-view es-items-lists">
-				<div id="post-body" class="metabox-holder column-1">
-					<div id="post-body-content">
-						<div class="meta-box-sortables ui-sortable">
-							<form method="get">
-								<input type="hidden" name="page" value="es_subscribers"/>
-								<?php
-								// Display search field and other available filter fields.
-								$this->prepare_items();
-
-								// Display Advanced Filter block
-								do_action('ig_es_render_advanced_filter');
-
-								?>
-							</form>
-							<form method ='post'>
-								<?php
-								// Add hidden list dropdown and status dropdown fields. They will be displayed accordling to the chosen bulk action using JS.
-								$this->prepare_lists_dropdown();
-								$this->prepare_statuses_dropdown();
-
-								// Display bulk action fields, pagination and list items.
-								$this->display();
-								?>
-							</form>
-						</div>
-					</div>
-					<br class="clear">
-				</div>
-			</div>
-			<?php
-		}
 	}
 
 	/**
@@ -448,8 +372,9 @@ class ES_Contacts_Table extends ES_List_Table {
 			if ( wp_verify_nonce( $contact_nonce, 'ig-es-contact-nonce' ) ) {
 
 			$contact_data = ig_es_get_data( $_POST, 'contact_data', array(), true );
-			$contact_data['id'] = $id;
 			
+			$contact_data['id'] = $id;
+
 			$save_result = ES_Contact_Controller::process_contact_save( $contact_data );
 
 				if ( ! empty( $save_result['errors'] ) ) {

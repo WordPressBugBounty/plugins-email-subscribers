@@ -723,6 +723,11 @@ class ES_Service_Email_Sending extends ES_Services {
 			'admin_email'   => $admin_email,
 		);
 		$ess_data    = self::get_ess_data();
+		
+		if ( empty( $ess_data['api_key'] ) ) {
+			return;
+		}
+		
 		$api_key     = $ess_data['api_key'];
 		$options     = array(
 			'method'  => 'POST',
@@ -1037,6 +1042,12 @@ class ES_Service_Email_Sending extends ES_Services {
 		);
 
 		$ess_data = self::get_ess_data();
+		
+		// Return error if api_key is not set
+		if ( empty( $ess_data['api_key'] ) ) {
+			return $response;
+		}
+		
 		$api_key  = $ess_data['api_key'];
 
 		$data = array(

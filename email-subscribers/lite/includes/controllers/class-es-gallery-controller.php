@@ -24,7 +24,6 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 		 * Get campaign templates
 		 */
 		public static function get_gallery_items() {
-	
 			$response = array();
 			$gallery_items = array();
 			$blog_charset = get_option( 'blog_charset' );
@@ -40,6 +39,7 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 					$gallery_item['title'] = html_entity_decode( $campaign_template->post_title, ENT_QUOTES, $blog_charset );
 					$gallery_item['type'] = get_post_meta( $campaign_template->ID, 'es_template_type', true );
 					$gallery_item['editor_type'] = !empty($editor_type) ? $editor_type : IG_ES_CLASSIC_EDITOR;
+					$gallery_item['post_type'] = $campaign_template->post_type;
 					$gallery_type  = 'local';
 					$categories[] = !empty($gallery_item['type']) ?  $gallery_item['type'] : IG_CAMPAIGN_TYPE_NEWSLETTER;
 					$categories[] = !empty($editor_type) ? $editor_type : IG_ES_CLASSIC_EDITOR;
@@ -52,6 +52,8 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 						) ): '';
 					$gallery_item['thumbnail'] = ( !empty ($thumbnail_url) ) ? $thumbnail_url : '';
 					$gallery_item['gallery_type'] = $gallery_type;
+					$gallery_item['slug'] = $template_slug;
+					$gallery_item['category_ids'] = array();
 					$gallery_items[$template_slug] = $gallery_item;
 				}
 			}
@@ -75,44 +77,75 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 						$es_plan       = ! empty( $item->es_plan ) ? $item->es_plan : 'lite';
 						$gallery_type  = 'remote';
 						$template_version = ! empty( $item->template_version ) ? $item->template_version : '1.0.0';
+						$category_ids  = ! empty( $item->es_gallery_cat ) ? $item->es_gallery_cat : array();
 						
 						$categories = array(
 							$campaign_type,
 							$editor_type
 						);
 
-						if ( 'lite' !== $es_plan ) {
-							$categories[] = $es_plan;
-						}
+					if ( 'lite' !== $es_plan ) {
+						$categories[] = $es_plan;
+					}
 
-						$gallery_items[$template_slug] = array(
-							'ID'           		=> $item_id,
-							'title'        		=> $item_title,
-							'thumbnail'    		=> $thumbnail_url,
-							'categories'   		=> $categories,
-							'type'		   		=> $campaign_type,
-							'editor_type'  		=> $editor_type,
-							'gallery_type' 		=> 'remote',
-							'es_plan'      		=> $es_plan,
-							'template_version'	=> $template_version,
-						);
+					$gallery_items[$template_slug] = array(
+						'ID'           		=> $item_id,
+						'title'        		=> $item_title,
+						'thumbnail'    		=> $thumbnail_url,
+						'categories'   		=> $categories,
+						'type'		   		=> $campaign_type,
+						'editor_type'  		=> $editor_type,
+						'gallery_type' 		=> 'remote',
+						'es_plan'      		=> $es_plan,
+						'template_version'	=> $template_version,
+						'slug'				=> $template_slug,
+						'category_ids'		=> $category_ids,
+						'post_type'			=> 'es_gallery_item',
+					);
+				}
+			}
+		}		
+		
+		$response['items'] = array_values( $gallery_items );
+
+			wp_send_json_success( $response );
+		}
+
+		public static function get_gallery_categories() {
+			$remote_gallery_categories_updated = get_transient( 'ig_es_remote_gallery_categories_updated' );
+			if ( ! $remote_gallery_categories_updated ) {
+				$remote_gallery_categories_url = 'https://www.icegram.com/gallery/wp-json/wp/v2/es_gallery_cat?filter[posts_per_page]=200';
+				$request_args = array(
+					'timeout' => 15
+				);
+				$response = wp_remote_get( $remote_gallery_categories_url, $request_args );
+				if ( ! is_wp_error( $response ) ) {
+					$json_response = wp_remote_retrieve_body( $response );
+					if ( ! empty( $json_response ) && ES_Common::is_valid_json( $json_response ) ) {
+						$gallery_categories = json_decode( $json_response );
+						if ( is_array( $gallery_categories ) ) {
+							$updated = update_option( 'ig_es_remote_gallery_categories', $gallery_categories, 'no' );
+							if ( $updated ) {
+								set_transient( 'ig_es_remote_gallery_categories_updated', time(), 24 * HOUR_IN_SECONDS ); // 1 day
+							}
+							return $gallery_categories;
+						}
 					}
 				}
 			}
-			
-			$response['items'] = array_values( $gallery_items );
 
-			wp_send_json_success( $response );
+			$remote_gallery_categories = get_option( 'ig_es_remote_gallery_categories', array() );
+			return $remote_gallery_categories;
 		}
 
 		public static function get_remote_gallery_items() {
 			$remote_gallery_items_updated = get_transient( 'ig_es_remote_gallery_items_updated' );
 			if ( ! $remote_gallery_items_updated ) {
-				$remote_gallery_items_url = 'https://icegram.com/gallery/wp-json/wp/v2/es_gallery_item?filter[posts_per_page]=200';
+				$remote_gallery_items_url = 'https://icegram.com/gallery/wp-json/wp/v2/es_gallery_item?filter[posts_per_page]=200&orderby=modified&order=desc';
 				$request_args = array(
 					'timeout' => 15
 				);
-				$response = wp_remote_get( $remote_gallery_items_url, $request_args );
+			$response = wp_remote_get( $remote_gallery_items_url, $request_args );
 				if ( ! is_wp_error( $response ) ) {
 					$json_response = wp_remote_retrieve_body( $response );
 					if ( ! empty( $json_response ) && ES_Common::is_valid_json( $json_response ) ) {
@@ -157,18 +190,73 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 			return $gallery_item;
 		}
 
-		public static function import_gallery_item_handler( $gallery_type, $template_id, $campaign_type, $campaign_id = 0 ) {
-			
-			if ( 'remote' === $gallery_type ) {
-				$campaign_id = self::import_remote_gallery_item( $template_id, $campaign_type, $campaign_id );
-			} else {
-				$campaign_id = self::import_local_gallery_item( $template_id, $campaign_type, $campaign_id );
-			}
-			
-			return $campaign_id;
+	public static function import_gallery_item_handler( $gallery_type, $template_id, $campaign_type, $campaign_id = 0 ) {
+		
+		if ( 'remote' === $gallery_type ) {
+			$campaign_id = self::import_remote_gallery_item( $template_id, $campaign_type, $campaign_id );
+		} else {
+			$campaign_id = self::import_local_gallery_item( $template_id, $campaign_type, $campaign_id );
+		}
+		
+		return $campaign_id;
+	}
+
+	/**
+	 * API method to import gallery item and return full campaign data
+	 * 
+	 * @param array $data Request data containing template_id, campaign_type, gallery_type, campaign_id
+	 * @return array Campaign data with campaign_id, name, subject, body, meta
+	 */
+	public static function import_gallery_item( $data ) {
+		// Decode JSON data
+		$data = ES_Common::decode_args( $data );
+		
+		$template_id = ! empty( $data['template_id'] ) ? sanitize_text_field( $data['template_id'] ) : '';
+		$campaign_type = ! empty( $data['campaign_type'] ) ? sanitize_text_field( $data['campaign_type'] ) : '';
+		$gallery_type = ! empty( $data['gallery_type'] ) ? sanitize_text_field( $data['gallery_type'] ) : 'local';
+		$campaign_id = ! empty( $data['campaign_id'] ) ? absint( $data['campaign_id'] ) : 0;
+
+		if ( empty( $template_id ) || empty( $campaign_type ) ) {
+			return array(
+				'error' => __( 'Template ID and campaign type are required', 'email-subscribers' )
+			);
 		}
 
-		public static function import_local_gallery_item( $template_id, $campaign_type, $campaign_id = 0 ) {
+		// Import the template using existing handler
+		$campaign_id = self::import_gallery_item_handler( $gallery_type, $template_id, $campaign_type, $campaign_id );
+
+		if ( empty( $campaign_id ) ) {
+			return array(
+				'error' => __( 'Failed to import template', 'email-subscribers' )
+			);
+		}
+
+		// Get full campaign data
+		$campaign = ES()->campaigns_db->get( $campaign_id );
+
+		if ( empty( $campaign ) ) {
+			return array(
+				'error' => __( 'Campaign created but data could not be retrieved', 'email-subscribers' )
+			);
+		}
+
+		// Unserialize meta data
+		$meta = ! empty( $campaign['meta'] ) ? ig_es_maybe_unserialize( $campaign['meta'] ) : array();
+
+		// Return just the data - router will wrap it in success response
+		return array(
+			'campaign_id' => absint( $campaign['id'] ),
+			'campaign_data' => array(
+				'name' => $campaign['name'],
+				'subject' => $campaign['subject'],
+				'body' => $campaign['body'],
+				'from_name' => $campaign['from_name'],
+				'from_email' => $campaign['from_email'],
+				'type' => $campaign['type'],
+				'meta' => $meta
+			)
+		);
+	}		public static function import_local_gallery_item( $template_id, $campaign_type, $campaign_id = 0 ) {
 			if ( ! empty( $template_id ) ) {
 				$template = get_post( $template_id );
 				if ( ! empty( $template ) ) {
@@ -202,35 +290,59 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 						}
 					}
 
-					$campaign_meta = maybe_serialize( $campaign_meta );
+				$campaign_meta = maybe_serialize( $campaign_meta );
 
-					$campaign_data = array(
-						'name'       => $subject,
-						'subject'    => $subject,
-						'slug'       => sanitize_title( sanitize_text_field( $subject ) ),
-						'body'       => $content,
-						'from_name'  => $from_name,
-						'from_email' => $from_email,
-						'type'       => $campaign_type,
-						'meta'		 => $campaign_meta,
-					);
+				$campaign_data = array(
+					'name'             => $subject,
+					'subject'          => $subject,
+					'slug'             => sanitize_title( sanitize_text_field( $subject ) ),
+					'body'             => $content,
+					'from_name'        => $from_name,
+					'from_email'       => $from_email,
+					'type'             => $campaign_type,
+					'base_template_id' => $template_id,
+					'meta'             => $campaign_meta,
+				);
 
-					if ( ! empty( $campaign_id ) ) {
-						ES()->campaigns_db->update( $campaign_id, $campaign_data );
+				if ( ! empty( $campaign_id ) ) {
+					// When updating existing campaign, only update design fields
+					// Preserve user's saved data (name, subject, sender, recipients, schedule, settings)
+					$existing_campaign = ES()->campaigns_db->get( $campaign_id );
+					if ( ! empty( $existing_campaign ) ) {
+						$existing_meta = ! empty( $existing_campaign['meta'] ) ? ig_es_maybe_unserialize( $existing_campaign['meta'] ) : array();
+						$new_meta = ig_es_maybe_unserialize( $campaign_meta );
+						
+						// Merge: keep existing meta, only update editor-related fields
+						$merged_meta = array_merge( $existing_meta, array(
+							'editor_type' => $new_meta['editor_type'],
+							'dnd_editor_data' => ! empty( $new_meta['dnd_editor_data'] ) ? $new_meta['dnd_editor_data'] : ( ! empty( $existing_meta['dnd_editor_data'] ) ? $existing_meta['dnd_editor_data'] : '' ),
+							'es_custom_css' => ! empty( $new_meta['es_custom_css'] ) ? $new_meta['es_custom_css'] : ( ! empty( $existing_meta['es_custom_css'] ) ? $existing_meta['es_custom_css'] : '' )
+						));
+						
+						// Only update body, template_id, and editor meta - preserve everything else
+						$update_data = array(
+							'body'             => $content,
+							'base_template_id' => $template_id,
+							'meta'             => maybe_serialize( $merged_meta )
+						);
+						
+						ES()->campaigns_db->update( $campaign_id, $update_data );
 					} else {
-						$campaign_id = ES()->campaigns_db->save_campaign( $campaign_data );
-						if ( in_array( $campaign_type, array( IG_CAMPAIGN_TYPE_POST_NOTIFICATION, IG_CAMPAIGN_TYPE_POST_DIGEST ), true ) ) {
-							ES_Campaign_Controller::add_to_new_category_format_campaign_ids( $campaign_id );
-						}
+						// Campaign doesn't exist, use full data
+						ES()->campaigns_db->update( $campaign_id, $campaign_data );
 					}
-
+				} else {
+					$campaign_id = ES()->campaigns_db->save_campaign( $campaign_data );
+					if ( in_array( $campaign_type, array( IG_CAMPAIGN_TYPE_POST_NOTIFICATION, IG_CAMPAIGN_TYPE_POST_DIGEST ), true ) ) {
+						ES_Campaign_Controller::add_to_new_category_format_campaign_ids( $campaign_id );
+					}
 				}
-			}
 
-			return $campaign_id;
+			}
 		}
 
-		public static function import_remote_gallery_item( $template_id, $campaign_type, $campaign_id = 0 ) {
+		return $campaign_id;
+	}		public static function import_remote_gallery_item( $template_id, $campaign_type, $campaign_id = 0 ) {
 			$gallery_item  = self::get_remote_gallery_item( $template_id );
 			if ( empty( $gallery_item ) ) {
 				return $campaign_id;
@@ -248,7 +360,7 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 					'editor_type' => $editor_type,
 				);
 				if ( IG_ES_DRAG_AND_DROP_EDITOR === $editor_type ) {
-					$dnd_editor_data = maybe_unserialize( $gallery_item->es_dnd_editor_data );
+					$dnd_editor_data = ig_es_maybe_unserialize( $gallery_item->es_dnd_editor_data );
 					if ( ! empty( $dnd_editor_data ) ) {
 						$campaign_meta['dnd_editor_data'] = $gallery_item->es_dnd_editor_data;
 					}
@@ -289,30 +401,52 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 				$campaign_data = array(
 					'name'       => $subject,
 					'subject'    => $subject,
-					'slug'       => sanitize_title( sanitize_text_field( $subject ) ),
-					'body'       => $content,
-					'from_name'  => $from_name,
-					'from_email' => $from_email,
-					'type'       => $campaign_type,
-					'meta'		 => $campaign_meta,
-				);
+				'slug'       => sanitize_title( sanitize_text_field( $subject ) ),
+				'body'       => $content,
+				'from_name'  => $from_name,
+				'from_email' => $from_email,
+				'type'       => $campaign_type,
+				'meta'		 => $campaign_meta,
+			);
 
-				if ( ! empty( $campaign_id ) ) {
-					ES()->campaigns_db->update( $campaign_id, $campaign_data );
+			if ( ! empty( $campaign_id ) ) {
+				// When updating existing campaign, only update design fields
+				// Preserve user's saved data (name, subject, sender, recipients, schedule, settings)
+				$existing_campaign = ES()->campaigns_db->get( $campaign_id );
+				if ( ! empty( $existing_campaign ) ) {
+					$existing_meta = ! empty( $existing_campaign['meta'] ) ? ig_es_maybe_unserialize( $existing_campaign['meta'] ) : array();
+					$new_meta = ig_es_maybe_unserialize( $campaign_meta );
+					
+					// Merge: keep existing meta, only update editor-related fields
+					$merged_meta = array_merge( $existing_meta, array(
+						'editor_type' => $new_meta['editor_type'],
+						'dnd_editor_data' => ! empty( $new_meta['dnd_editor_data'] ) ? $new_meta['dnd_editor_data'] : ( ! empty( $existing_meta['dnd_editor_data'] ) ? $existing_meta['dnd_editor_data'] : '' ),
+						'es_custom_css' => ! empty( $new_meta['es_custom_css'] ) ? $new_meta['es_custom_css'] : ( ! empty( $existing_meta['es_custom_css'] ) ? $existing_meta['es_custom_css'] : '' )
+					));
+					
+					// Only update body and editor meta - preserve everything else
+					$update_data = array(
+						'body' => $content,
+						'meta' => maybe_serialize( $merged_meta )
+					);
+					
+					ES()->campaigns_db->update( $campaign_id, $update_data );
 				} else {
-					$campaign_id = ES()->campaigns_db->save_campaign( $campaign_data );
-					if ( ! empty( $campaign_id ) ) {
-						$imported_gallery_template_ids   = get_option( 'ig_es_imported_remote_gallery_template_ids', array() );
-						$imported_gallery_template_ids[] = $template_id;
-						update_option( 'ig_es_imported_remote_gallery_template_ids', $imported_gallery_template_ids );
-						if ( in_array( $campaign_type, array( IG_CAMPAIGN_TYPE_POST_NOTIFICATION, IG_CAMPAIGN_TYPE_POST_DIGEST ), true ) ) {
-							ES_Campaign_Controller::add_to_new_category_format_campaign_ids( $campaign_id );
-						}
+					// Campaign doesn't exist, use full data
+					ES()->campaigns_db->update( $campaign_id, $campaign_data );
+				}
+			} else {
+				$campaign_id = ES()->campaigns_db->save_campaign( $campaign_data );
+				if ( ! empty( $campaign_id ) ) {
+					$imported_gallery_template_ids   = get_option( 'ig_es_imported_remote_gallery_template_ids', array() );
+					$imported_gallery_template_ids[] = $template_id;
+					update_option( 'ig_es_imported_remote_gallery_template_ids', $imported_gallery_template_ids );
+					if ( in_array( $campaign_type, array( IG_CAMPAIGN_TYPE_POST_NOTIFICATION, IG_CAMPAIGN_TYPE_POST_DIGEST ), true ) ) {
+						ES_Campaign_Controller::add_to_new_category_format_campaign_ids( $campaign_id );
 					}
 				}
 			}
-
-			return $campaign_id;
+		}			return $campaign_id;
 		}
 
 		public static function import_remote_gallery_template( $template_id ) {
@@ -333,7 +467,7 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 					'es_editor_type' => $editor_type,
 				);
 				if ( IG_ES_DRAG_AND_DROP_EDITOR === $editor_type ) {
-					$dnd_editor_data = maybe_unserialize( $gallery_item->es_dnd_editor_data );
+					$dnd_editor_data = ig_es_maybe_unserialize( $gallery_item->es_dnd_editor_data );
 					if ( ! empty( $dnd_editor_data ) ) {
 						$campaign_meta['es_dnd_editor_data'] = $gallery_item->es_dnd_editor_data;
 					}
@@ -444,7 +578,7 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 			// Duplicate all custom fields
 			$custom_fields = get_post_custom( $template_id );
 			foreach ( $custom_fields as $key => $value ) {
-				add_post_meta( $duplicate_id, $key, maybe_unserialize( $value[0] ) );
+				add_post_meta( $duplicate_id, $key, ig_es_maybe_unserialize( $value[0] ) );
 			}
 
 			return $duplicate_id;
@@ -453,21 +587,33 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 		public static function preview_template( $args ) {
 			$template_id  = $args['template_id'];
 			$gallery_type = $args['gallery_type'];
+			$response = array();
 
 			if ( 'remote' === $gallery_type ) {
 				$template = self::get_remote_gallery_item( $template_id );
 				
-				$es_template_body = $template->content->rendered;
-				$es_template_type = $template->es_template_type;
-				$custom_css       = $template->es_custom_css;
+				if ( empty( $template ) || ! is_object( $template ) ) {
+					$response['template_html'] = __( 'Template not found.', 'email-subscribers' );
+					return $response;
+				}
+				
+				$es_template_body = ! empty( $template->content->rendered ) ? $template->content->rendered : '';
+				$es_template_type = ! empty( $template->es_template_type ) ? $template->es_template_type : '';
+				$custom_css       = ! empty( $template->es_custom_css ) ? $template->es_custom_css : '';
 				$es_template_body = $custom_css . $es_template_body;
 			} else {
 				$template         = get_post( $template_id, ARRAY_A );
-				$es_template_body = $template['post_content'];
+				
+				if ( empty( $template ) ) {
+					$response['template_html'] = __( 'Template not found.', 'email-subscribers' );
+					return $response;
+				}
+				
+				$es_template_body = ! empty( $template['post_content'] ) ? $template['post_content'] : '';
 				$es_template_type = get_post_meta( $template_id, 'es_template_type', true );
 			}
 			
-			if ( $template ) {
+			if ( ! empty( $es_template_body ) ) {
 				$current_user = wp_get_current_user();
 				$username     = $current_user->user_login;
 				$useremail    = $current_user->user_email;

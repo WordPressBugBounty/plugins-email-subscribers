@@ -65,7 +65,7 @@ class Email_Subscribers_Uninstall {
 		// Delete all tables
 		self::delete_all_es_tables();
 
-		$sidebars_widgets = maybe_unserialize( get_option( 'sidebars_widgets', array() ) );
+		$sidebars_widgets = ig_es_maybe_unserialize( get_option( 'sidebars_widgets', array() ) );
 		$option_name      = $wpdb->esc_like( 'ig_es_' ) . '%';
 		$post_type        = 'es_template';
 

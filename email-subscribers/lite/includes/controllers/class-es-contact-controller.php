@@ -147,7 +147,7 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 		
 			//Validate and sanitize
 			$result = self::validate_and_sanitize_contact_data( $contact_data );
-		
+  
 			if ( ! empty( $result['errors'] ) ) {
 				return array( 'errors' => $result['errors'] );
 			}
@@ -175,8 +175,8 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 			} else {
 				$contact['id'] = $id;
 				self::update_contact( $contact );
-			}
-		
+			} 
+
 			//Update contact list 
 			self::update_contact_lists( $id, $lists, $is_new );
 		
@@ -197,6 +197,57 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 		}
 		public static function save_contact( $contact) {
 			return ES()->contacts_db->insert( $contact );
+		}
+
+		public static function get_contact_activity( $args = array() ) {
+
+			if ( is_string( $args ) ) {
+				$decoded = json_decode( $args, true );
+				if ( $decoded ) {
+					$args = $decoded;
+				}
+			}  
+
+			if(!empty($args['contact_id']) && $args['contact_id'] == 0){
+				return array();
+			} 
+
+			$all_actions = ES()->actions_db->get_actions( $args );
+
+			$prepare_activity = ES_Pro_Dashboard_Controller::prepare_activities_from_actions( $all_actions ); 
+
+			if ( empty( $prepare_activity ) ) {
+				return array();
+			}
+
+			foreach ( $prepare_activity as &$activity ) {
+				if ( ! empty( $activity['text'] ) ) {
+					
+					$text = $activity['text'];
+					
+					if ( preg_match( '/>([^<]+)<\/a>\s+list/i', $text, $matches ) ) {
+						$list_name = $matches[1];
+						$text = preg_replace( '/<a\b[^>]*>.*?<\/a>/i', '', $text );
+						$text = strip_tags( $text );
+						$text = preg_replace( '/(from|to)\s+list/i', '$1 list ' . $list_name, $text );
+					} else {
+						$text = preg_replace( '/<a\b[^>]*>.*?<\/a>/i', '', $text );
+						$text = strip_tags( $text );
+					}
+					
+					$activity['text'] = ucfirst(trim( $text ));
+				}
+			} 
+
+			usort( $prepare_activity, function ( $a, $b ) {
+				$timeA = strtotime( $a['time_formatted'] );
+				$timeB = strtotime( $b['time_formatted'] );
+
+				return ( $timeA < $timeB ) ? 1 : ( ( $timeA > $timeB ) ? -1 : 0 ); 
+			});
+
+			return $prepare_activity;
+
 		}
 	}
 

@@ -413,7 +413,7 @@ class ES_DB_Sending_Queue {
 		$current_utc_time   = current_time( 'mysql', true );
 		$send_immediately   = true;
 		if ( ! empty( $campaign ) && ! empty( $campaign['meta'] ) ) {
-			$campaign_meta = maybe_unserialize( $campaign['meta'] );
+			$campaign_meta = ig_es_maybe_unserialize( $campaign['meta'] );
 			if ( ! empty( $campaign_meta['list_conditions'] ) ) {
 				$args['conditions'] = $campaign_meta['list_conditions'];
 			}
@@ -442,10 +442,35 @@ class ES_DB_Sending_Queue {
 		if ($send_immediately) {
 			$send_at_query = $wpbd->prepare('%s AS `send_at`', array($current_utc_time));
 		} else {
+			// Only process optimization if Pro version
 			if ( ES()->is_pro() ) {
-				$is_optimzation_enabled = ES_Email_Send_Time_Optimizer::is_optimizer_enabled();
-				if ( $is_optimzation_enabled ) {
-					$optimization_method = ES_Email_Send_Time_Optimizer::get_optimization_method();
+				// Check for campaign-level send at best time setting first (Pro feature)
+				$campaign_send_at_best_time = false;
+				$campaign_optimization_method = '';
+				if ( ! empty( $campaign_meta['send_at_best_time'] ) ) {
+					$campaign_send_at_best_time = true;
+					// Get optimization method from campaign meta if available
+					$campaign_optimization_method = ! empty( $campaign_meta['send_time_optimization_method'] ) ? $campaign_meta['send_time_optimization_method'] : '';
+				}
+				
+				// Use campaign-level setting if enabled, otherwise fall back to global setting
+				$use_optimization = false;
+				$optimization_method = '';
+				
+				if ( $campaign_send_at_best_time && ! empty( $campaign_optimization_method ) ) {
+					// Use campaign-level settings
+					$use_optimization = true;
+					$optimization_method = $campaign_optimization_method;
+				} else {
+					// Fall back to global settings
+					$is_optimzation_enabled = ES_Email_Send_Time_Optimizer::is_optimizer_enabled();
+					if ( $is_optimzation_enabled ) {
+						$use_optimization = true;
+						$optimization_method = ES_Email_Send_Time_Optimizer::get_optimization_method();
+					}
+				}
+				
+				if ( $use_optimization ) {
 					if ( 'subscriber_average_open_time' === $optimization_method ) {
 						$send_at_query = $wpbd->prepare('
 						CASE 
@@ -458,6 +483,7 @@ class ES_DB_Sending_Queue {
 						END AS `send_at`
 						', array($scheduled_utc_time,$schedule_base_time,$current_utc_time,$schedule_base_time,$schedule_base_time));
 					} else {
+						// subscriber_timezone
 						$send_at_query = $wpbd->prepare("
 						CASE 
 							WHEN `timezone` IS null THEN %s

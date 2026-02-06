@@ -245,6 +245,14 @@ class ES_DB_Actions extends ES_DB {
 	public function get_count( $args = array(), $distinct = true ) {
 		global $wpbd;
 
+		// Generate cache key from arguments
+		$cache_key = ES_Cache::generate_key( 'ig_es_actions_get_count_' . md5( serialize( array( $args, $distinct ) ) ) );
+		
+		// Check cache first (5 minute TTL)
+		if ( ES_Cache::is_exists( $cache_key, 'query' ) ) {
+			return ES_Cache::get( $cache_key, 'query' );
+		}
+
 		$contacts_count = 0;
 
 		$query = 'SELECT';
@@ -277,13 +285,27 @@ class ES_DB_Actions extends ES_DB {
 			$query
 		);
 
+		// Cache results for 5 minutes
+		ES_Cache::set( $cache_key, $contacts_count, 'query', 300 );
+
 		return $contacts_count;
 	}
 
 	public function get_actions( $args = array() ) {
 		global $wpbd;
 
+		$cache_key = ES_Cache::generate_key( 'ig_es_actions_get_actions_' . md5( serialize( $args ) ) );
+		
+		if ( ES_Cache::is_exists( $cache_key, 'query' ) ) {
+			return ES_Cache::get( $cache_key, 'query' );
+		}
+
 		$where = array();
+
+		if ( ! empty( $args['contact_id'] ) && intval($args['contact_id']) > 0 ) {
+			$where[] = $wpbd->prepare( 'contact_id = %d', intval($args['contact_id']) );
+		}
+		
 		if ( ! empty( $args['type'] ) ) {
 			if ( is_array( $args['type'] ) ) {
 				$types_count        = count( $args['type'] );
@@ -319,64 +341,140 @@ class ES_DB_Actions extends ES_DB {
 			ARRAY_A
 		);
 
+		// Cache results for 5 minutes
+		ES_Cache::set( $cache_key, $actions, 'query', 300 );
+
 		return $actions;
 	}
 
+	/**
+	 * Get actions count by type
+	 * @param array $args
+	 * @return array
+	 * 
+	 * @since 4.2.1
+	 */
 	public function get_actions_count( $args = array() ) {
 		global $wpbd;
-		$query   = 'SELECT';
-		$columns = array();
-		if ( ! empty( $args['types'] ) ) {
-			$types = $args['types'];
-			foreach ( $types as $type ) {
-				$column_name = ''; 
+		
+		$cache_key = ES_Cache::generate_key( 'ig_es_actions_count_' . md5( serialize( $args ) ) );
+		
+		if ( ES_Cache::is_exists( $cache_key, 'query' ) ) {
+			return ES_Cache::get( $cache_key, 'query' );
+		}
+		
+		$results = array();
+		
+		if ( empty( $args['types'] ) ) {
+			$query = "SELECT COUNT(*) as total FROM {$wpbd->prefix}ig_actions";
+			$where = $this->build_where_clause( $args );
+			if ( ! empty( $where ) ) {
+				$query .= ' WHERE ' . implode( ' AND ', $where );
+			}
+			$results = array( 'total' => $wpbd->get_var( $query ) );
+			ES_Cache::set( $cache_key, $results, 'query', 300 ); 
+			return $results;
+		}
+		
+		$where = $this->build_where_clause( $args );
+		$where_conditions = ! empty( $where ) ? $where : array();
+		
+		$types = $args['types'];
+		$type_placeholders = implode( ',', array_fill( 0, count( $types ), '%d' ) );
+		$where_conditions[] = $wpbd->prepare( "type IN ($type_placeholders)", $types );
+		
+		$where_sql = ' WHERE ' . implode( ' AND ', $where_conditions );
+		
+		$query = "SELECT type, contact_id FROM {$wpbd->prefix}ig_actions" . $where_sql;
+		
+		$rows = $wpbd->get_results( $query );
+		
+		$sent = 0;
+		$opened = array();
+		$clicked = array();
+		$unsubscribed = array();
+		$hard_bounced = 0;
+		$soft_bounced = 0;
+		$subscribed = 0;
+		
+		if ( ! empty( $rows ) ) {
+			foreach ( $rows as $row ) {
+				$type = (int) $row->type;
+				$contact_id = (int) $row->contact_id;
+				
 				switch ( $type ) {
 					case IG_CONTACT_SUBSCRIBE:
-						$column_name = 'subscribed';
+						$subscribed++;
 						break;
+					
 					case IG_MESSAGE_SENT:
-						$column_name = 'sent';
+						$sent++;
 						break;
+					
 					case IG_MESSAGE_OPEN:
-						$column_name = 'opened';
+						// Use array keys for efficient deduplication
+						$opened[ $contact_id ] = true;
 						break;
+					
 					case IG_LINK_CLICK:
-						$column_name = 'clicked';
+						$clicked[ $contact_id ] = true;
 						break;
+					
 					case IG_CONTACT_UNSUBSCRIBE:
-						$column_name = 'unsubscribed';
+						$unsubscribed[ $contact_id ] = true;
 						break;
+					
 					case IG_MESSAGE_SOFT_BOUNCE:
-						$column_name = 'soft_bounced';
+						$soft_bounced++;
 						break;
+					
 					case IG_MESSAGE_HARD_BOUNCE:
-						$column_name = 'hard_bounced';
+						$hard_bounced++;
 						break;
 				}
-				$columns[] = 'SUM( IF( type = ' . $type . ", 1, 0 ) ) AS '" . $column_name . "'";
 			}
 		}
-
-		if ( ! empty( $columns ) ) {
-			$query .= ' ' . implode( ',', $columns );
-		} else {
-			$query .= ' COUNT( contact_id )';
-		}
-
-		$query .= " FROM {$wpbd->prefix}ig_actions";
-
+		
+		$results = array(
+			'subscribed'   => $subscribed,
+			'sent'         => $sent,
+			'opened'       => count( $opened ),
+			'clicked'      => count( $clicked ),
+			'unsubscribed' => count( $unsubscribed ),
+			'soft_bounced' => $soft_bounced,
+			'hard_bounced' => $hard_bounced,
+		);
+		
+		ES_Cache::set( $cache_key, $results, 'query', 300 );
+		
+		return $results;
+	}
+	
+	/**
+	 * Build WHERE clause for actions queries
+	 * 
+	 * @param array $args
+	 * @return array
+	 * 
+	 * @since 5.7.25
+	 */
+	private function build_where_clause( $args = array() ) {
+		global $wpbd;
+		
 		$where = array();
-
+		
 		if ( ! empty( $args['list_id'] ) ) {
-			// Since list_id isn't store for sent/opened/clicked/bounced events, we are using contacts ids from list_contacts table from list id.
-			$where[] = $wpbd->prepare( "contact_id IN(SELECT contact_id FROM `{$wpbd->prefix}ig_lists_contacts` WHERE list_id = %d )", esc_sql( $args['list_id'] ) );
+			$where[] = $wpbd->prepare( "EXISTS(SELECT 1 FROM `{$wpbd->prefix}ig_lists_contacts` lc WHERE lc.contact_id = {$wpbd->prefix}ig_actions.contact_id AND lc.list_id = %d )", esc_sql( $args['list_id'] ) );
 		}
-
-		if ( ! empty( $args['campaign_id'] ) ) {
-			// Since list_id isn't store for sent/opened/clicked/bounced events, we are using contacts ids from list_contacts table from list id.
+		
+		if ( isset( $args['campaign_id'] ) ) {
 			$where[] = $wpbd->prepare( 'campaign_id = %d', esc_sql( $args['campaign_id'] ) );
 		}
-
+		
+		if ( ! empty( $args['message_id'] ) || ( isset( $args['message_id'] ) && 0 === $args['message_id'] ) ) {
+			$where[] = $wpbd->prepare( 'message_id = %d', esc_sql( $args['message_id'] ) );
+		}
+		
 		if ( ! empty( $args['days'] ) ) {
 			$where[] = $wpbd->prepare( 'created_at >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL %d DAY))', esc_sql( $args['days'] ) );
 		}
@@ -389,17 +487,36 @@ class ES_DB_Actions extends ES_DB {
 			$where[] = $wpbd->prepare( 'created_at <= UNIX_TIMESTAMP(%s)', esc_sql( $args['end_date'] ) );
 		}
 		
-
-		if ( ! empty( $where ) ) {
-			$query .= ' WHERE ' . implode( ' AND ', $where );
+		return $where;
+	}
+	
+	/**
+	 * Get column name by action type
+	 * 
+	 * @param int $type
+	 * @return string
+	 * 
+	 * @since 5.7.25
+	 */
+	private function get_column_name_by_type( $type ) {
+		switch ( $type ) {
+			case IG_CONTACT_SUBSCRIBE:
+				return 'subscribed';
+			case IG_MESSAGE_SENT:
+				return 'sent';
+			case IG_MESSAGE_OPEN:
+				return 'opened';
+			case IG_LINK_CLICK:
+				return 'clicked';
+			case IG_CONTACT_UNSUBSCRIBE:
+				return 'unsubscribed';
+			case IG_MESSAGE_SOFT_BOUNCE:
+				return 'soft_bounced';
+			case IG_MESSAGE_HARD_BOUNCE:
+				return 'hard_bounced';
+			default:
+				return '';
 		}
-		$results = $wpbd->get_row(
-			$query,
-			ARRAY_A
-		);
-
-		return $results;
-		
 	}
 
 	/**
@@ -754,6 +871,125 @@ class ES_DB_Actions extends ES_DB {
 		   return $result;
 	}
 
+	/**
+	 * Get device open counts grouped by device type
+	 *
+	 * Uses SQL GROUP BY for efficient aggregation instead of PHP loops
+	 *
+	 * @param int $days Number of days to look back (0 for all time)
+	 * @return array Array of device => count pairs
+	 * 
+	 * @since 5.9.14
+	 */
+	public function get_device_open_counts( $days = 0 ) {
+		global $wpdb;
+		
+		$device_counts = array();
+		
+		if ( $days > 0 ) {
+			$start_date = time() - ( $days * DAY_IN_SECONDS );
+			
+			// phpcs:disable
+			$results = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT LOWER(device) as device, COUNT(*) as count 
+					FROM {$this->table_name} 
+					WHERE created_at >= %d AND type = %d AND device IS NOT NULL AND device != ''
+					GROUP BY LOWER(device)
+					ORDER BY count DESC",
+					$start_date,
+					IG_MESSAGE_OPEN
+				),
+				ARRAY_A
+			);
+			// phpcs:enable
+		} else {
+			// No date filter - get all time stats
+			// phpcs:disable
+			$results = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT LOWER(device) as device, COUNT(*) as count 
+					FROM {$this->table_name} 
+					WHERE type = %d AND device IS NOT NULL AND device != ''
+					GROUP BY LOWER(device)
+					ORDER BY count DESC",
+					IG_MESSAGE_OPEN
+				),
+				ARRAY_A
+			);
+			// phpcs:enable
+		}
+		
+		if ( ! empty( $results ) ) {
+			foreach ( $results as $row ) {
+				$device_counts[ $row['device'] ] = (int) $row['count'];
+			}
+		}
+		
+		return $device_counts;
+	}
 
+	/**
+	 * Get country open counts grouped by country
+	 *
+	 * Uses SQL GROUP BY for efficient aggregation instead of PHP loops
+	 *
+	 * @param int $days Number of days to look back (0 for all time)
+	 * @param int $limit Maximum number of countries to return (default 10)
+	 * @return array Array of country code => count pairs
+	 * 
+	 * @since 5.9.14
+	 */
+	public function get_country_open_counts( $days = 0, $limit = 10 ) {
+		global $wpdb;
+		
+		$country_counts = array();
+		
+		if ( $days > 0 ) {
+			$start_date = time() - ( $days * DAY_IN_SECONDS );
+			
+			// phpcs:disable
+			$results = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT country, COUNT(*) as count 
+					FROM {$this->table_name} 
+					WHERE created_at >= %d AND type = %d AND country IS NOT NULL AND country != ''
+					GROUP BY country
+					ORDER BY count DESC
+					LIMIT %d",
+					$start_date,
+					IG_MESSAGE_OPEN,
+					$limit
+				),
+				ARRAY_A
+			);
+			// phpcs:enable
+		} else {
+			// No date filter - get all time stats
+			// phpcs:disable
+			$results = $wpdb->get_results(
+				$wpdb->prepare(
+					"SELECT country, COUNT(*) as count 
+					FROM {$this->table_name} 
+					WHERE type = %d AND country IS NOT NULL AND country != ''
+					GROUP BY country
+					ORDER BY count DESC
+					LIMIT %d",
+					IG_MESSAGE_OPEN,
+					$limit
+				),
+				ARRAY_A
+			);
+			// phpcs:enable
+		}
+		
+		if ( ! empty( $results ) ) {
+			foreach ( $results as $row ) {
+				$country_counts[ $row['country'] ] = (int) $row['count'];
+			}
+		}
+		
+		return $country_counts;
+	}
 
 }

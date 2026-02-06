@@ -264,7 +264,7 @@ class ES_Templates_Table {
 		// Duplicate all custom fields
 		$custom_fields = get_post_custom( $original_id );
 		foreach ( $custom_fields as $key => $value ) {
-			add_post_meta( $duplicate_id, $key, maybe_unserialize( $value[0] ) );
+			add_post_meta( $duplicate_id, $key, ig_es_maybe_unserialize( $value[0] ) );
 		}
 
 		return $duplicate_id;

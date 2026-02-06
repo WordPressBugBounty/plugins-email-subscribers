@@ -113,7 +113,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 
 				$campaigns_to_process[] = $campaign_id;
 
-				$meta = ! empty( $campaign['meta'] ) ? maybe_unserialize( $campaign['meta'] ) : array();
+				$meta = ! empty( $campaign['meta'] ) ? ig_es_maybe_unserialize( $campaign['meta'] ) : array();
 				$rules = ! empty( $meta['rules'] ) ? $meta['rules'] : array();
 
 				if ( ! empty( $rules ) ) {
@@ -278,7 +278,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 
 				$campaigns_to_process[] = $campaign_id;
 
-				$meta = maybe_unserialize( $campaign['meta'] );
+				$meta = ig_es_maybe_unserialize( $campaign['meta'] );
 
 				$rules = ! empty( $meta['rules'] ) ? $meta['rules'] : array();
 
@@ -314,7 +314,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 
 					$conditions = array();
 					if ( ! empty( $campaign ) && ! empty( $campaign['meta'] ) ) {
-						$campaign_meta = maybe_unserialize( $campaign['meta'] );
+						$campaign_meta = ig_es_maybe_unserialize( $campaign['meta'] );
 						if ( ! empty( $campaign_meta['list_conditions'] ) ) {
 							$conditions = $campaign_meta['list_conditions'];
 						}
@@ -657,7 +657,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 									'campaign_id' => $campaign_id,
 								);
 
-								$notification_options = maybe_unserialize( $notification['_options'] );
+								$notification_options = ig_es_maybe_unserialize( $notification['_options'] );
 								$notification_type    = ! empty( $notification_options['type'] ) ? $notification_options['type'] : '';
 								$email_sent = false;
 								if ( 'optin_confirmation' === $notification_type ) {
@@ -731,7 +731,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 				$campaign_id       = isset( $notification['campaign_id'] ) ? $notification['campaign_id'] : 0;
 				if ( ! $triggered_by_admin ) {
 				
-					$notification_meta = ! empty( $notification['meta'] ) ? maybe_unserialize( $notification['meta'] ) : array();
+					$notification_meta = ! empty( $notification['meta'] ) ? ig_es_maybe_unserialize( $notification['meta'] ) : array();
 					$batch_count       = isset( $notification_meta['batch_count'] ) ? $notification_meta['batch_count'] : 0;
 					
 					if ( $batch_count < 2 && $es_c_croncount > 200 ) {
@@ -838,7 +838,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 									);
 									$pending_emails = ES_DB_Sending_Queue::get_total_emails_to_be_sent_by_hash( $notification_guid, $pending_statuses );	
 									if ( empty( $pending_emails ) ) {
-										$notification_meta = maybe_unserialize( $notification['meta'] );
+										$notification_meta = ig_es_maybe_unserialize( $notification['meta'] );
 										$failed_count      = isset( $notification_meta['failed_count'] ) ? $notification_meta['failed_count'] : 0;
 										$failed_count++;
 										$notification_meta['failed_count'] = $failed_count;
@@ -864,7 +864,7 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 								} elseif ( $triggered_by_admin ) {
 									$notification_status = $notification['status'];
 									if ( IG_ES_MAILING_QUEUE_STATUS_FAILED === $notification_status ) {
-										$notification_meta = maybe_unserialize( $notification['meta'] );
+										$notification_meta = ig_es_maybe_unserialize( $notification['meta'] );
 										unset( $notification_meta['failed_count'] );
 										$notification_data = array(
 											'meta'    => maybe_serialize( $notification_meta ),
@@ -1131,9 +1131,19 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 		 */
 		public function trigger_mailing_queue_sending() {
 
-			// Call cron action only when it is not locked.
-			if ( ! ES()->cron->is_locked() ) {
+			$can_access_campaign = ES_Common::ig_es_can_access( 'campaigns' );
+			$nonce = ig_es_get_request_data( 'nonce' );
+			
+			if ( ! $can_access_campaign ) {	
+				return;
+			} 
 
+			if ( empty( $nonce ) || ! wp_verify_nonce( $nonce, 'ig-es-trigger-mailing-queue-sending-nonce' ) ) {
+				return;
+			}
+				
+			// Call cron action only when it is not locked.
+			if ( ! ES()->cron->is_locked() ) {		
 				// Start processing of campaigns which are scheduled for current date time.
 				do_action( 'ig_es_cron_worker' );
 			}

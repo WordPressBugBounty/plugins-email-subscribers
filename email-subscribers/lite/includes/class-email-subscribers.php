@@ -195,16 +195,32 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 		 */
 		public $links_db;
 
-		/**
-		 * ES_DB_Lists_Contacts object
-		 *
-		 * @since 4.3.5
-		 *
-		 * @var object|ES_DB_Lists_Contacts
-		 */
-		public $lists_contacts_db;
+	/**
+	 * ES_DB_Temp_Import object
+	 *
+	 * @since 5.0.0
+	 *
+	 * @var object|ES_DB_Temp_Import
+	 */
+	public $temp_import_db;
 
-		/**
+	/**
+	 * ES_DB_Import_Utils object
+	 *
+	 * @since 5.9.4
+	 *
+	 * @var object|ES_DB_Import_Utils
+	 */
+	public $import_utils_db;
+
+	/**
+	 * ES_DB_Lists_Contacts object
+	 *
+	 * @since 4.3.5
+	 *
+	 * @var object|ES_DB_Lists_Contacts
+	 */
+	public $lists_contacts_db;		/**
 		 * ES_DB_Lists_Contacts object
 		 *
 		 * @since 4.3.5
@@ -758,6 +774,8 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/db/class-es-db-forms.php',
 				'lite/includes/db/class-es-db-blocked-emails.php',
 				'lite/includes/db/class-es-db-actions.php',
+				'lite/includes/db/class-es-db-temp-import.php',
+				'lite/includes/db/class-es-db-import-utils.php',
 				'lite/includes/db/class-ig-es-db-unsubscribe-feedback.php',
 				'lite/includes/db/class-ig-es-db-wc-cart.php',
 				'lite/includes/db/class-ig-es-db-wc-guest.php',
@@ -825,6 +843,8 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				'lite/includes/classes/class-es-browser.php',
 				'lite/includes/classes/class-ig-es-trial.php',
 				'lite/includes/classes/class-es-mailchimp-api.php',
+				'lite/includes/classes/class-es-list-cleanup.php',
+
 
 				// pricing
 				'lite/includes/classes/class-email-subscribers-pricing.php',
@@ -1451,6 +1471,8 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 				self::$instance->lists_contacts_db = new ES_DB_Lists_Contacts();
 				self::$instance->blocked_emails_db = new ES_DB_Blocked_Emails();
 				self::$instance->links_db          = new ES_DB_Links();
+				self::$instance->temp_import_db    = new ES_DB_Temp_Import();
+				self::$instance->import_utils_db   = new ES_DB_Import_Utils();
 				self::$instance->queue             = new ES_Queue();
 				self::$instance->actions           = new ES_Actions();
 				self::$instance->cron              = new ES_Cron();
@@ -2127,8 +2149,8 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 			$offer_start_time = 0;
 			$offer_end_time   = 0;
 			if ( 'bfcm' === $offer_name ) {
-				$offer_start_time = strtotime( '2024-11-26 12:30:00' ); // Offer start time in IST
-				$offer_end_time   = strtotime( '2024-12-05 12:30:00' ); // Offer end time in IST
+				$offer_start_time = strtotime( '2025-11-14 12:30:00' ); // Offer start time in IST
+				$offer_end_time   = strtotime( '2025-12-05 12:30:00' ); // Offer end time in IST
 			}
 
 			$is_offer_period = $current_ist_time >= $offer_start_time && $current_ist_time <= $offer_end_time;

@@ -177,7 +177,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				if ( $form_id ) {
 					$form = ES()->forms_db->get_form_by_id( $form_id );
 					if ( $form ) {
-						$settings = ! empty( $form['settings'] ) ? maybe_unserialize( $form['settings'] ) : array();
+						$settings = ! empty( $form['settings'] ) ? ig_es_maybe_unserialize( $form['settings'] ) : array();
 						$editor_type = ! empty( $settings['editor_type'] ) ? $settings['editor_type'] : '';
 						
 						// If it's a WYSIWYG form, transform the data and use standard processor
@@ -229,14 +229,11 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 			$doing_ajax      = defined( 'DOING_AJAX' ) && DOING_AJAX;
 			$return_response = defined( 'IG_ES_RETURN_HANDLE_RESPONSE' ) && IG_ES_RETURN_HANDLE_RESPONSE;
 
-			// Verify nonce only if it is submitted through Icegram Express' subscription form else check if we have form data in $external_form_data.
 			if ( ( 'subscribe' === $es ) || ! empty( $external_form_data ) ) {
 
-				// Get form data from external source if passed.
 				if ( ! empty( $external_form_data ) ) {
 					$form_data = $external_form_data;
 				} else {
-					// If external form data is not passed then get form data from $_POST.
 					$form_data = wp_unslash( $_POST );
 				}
 				$validate_response = $this->validate_data( $form_data );
@@ -244,8 +241,6 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 
 				if ( 'ERROR' === $validate_response['status'] ) {
 
-					// We want to pretend as "SUCCESS" for blocked emails.
-					// So, we are setting as "SUCCESS" even if this email is blocked
 					if ( 'es_email_address_blocked' === $validate_response['message'] ) {
 						$validate_response['status']  = 'SUCCESS';
 						$validate_response['message'] = 'es_optin_success_message';
@@ -268,7 +263,6 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				$first_name = '';
 				$last_name  = '';
 				if ( ! empty( $name ) ) {
-					// Get First Name and Last Name from Name.
 					$name_parts = ES_Common::prepare_first_name_last_name( $name );
 					$first_name = $name_parts['first_name'];
 					$last_name  = $name_parts['last_name'];
@@ -284,14 +278,15 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				$this->form_id        = isset( $form_data['esfpx_form_id'] ) ? trim( $form_data['esfpx_form_id'] ) : 0;
 
 
+
 			
-				// Merge frontend selected lists with backend configured lists
 				if ( ! empty( $this->form_id ) ) {
 					$form = ES()->forms_db->get_form_by_id( $this->form_id );
 					if ( $form && ! empty( $form['settings'] ) ) {
-						$settings = maybe_unserialize( $form['settings'] );
+						$settings = ig_es_maybe_unserialize( $form['settings'] );
 						
-						// Support both new and old settings format
+						$has_list_field = ! empty( $settings['has_list_field'] ) && 'yes' === $settings['has_list_field'];
+						
 						$backend_list_ids = array();
 						if ( ! empty( $settings['lists'] ) && is_array( $settings['lists'] ) ) {
 							$backend_list_ids = array_map( 'intval', $settings['lists'] );
@@ -299,32 +294,33 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 							$backend_list_ids = array( intval( $settings['lists'] ) );
 						}
 						
-						if ( ! empty( $backend_list_ids ) ) {
-							$backend_lists = ES()->lists_db->get_lists_by_id( $backend_list_ids );
-							$backend_list_hashes = array();
-							
-							if ( ! empty( $backend_lists ) ) {
-								foreach ( $backend_lists as $list ) {
-									if ( ! empty( $list['hash'] ) ) {
-										$backend_list_hashes[] = $list['hash'];
-									}
-								}
-							}
-							
-							// Merge frontend and backend list hashes
+						if ( $has_list_field ) {
 							if ( empty( $this->list_hashes ) ) {
-								$this->list_hashes = $backend_list_hashes;
-							} else {
-								$this->list_hashes = array_unique( array_merge( $this->list_hashes, $backend_list_hashes ) );
+								$this->list_hashes = array();
 							}
 						} else {
-							// No backend lists configured - using frontend lists only
+							if ( ! empty( $backend_list_ids ) ) {
+								$backend_lists = ES()->lists_db->get_lists_by_id( $backend_list_ids );
+								$backend_list_hashes = array();
+								
+								if ( ! empty( $backend_lists ) ) {
+									foreach ( $backend_lists as $list ) {
+										if ( ! empty( $list['hash'] ) ) {
+											$backend_list_hashes[] = $list['hash'];
+										}
+									}
+								}
+								
+								$this->list_hashes = $backend_list_hashes;
+							} else {
+								$this->list_hashes = array();
+							}
 						}
 					} else {
-						// No form settings found
+						// No form settings found - fallback to existing behavior
 					}
 				} else {
-					// No form ID provided
+					// No form ID provided - fallback to existing behavior
 				}
 				$this->reference_site = isset( $form_data['esfpx_reference_site'] ) ? esc_url_raw( $form_data['esfpx_reference_site'] ) : null;
 				$this->es_optin_type  = get_option( 'ig_es_optin_type' );
@@ -520,6 +516,10 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 			} elseif ( $doing_ajax ) {
 				wp_send_json( $response );
 			} else {
+				if ( ! empty( $response['redirection_url'] ) && 'SUCCESS' === $response['status'] ) {
+					wp_safe_redirect( $response['redirection_url'] );
+					exit;
+				}
 				return $response;
 			}
 		}
@@ -652,7 +652,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 			// Get form settings for success message handling
 			$form = ES()->forms_db->get_form_by_id( $form_id );
 			if ( $form ) {
-				$settings = ! empty( $form['settings'] ) ? maybe_unserialize( $form['settings'] ) : array();
+				$settings = ! empty( $form['settings'] ) ? ig_es_maybe_unserialize( $form['settings'] ) : array();
 				
 				// Store form-specific success message for later use
 				if ( ! empty( $settings['success_message'] ) ) {
@@ -680,7 +680,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 			$success_message 					   = ''; // Initialize to empty string
 			
 			if ( ! empty( $form_data['settings'] ) ) {
-				$settings        = maybe_unserialize( $form_data['settings'] );
+				$settings        = ig_es_maybe_unserialize( $form_data['settings'] );
 				$success_message = ! empty( $settings['success_message'] ) ? $settings['success_message'] : '';
 			}
 
@@ -762,7 +762,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 					if ( ! empty( $form_id ) ) {
 						$form = ES()->forms_db->get_form_by_id( $form_id );
 						if ( $form ) {
-							$settings = ! empty( $form['settings'] ) ? maybe_unserialize( $form['settings'] ) : array();
+							$settings = ! empty( $form['settings'] ) ? ig_es_maybe_unserialize( $form['settings'] ) : array();
 							$editor_type = ! empty( $settings['editor_type'] ) ? $settings['editor_type'] : '';
 							
 							// If it's a WYSIWYG form, transform the data and use standard processor

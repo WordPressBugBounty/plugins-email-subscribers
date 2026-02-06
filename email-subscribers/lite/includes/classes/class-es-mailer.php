@@ -616,7 +616,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 						$sender_data['reply_to_email'] = $reply_to_email;
 					}
 
-					$campaign_meta = maybe_unserialize( $campaign['meta'] );
+					$campaign_meta = ig_es_maybe_unserialize( $campaign['meta'] );
 					
 					if ( ! empty( $campaign_meta['preheader'] ) ) {
 						$content = '<span class="preheader" style="display: none !important; visibility: hidden; opacity: 0; color: transparent; height: 0; width: 0;">' . $campaign_meta['preheader'] . '</span>' . $content;
@@ -951,12 +951,14 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 			$sender_name    = '';
 			$sender_email   = '';
 			$reply_to_email = '';
+			$reply_to_name  = '';
 			$attachments    = array();
 			// If sender data is passed .i.g. set in the campaign then use it.
 			if ( ! empty( $sender_data ) ) {
 				$sender_name    = ! empty( $sender_data['from_name'] ) ? $sender_data['from_name'] : '';
 				$sender_email   = ! empty( $sender_data['from_email'] ) ? $sender_data['from_email'] : '';
 				$reply_to_email = ! empty( $sender_data['reply_to_email'] ) ? $sender_data['reply_to_email'] : '';
+				$reply_to_name  = ! empty( $sender_data['reply_to_name'] ) ? $sender_data['reply_to_name'] : '';
 				$attachments    = ! empty( $sender_data['attachments'] ) ? $sender_data['attachments'] : array();
 			}
 
@@ -975,6 +977,11 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 				$reply_to_email = $this->get_from_email();
 			}
 
+			// If reply to name is not passed then fallback to sender name.
+			if ( empty( $reply_to_name ) ) {
+				$reply_to_name = $sender_name;
+			}
+
 			$charset = get_bloginfo( 'charset' );
 
 			$subject = html_entity_decode( $subject, ENT_QUOTES, $charset );
@@ -986,6 +993,7 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 			$message->body           = $body;
 			$message->attachments    = $attachments;
 			$message->reply_to_email = $reply_to_email;
+			$message->reply_to_name  = $reply_to_name;
 			$message->charset        = $charset;
 
 			$headers = array(

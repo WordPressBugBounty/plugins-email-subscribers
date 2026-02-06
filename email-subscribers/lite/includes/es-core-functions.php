@@ -150,7 +150,12 @@ if ( ! function_exists( 'ig_es_format_date_time' ) ) {
 	 */
 	function ig_es_format_date_time( $date ) {
 
-		$local_timestamp = ( '0000-00-00 00:00:00' !== $date && ! empty( $date ) ) ? ES_Common::convert_date_to_wp_date( get_date_from_gmt( $date ) ) : '<i class="dashicons dashicons-es dashicons-minus"></i>';
+		// Return a plain dash when date is empty to avoid HTML leaking into
+		// JSON/API responses and React UI. Admin views can render their own
+		// icons if needed.
+		$local_timestamp = ( '0000-00-00 00:00:00' !== $date && ! empty( $date ) )
+			? ES_Common::convert_date_to_wp_date( get_date_from_gmt( $date ) )
+			: '—';
 
 		return $local_timestamp;
 	}

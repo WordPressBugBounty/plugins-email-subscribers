@@ -716,9 +716,9 @@ class ES_Forms_Table extends ES_List_Table {
 		$name          = ! empty( $data['name'] ) ? $data['name'] : '';
 		$id            = ! empty( $data['id'] ) ? $data['id'] : '';
 		$af_id         = ! empty( $data['af_id'] ) ? $data['af_id'] : '';
-		$body_data     = maybe_unserialize( $data['body'] );
-		$settings_data = maybe_unserialize( $data['settings'] );
-		$styles_data   = maybe_unserialize( $data['styles'] );
+		$body_data     = ig_es_maybe_unserialize( $data['body'] );
+		$settings_data = ig_es_maybe_unserialize( $data['settings'] );
+		$styles_data   = ig_es_maybe_unserialize( $data['styles'] );
 		
 		// Handle JSON body data for new WYSIWYG forms
 		if ( is_string( $body_data ) && ! empty( $body_data ) ) {

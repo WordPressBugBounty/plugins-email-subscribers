@@ -227,16 +227,45 @@ if (!class_exists('ES_Plugin_Usage_Data_Collector')) {
 		public static function get_subscriber_source_stats() {
 			global $wpdb;
 
-			$subscriber_source_stats = $wpdb->get_results("SELECT source, COUNT(*) AS source_count,(COUNT(*) * 100.0 / (SELECT COUNT(*) FROM {$wpdb->prefix}ig_contacts)) AS source_percentage FROM {$wpdb->prefix}ig_contacts GROUP BY source", ARRAY_A);
-
-			return $subscriber_source_stats;
+		$cache_key = 'subscriber_source_stats';
+		$cached = ES_Cache::get_transient( $cache_key );
+		if ( false !== $cached ) {
+			return $cached;
 		}
 
-		public static function get_ess_email_sending_stats() {
-			$results = ES_Service_Email_Sending::get_ess_data();
-			if ( empty($results) || !isset( $results['used_limit'] )) {
-				return array();
+		$total_count = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ig_contacts" );
+		
+		if ( 0 == $total_count ) {
+			return array();
+		}
+		
+		$source_counts = $wpdb->get_results(
+			"SELECT source, COUNT(*) AS source_count FROM {$wpdb->prefix}ig_contacts GROUP BY source", 
+			ARRAY_A
+		);
+		
+		// Calculate percentages in PHP (faster than doing it in SQL for each row)
+		$subscriber_source_stats = array();
+		if ( ! empty( $source_counts ) ) {
+			foreach ( $source_counts as $row ) {
+				$subscriber_source_stats[] = array(
+					'source' => $row['source'],
+					'source_count' => $row['source_count'],
+					'source_percentage' => ( $row['source_count'] * 100.0 ) / $total_count
+				);
 			}
+		}
+		
+		ES_Cache::set_transient( $cache_key, $subscriber_source_stats, HOUR_IN_SECONDS );
+		
+		return $subscriber_source_stats;
+	}
+	
+	public static function get_ess_email_sending_stats() {
+		$results = ES_Service_Email_Sending::get_ess_data();
+		if ( empty($results) || !isset( $results['used_limit'] )) {
+			return array();
+		}
 
 			$current_date = new DateTime();
 			$start_date = ( clone $current_date )->modify('first day of last month')->setTime(0, 0, 0)->format('Y-m-d H:i:s');
@@ -315,7 +344,7 @@ if (!class_exists('ES_Plugin_Usage_Data_Collector')) {
 			$form_style_usage_counts = array();
 			if (!empty($forms)) {
 				foreach ($forms as $form) {
-					$form_setting = maybe_unserialize($form['settings']);
+					$form_setting = ig_es_maybe_unserialize($form['settings']);
 					$editor_type = !empty($form_setting['editor_type']) ? $form_setting['editor_type'] : IG_ES_CLASSIC_EDITOR;
 					if (IG_ES_DRAG_AND_DROP_EDITOR !== $editor_type) {
 						continue;
@@ -334,7 +363,7 @@ if (!class_exists('ES_Plugin_Usage_Data_Collector')) {
 			$form_embed_counts = 0;
 			if (!empty($forms)) {
 				foreach ($forms as $form) {
-					$form_setting = maybe_unserialize($form['settings']);
+					$form_setting = ig_es_maybe_unserialize($form['settings']);
 					$is_embed_form_enabled = !empty($form_setting['is_embed_form_enabled']) ? $form_setting['is_embed_form_enabled'] : 'no';
 					if ('yes' === $is_embed_form_enabled) {
 						$form_embed_counts++;
@@ -348,7 +377,7 @@ if (!class_exists('ES_Plugin_Usage_Data_Collector')) {
 			$form_popup_counts = 0;
 			if (!empty($forms)) {
 				foreach ($forms as $form) {
-					$form_setting = maybe_unserialize($form['settings']);
+					$form_setting = ig_es_maybe_unserialize($form['settings']);
 					$show_in_popup = !empty($form_setting['show_in_popup']) ? $form_setting['show_in_popup'] : 'no';
 					if ('yes' === $show_in_popup) {
 						$form_popup_counts++;

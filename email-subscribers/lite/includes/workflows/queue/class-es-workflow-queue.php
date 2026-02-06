@@ -81,7 +81,7 @@ class ES_Workflow_Queue extends ES_DB_Workflows_Queue {
 			$queue_data = $this->get_by( 'id', $id );
 			if ( ! empty( $queue_data ) && is_array( $queue_data ) ) {
 				$this->id           = $id;
-				$queue_data['meta'] = ! empty( $queue_data['meta'] ) ? maybe_unserialize( $queue_data['meta'] ) : array();
+				$queue_data['meta'] = ! empty( $queue_data['meta'] ) ? ig_es_maybe_unserialize( $queue_data['meta'] ) : array();
 				$this->data         = $queue_data;
 				$this->exists       = true;
 			}
@@ -540,7 +540,7 @@ class ES_Workflow_Queue extends ES_DB_Workflows_Queue {
 		}
 
 		$value = $this->data[$key];
-		$value = maybe_unserialize( $value );
+		$value = ig_es_maybe_unserialize( $value );
 
 		return $value;
 	}

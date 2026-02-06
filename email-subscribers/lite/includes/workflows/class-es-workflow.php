@@ -98,6 +98,14 @@ class ES_Workflow {
 	public $meta;
 
 	/**
+	 * Workflow setup status
+	 *
+	 * @since 5.7.44
+	 * @var bool
+	 */
+	public $is_setup = false;
+
+	/**
 	 * Workflow priority
 	 *
 	 * @since 4.4.1
@@ -174,10 +182,10 @@ class ES_Workflow {
 			$this->name            = $workflow->name;
 			$this->title           = $workflow->title;
 			$this->trigger_name    = $workflow->trigger_name;
-			$this->trigger_options = maybe_unserialize( $workflow->trigger_options );
-			$this->rules           = maybe_unserialize( $workflow->rules );
-			$this->actions         = maybe_unserialize( $workflow->actions );
-			$this->meta            = maybe_unserialize( $workflow->meta );
+			$this->trigger_options = ig_es_maybe_unserialize( $workflow->trigger_options );
+			$this->rules           = ig_es_maybe_unserialize( $workflow->rules );
+			$this->actions         = ig_es_maybe_unserialize( $workflow->actions );
+			$this->meta            = ig_es_maybe_unserialize( $workflow->meta );
 			$this->status          = $workflow->status;
 			$this->priority        = $workflow->priority;
 			$this->created_at      = $workflow->created_at;

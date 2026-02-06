@@ -449,7 +449,7 @@ class ES_Handle_Post_Notification {
 				$post_mailing_queue_ids = get_transient( 'ig_es_post_mailing_queue_ids_' . $post->ID );
 				if ( ! empty( $post_mailing_queue_ids ) ) {
 					$notice_text     = $this->get_emails_queued_notice_text();
-					$report_page_url = menu_page_url( 'es_reports', false );
+					$report_page_url = admin_url( 'admin.php?page=es_dashboard#reports' );
 					?>
 					<div id="ig-es-reports-queued-notice" class="notice notice-success">
 						<p>
@@ -496,7 +496,7 @@ class ES_Handle_Post_Notification {
 			return;
 		}
 
-		$report_page_url = menu_page_url( 'es_reports', false );
+		$report_page_url = admin_url( 'admin.php?page=es_dashboard#reports' );
 
 		$notice_text = $this->get_emails_queued_notice_text();
 		?>

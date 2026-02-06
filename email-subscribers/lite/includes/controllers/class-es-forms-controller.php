@@ -56,19 +56,18 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 		
 			if ( empty( $form ) ) {
 				return false;
-			}		// Convert to array format and add additional data
+			}		
 		$form_array = (array) $form;
 		$form_array['subscriber_count'] = ES()->contacts_db->get_total_contacts_by_form_id( $form_id, 0 );
 
-		$settings = ! empty( $form_array['settings'] ) ? maybe_unserialize( $form_array['settings'] ) : [];
+		$settings = ! empty( $form_array['settings'] ) ? ig_es_maybe_unserialize( $form_array['settings'] ) : [];
 		
 		$list_ids = [];
 			if ( ! empty( $settings['lists'] ) ) {
 				$list_ids = is_array( $settings['lists'] ) ? $settings['lists'] : [ intval( $settings['lists'] ) ];
 			} else {
-				// Check for old-style form lists storage
 				if ( ! empty( $form_array['lists'] ) ) {
-					$old_lists = maybe_unserialize( $form_array['lists'] );
+					$old_lists = ig_es_maybe_unserialize( $form_array['lists'] );
 					if ( is_array( $old_lists ) ) {
 						$list_ids = $old_lists;
 					} elseif ( is_numeric( $old_lists ) ) {
@@ -89,12 +88,10 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 
 		$form_array['list_names'] = ! empty( $list_names ) ? implode( ', ', $list_names ) : '';
 		
-		// Include unserialized settings for frontend
 			if ( ! empty( $settings ) ) {
 				$form_array['settings'] = $settings;
 			}
 		
-		// Add legacy fields for backward compatibility
 		$form_array['lists'] = $list_ids;
 		$form_array['show_in_popup'] = isset( $settings['show_in_popup'] ) ? $settings['show_in_popup'] : 
 			( isset( $form_array['afg'] ) ? $form_array['afg'] : 'no' ); // 'afg' might be old field name
@@ -102,14 +99,16 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 			( isset( $form_array['name_visible'] ) ? $form_array['name_visible'] : '' );
 		$form_array['list_visible'] = isset( $settings['list_visible'] ) ? $settings['list_visible'] : 
 			( isset( $form_array['list_visible'] ) ? $form_array['list_visible'] : '' );
-		$form_array['gdpr_consent'] = isset( $settings['gdpr_consent'] ) ? $settings['gdpr_consent'] : 
-			( isset( $form_array['gdpr_consent'] ) ? $form_array['gdpr_consent'] : '' );
+		$form_array['gdpr_consent'] = isset( $settings['gdpr']['consent'] ) ? $settings['gdpr']['consent'] : 
+			( isset( $settings['gdpr_consent'] ) ? $settings['gdpr_consent'] : 
+			( isset( $form_array['gdpr_consent'] ) ? $form_array['gdpr_consent'] : '' ) );
+		$form_array['gdpr_consent_text'] = isset( $settings['gdpr']['consent_text'] ) ? $settings['gdpr']['consent_text'] : 
+			( isset( $settings['gdpr_consent_text'] ) ? $settings['gdpr_consent_text'] : '' );
 		$form_array['captcha'] = isset( $settings['captcha'] ) ? $settings['captcha'] : 
 			( isset( $form_array['captcha'] ) ? $form_array['captcha'] : '' );
 		
-		// Extract form field values from body structure if they exist (for form editing)
 			if ( ! empty( $form_array['body'] ) ) {
-				$body_data = maybe_unserialize( $form_array['body'] );
+				$body_data = ig_es_maybe_unserialize( $form_array['body'] );
 				if ( is_array( $body_data ) ) {
 					$extracted_values = array();
 					foreach ( $body_data as $field ) {
@@ -140,7 +139,6 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 
 			$form_id = intval( $args['form_id'] );
 		
-			// Use the existing forms database class to duplicate
 			$duplicated_form_id = ES()->forms_db->duplicate_form( $form_id );
 		
 			if ( empty( $duplicated_form_id ) ) {
@@ -255,16 +253,14 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 
 				$result = $wpbd->get_results( $sql, 'ARRAY_A' );
 				
-				// Add additional data to forms similar to dashboard implementation
 				if ( ! empty( $result ) ) {
 					foreach ( $result as &$form ) {
 						$form_id = ! empty( $form['id'] ) ? intval( $form['id'] ) : 0;
 
 						$form['subscriber_count'] = ES()->contacts_db->get_total_contacts_by_form_id( $form_id, 0 );
 
-						$settings = ! empty( $form['settings'] ) ? maybe_unserialize( $form['settings'] ) : [];
+						$settings = ! empty( $form['settings'] ) ? ig_es_maybe_unserialize( $form['settings'] ) : [];
 						
-						// Add unserialized settings for frontend access
 						$form['settings'] = $settings;
 
 						$list_ids = [];
@@ -326,19 +322,15 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 				$embed_html .= "<form method='post' action='$form_action_url' class='ig-es-embeded-from'>";
 
 				if ( ! $is_dnd_editor ) {
-					//To avoid Captcha in embed form
 					$form_data['captcha'] = 'no';
-					//Name field
 					$show_name        = ! empty( $form_data['name_visible'] ) ? strtolower( $form_data['name_visible'] ) : false;
 					$name_required    = ! empty( $form_data['name_required'] ) ? $form_data['name_required'] : false;
 					$name_label       = ! empty( $form_data['name_label'] ) ? $form_data['name_label'] : '';
 					$name_placeholder = ! empty( $form_data['name_place_holder'] ) ? $form_data['name_place_holder'] : '';
-					//Email field
 					$email_label       = ! empty( $form_data['email_label'] ) ? $form_data['email_label'] : '';
 					$email_placeholder = ! empty( $form_data['email_place_holder'] ) ? $form_data['email_place_holder'] : '';
 	
 					$button_label = ! empty( $form_data['button_label'] ) ? $form_data['button_label'] : __( 'Subscribe', 'email-subscribers' );
-					//List Field
 					$list_label = ! empty( $form_data['list_label'] ) ? $form_data['list_label'] : __( 'Select list(s)', 'email-subscribers' );
 					$show_list  = ! empty( $form_data['list_visible'] ) ? $form_data['list_visible'] : false;
 					$list       = ! empty( $form_data['list'] ) ? $form_data['list'] : 0;
@@ -346,7 +338,6 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 					$desc         = ! empty( $form_data['desc'] ) ? $form_data['desc'] : '';
 				
 	
-					//GDRP content
 					$gdpr_consent      = ! empty( $form_data['gdpr_consent'] ) ? $form_data['gdpr_consent'] : 'no';
 					$gdpr_consent_text = ! empty( $form_data['gdpr_consent_text'] ) ? $form_data['gdpr_consent_text'] : '';
 

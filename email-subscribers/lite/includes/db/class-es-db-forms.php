@@ -351,7 +351,7 @@ class ES_DB_Forms extends ES_DB {
 			$settings  	= ig_es_get_data( $form_data, 'settings', array() );
 
 			if ( ! empty( $settings ) ) {
-				$settings        = maybe_unserialize( $settings );
+				$settings        = ig_es_maybe_unserialize( $settings );
 				return $settings;
 			}
 		}			

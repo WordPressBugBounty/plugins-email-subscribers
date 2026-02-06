@@ -152,7 +152,7 @@ class ES_Newsletters {
 				'list_ids'       => $broadcast['list_ids'],
 				'template_id'    => $broadcast['base_template_id'],
 				'status'         => $broadcast['status'],
-				'meta'           => maybe_unserialize( $broadcast['meta'] ),
+				'meta'           => ig_es_maybe_unserialize( $broadcast['meta'] ),
 			);
 		}
 
@@ -555,7 +555,7 @@ class ES_Newsletters {
 				$data['body'] = ES_Common::es_process_template_body( $data['body'], $data['base_template_id'], $campaign_id );
 
 				$guid = ES_Common::generate_guid( 6 );
-				$campaign_meta = maybe_unserialize( $data['meta'] );
+				$campaign_meta = ig_es_maybe_unserialize( $data['meta'] );
 				$meta = apply_filters( 'ig_es_before_save_campaign_notification_meta', array( 'type' => 'newsletter' ), $campaign_meta );
 				$data = array(
 					'hash'        => $guid,
@@ -870,7 +870,7 @@ class ES_Newsletters {
 			$schedule_date     = gmdate( 'Y-m-d H:i:s', $schedule_str - ( $gmt_offset * HOUR_IN_SECONDS ) );
 
 			$data['start_at'] = $schedule_date;
-			$meta             = ! empty( $data['meta'] ) ? maybe_unserialize( $data['meta'] ) : array();
+			$meta             = ! empty( $data['meta'] ) ? ig_es_maybe_unserialize( $data['meta'] ) : array();
 			$meta['type']     = 'one_time';
 			$meta['date']     = $schedule_date;
 			$data['meta']     = maybe_serialize( $meta );
@@ -899,7 +899,7 @@ class ES_Newsletters {
 				if ( ! empty( $campaign ) ) {
 					$campaign_type = $campaign['type'];
 					if ( in_array( $campaign_type, array( 'newsletter', 'workflow_email' ), true ) ) {
-						$campaign_meta        = maybe_unserialize( $campaign['meta'] );
+						$campaign_meta        = ig_es_maybe_unserialize( $campaign['meta'] );
 						$is_track_email_opens = ! empty( $campaign_meta['enable_open_tracking'] ) ? $campaign_meta['enable_open_tracking'] : $is_track_email_opens;
 					}
 				}

@@ -116,7 +116,7 @@ if ( ! class_exists( 'IG_ES_Campaign_Rules' ) ) {
 
 			$conditions = array();
 			if ( ! empty( $campaign_data['meta'] ) ) {
-				$campaign_meta = maybe_unserialize( $campaign_data['meta'] );
+				$campaign_meta = ig_es_maybe_unserialize( $campaign_data['meta'] );
 				$conditions    = ! empty( $campaign_meta['list_conditions'] ) ? $campaign_meta['list_conditions'] : array();
 			}
 

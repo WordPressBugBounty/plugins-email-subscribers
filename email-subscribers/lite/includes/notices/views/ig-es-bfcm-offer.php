@@ -9,13 +9,13 @@
 </style>
 <?php
 $plan    = ES()->get_plan();
-$offer_name = 'offer_bfcm_2024';
-$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm-express-free-pro-banner-2024.png';
+$offer_name = 'offer_bfcm_2025';
+$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm-express-free-pro-banner-2025.png';
 if ( ES()->is_pro() ) {
-	$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm-common-max-banner-2024.jpg';
+	$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm-common-max-banner-2025.png';
 }
 
-if ( ( get_option( 'ig_es_offer_bfcm_2024' ) !== 'yes' ) && ES()->is_offer_period( 'bfcm' ) ) { 
+if ( ( get_option( 'ig_es_offer_bfcm_2025' ) !== 'yes' ) && ES()->is_offer_period( 'bfcm' ) ) { 
 	$notice_dismiss_url = wp_nonce_url(
 		add_query_arg(
 			array(
@@ -26,7 +26,7 @@ if ( ( get_option( 'ig_es_offer_bfcm_2024' ) !== 'yes' ) && ES()->is_offer_perio
 		'es_dismiss_admin_notice'
 	);
 	?>
-	<div class="wrap">
+	<div class="ig_es_offer_container wrap">
 		<div class="ig_es_offer">
 			<a target="_blank" href="<?php echo esc_url( $notice_dismiss_url ); ?>"><img style="margin:0 auto" src="<?php echo esc_url( $img_url ); ?>"/></a>
 		</div>

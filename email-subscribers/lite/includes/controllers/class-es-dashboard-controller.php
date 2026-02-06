@@ -31,48 +31,56 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 		public function register_hooks() {
 		}
 
-		public static function get_subscribers_stats( $data = array() ) {
-			
-			if ( is_string( $data ) ) {
-				$decoded_data = json_decode( $data, true );
-				if ( $decoded_data ) {
-					$data = $decoded_data;
-				}
+	public static function get_subscribers_stats( $data = array() ) {
+		
+		if ( is_string( $data ) ) {
+			$decoded_data = json_decode( $data, true );
+			if ( $decoded_data ) {
+				$data = $decoded_data;
 			}
-			
-			$page           = '';
-			$days           = '';
-			$list_id        = '';
-			$override_cache = true;
-			
-			if ( isset( $data['page'] ) || isset( $data['days'] ) || isset( $data['list_id'] ) ) {
-				$page           = isset( $data['page'] ) ? $data['page'] : 'es_dashboard';
-				$days           = isset( $data['days'] ) ? $data['days'] : '';
-				$list_id        = isset( $data['list_id'] ) ? $data['list_id'] : '';
-				$override_cache = isset( $data['override_cache'] ) ? $data['override_cache'] : true;
-			} 
-			
-			if ( empty( $days ) || ! is_numeric( $days ) ) {
-				$days = 7;
-			} else {
-				$days = intval( $days );
-			}
-			
-			if ( ! empty( $list_id ) && ! is_numeric( $list_id ) ) {
-				$list_id = '';
-			}
+		} 
+		
+		$page           = '';
+		$days           = '';
+		$list_id        = '';
+		$override_cache = false; 
+		
+		if ( isset( $data['page'] ) || isset( $data['days'] ) || isset( $data['list_id'] ) ) {
+			$page           = isset( $data['page'] ) ? $data['page'] : 'es_dashboard';
+			$days           = isset( $data['days'] ) ? $data['days'] : '';
+			$list_id        = isset( $data['list_id'] ) ? $data['list_id'] : '';
+			$override_cache = isset( $data['override_cache'] ) ? $data['override_cache'] : false; 
+		} 
+		
+		if ( empty( $days ) || ! is_numeric( $days ) ) {
+			$days = 7;
+		} else {
+			$days = intval( $days );
+		} 
 
-			$reports_args = array(
-				'list_id' => $list_id,
-				'days'    => $days,
-			);
-			
-			
-			$reports_data = ES_Reports_Data::get_dashboard_reports_data( $page, $override_cache, $reports_args );
-			return $reports_data;
+		if ( ! empty( $list_id ) && $list_id !== 'all' && ! is_numeric( $list_id ) ) {
+			$list_id = 0;
 		}
 
-		public static function get_dashboard_data( $args ) {
+		if ( $list_id === 'all' ) {
+			$list_id = 0;
+		}
+ 
+		$reports_args = array(
+			'list_id' => $list_id,
+			'days'    => $days,
+		);
+		
+		// Get enhanced audience insights data
+		$enhanced_data = ES_Reports_Data::get_audience_insights_data( $reports_args );
+		
+		// Get basic dashboard reports data and merge with enhanced data
+		$reports_data = ES_Reports_Data::get_dashboard_reports_data( $page, $override_cache, $reports_args );
+		
+		return array_merge( $reports_data, $enhanced_data );
+	}		
+	
+	public static function get_dashboard_data( $args ) {
 			$dashboard_kpi = ES_Reports_Data::get_dashboard_reports_data( 'es_dashboard', true, $args );
 			
 			$campaign_args = array(
@@ -101,7 +109,7 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 
 				$form['subscriber_count'] = ES()->contacts_db->get_total_contacts_by_form_id( $form_id, 0 );
 
-				$settings = ! empty( $form['settings'] ) ? maybe_unserialize( $form['settings'] ) : [];
+				$settings = ! empty( $form['settings'] ) ? ig_es_maybe_unserialize( $form['settings'] ) : [];
 
 				$list_ids = [];
 					if ( ! empty( $settings['lists'] ) ) {
@@ -152,7 +160,6 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 				$data = ig_es_get_request_data( 'data', array(), false );
 			}
 			
-			// Handle if data is JSON string
 			if ( is_string( $data ) ) {
 				$decoded = json_decode( $data, true );
 				if ( $decoded ) {
@@ -163,7 +170,6 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 			$workflow_type = isset( $data['workflow_type'] ) ? sanitize_text_field( $data['workflow_type'] ) : '';
 			
 			
-			// Check for abandoned cart email - requires pro plan
 			if ('abandoned-cart-email' === $workflow_type  ||  'abandoned-cart' === $workflow_type ) {
 				$is_pro = ES()->is_pro();
 				$plan = ES()->get_plan();
@@ -209,10 +215,8 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 				);
 			}
 			
-			// Convert to integer and verify
 			$workflow_id = intval( $workflow_id );
 			
-			// Verify workflow was created
 			$workflow_from_db = ES()->workflows_db->get_workflow( $workflow_id );
 			
 			if ( ! $workflow_from_db ) {
@@ -309,18 +313,27 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 		}
 		
 		public static function get_audience_activities() {
-			$recent_activities_args = array(
-				'limit'    => 5,
-				'order_by' => 'updated_at',
-				'order'    => 'DESC',
-				'type' => array(
-					IG_CONTACT_SUBSCRIBE,
-					IG_CONTACT_UNSUBSCRIBE
-				)
-			);
-			$recent_actions    = ES()->actions_db->get_actions( $recent_activities_args );
-			$recent_activities = self::prepare_activities_from_actions( $recent_actions );
-			
+		$cache_key = 'es_audience_activities';
+		$cached = ES_Cache::get_transient( $cache_key );
+		if ( false !== $cached ) {
+			return $cached;
+		}
+		
+		$recent_activities_args = array(
+			'limit'    => 5,
+			'order_by' => 'id',
+			'order'    => 'DESC',
+			'type' => array(
+				IG_CONTACT_SUBSCRIBE,
+				IG_CONTACT_UNSUBSCRIBE
+			)
+		);
+		$recent_actions    = ES()->actions_db->get_actions( $recent_activities_args );
+		$recent_activities = self::prepare_activities_from_actions( $recent_actions );
+		
+		if ( ! empty( $recent_activities ) ) {
+			ES_Cache::set_transient( $cache_key, $recent_activities, 5 / 60 ); // 5 minutes
+		}
 			return $recent_activities;
 		}
 
@@ -439,7 +452,6 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 				);
 			}
 
-			// Save to WordPress options with prefix
 			$option_name = 'ig_es_onboarding_' . $step_name;
 			$updated = update_option( $option_name, $value, false );
 
@@ -499,7 +511,153 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 				'data' => $onboarding_data
 			);
 		}
-		
+
+
+
+		public static function get_audience_growth_stats( $data = array() ) {
+    
+			if ( is_string( $data ) ) {
+				$decoded_data = json_decode( $data, true );
+				if ( $decoded_data ) {
+					$data = $decoded_data;
+				}
+			}
+			
+			$days = isset( $data['days'] ) ? intval( $data['days'] ) : 30;
+			
+			try { 
+				
+				$end_date = current_time( 'Y-m-d' );
+				$start_date = date( 'Y-m-d', strtotime( "-{$days} days" ) );
+
+				$contacts_db = ES()->contacts_db;
+				
+				$current_total = $contacts_db->get_total_contacts();
+				$total_before_period = $contacts_db->get_total_subscribed_contacts_before_days( $days );
+				
+				$new_contacts = $current_total - $total_before_period;
+				
+				$subscribed_args = array(
+					'days' => $days
+				);
+				$subscribed = ES_Reports_Data::get_total_subscribed_contacts( $subscribed_args );
+				
+				$non_subscribed = $new_contacts - $subscribed;
+				$non_subscribed = $non_subscribed > 0 ? $non_subscribed : 0;
+
+				$growth_stats = array(
+					'new_contacts' => intval( $new_contacts ),
+					'non_subscribed' => $non_subscribed > 0 ? $non_subscribed : 0,
+					'subscribed' => intval( $subscribed ),
+					'start_date' => $start_date,
+					'end_date' => $end_date
+				);
+				
+				return $growth_stats;
+				
+			} catch ( Exception $e ) {
+				return array(
+					'success' => false,
+					'message' => 'Failed to fetch audience growth statistics: ' . $e->getMessage()
+				);
+			}
+		}
+
+		/**
+		 * Get all dashboard data in a single batched request
+		 * Combines: lists, country_stats, audience_growth, audience_health, subscribers_stats
+		 * 
+		 * @param array $args Arguments containing list_id, days, growth_days
+		 * @return array Combined dashboard data
+		 * 
+		 * @since 5.9.15
+		 */
+		public static function get_dashboard_batch_data( $args = array() ) {
+			
+			if ( is_string( $args ) ) {
+				$decoded = json_decode( $args, true );
+				if ( $decoded ) {
+					$args = $decoded;
+				}
+			}
+
+			$list_id = isset( $args['list_id'] ) ? $args['list_id'] : 'all';
+			$days = isset( $args['days'] ) ? intval( $args['days'] ) : 7;
+			$growth_days = isset( $args['growth_days'] ) ? intval( $args['growth_days'] ) : 30;
+			$override_cache = isset( $args['override_cache'] ) ? (bool) $args['override_cache'] : false;
+			
+			// Cache key based on parameters
+			$cache_key = ES_Cache::generate_key( 
+				'dashboard_batch_' . $list_id . '_' . $days . '_' . $growth_days 
+			);
+			
+			if ( ! $override_cache ) {
+				$cached_data = ES_Cache::get_transient( $cache_key );
+				if ( false !== $cached_data && ! empty( $cached_data ) ) {
+					return $cached_data;
+				}
+			} else {
+				ES_Cache::delete_transient( $cache_key );
+			}
+
+			$response = array();
+
+			try {
+				// 1. Get lists data (already optimized with batch counts)
+				$lists_args = array(
+					'order_by' => 'created_at',
+					'order' => 'DESC',
+					'per_page' => 20,
+					'page_number' => 1,
+				);
+				$lists_data = ES_Lists_Controller::get_lists( $lists_args );
+
+				// 2. Get country stats (with caching)
+				$country_args = array(
+					'list_id' => $list_id,
+					'days' => $days
+				);
+				$country_stats = ES_Lists_Controller::get_country_stats( $country_args );
+
+				// 3. Get audience growth stats
+				$growth_args = array(
+					'days' => $growth_days
+				);
+				$audience_growth = self::get_audience_growth_stats( $growth_args );
+
+				// 4. Get audience health stats
+				$audience_health = ES_Contacts_Controller::get_audience_health_stats( array() );
+
+				// 5. Get subscribers stats
+				$subscribers_args = array(
+					'list_id' => $list_id,
+					'days' => $days
+				);
+				$subscribers_stats = self::get_subscribers_stats( $subscribers_args );
+
+				// Combine all data
+				$response = array(
+					'lists' => $lists_data,
+					'country_stats' => $country_stats,
+					'audience_growth' => $audience_growth,
+					'audience_health' => $audience_health,
+					'subscribers_stats' => $subscribers_stats,
+				);
+
+				// Cache the result for 5 minutes (only if not overriding cache)
+				if ( ! $override_cache ) {
+					ES_Cache::set_transient( $cache_key, $response, 5 / 60 );
+				}
+
+			} catch ( Exception $e ) {
+				return array(
+					'success' => false,
+					'message' => 'Failed to fetch dashboard data: ' . $e->getMessage()
+				);
+			}
+
+			return $response;
+		}
 	}
 
 }

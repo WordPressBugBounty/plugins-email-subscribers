@@ -200,7 +200,7 @@ if ( ! class_exists( 'ES_Campaign' ) ) {
 				$this->list_ids         = $campaign->list_ids;
 				$this->base_template_id = $campaign->base_template_id;
 				$this->status           = $campaign->status;
-				$this->meta             = maybe_unserialize( $campaign->meta );
+				$this->meta             = ig_es_maybe_unserialize( $campaign->meta );
 				$this->created_at       = $campaign->created_at;
 				$this->updated_at       = $campaign->updated_at;
 			}

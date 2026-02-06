@@ -182,7 +182,7 @@ class ES_DB_Custom_Fields extends ES_DB {
 
 		$meta = $this->get_column_by( 'meta', 'slug', $slug );
 		if ( $meta ) {
-			$meta = maybe_unserialize( $meta );
+			$meta = ig_es_maybe_unserialize( $meta );
 		}
 
 		return $meta;

@@ -335,7 +335,7 @@ class ES_Workflows_Table extends ES_List_Table {
 
 			case 'last_ran_at':
 				$workflow_id  = $item['id'];
-				$item['meta'] = maybe_unserialize( $item['meta'] );
+				$item['meta'] = ig_es_maybe_unserialize( $item['meta'] );
 				$output      .= '<span class="last_ran_at_date_time" data-workflow-id="' . $workflow_id . '">';
 				if ( isset( $item['meta']['last_ran_at'] ) ) {
 					$output .= ig_es_format_date_time( $item['meta']['last_ran_at'] );

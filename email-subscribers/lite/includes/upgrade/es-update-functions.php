@@ -15,7 +15,7 @@ function ig_es_update_320_add_sync_option() {
 
 	$sync_subscribers = get_option( 'ig_es_sync_wp_users' );
 
-	$es_unserialized_data = maybe_unserialize( $sync_subscribers );
+	$es_unserialized_data = ig_es_maybe_unserialize( $sync_subscribers );
 	unset( $es_unserialized_data['es_commented'] );
 	unset( $es_unserialized_data['es_commented_group'] );
 
@@ -1460,7 +1460,7 @@ function ig_es_migrate_4613_sequence_list_settings_into_campaign_rules() {
 			$list_ids    = $campaign['list_ids'];
 			if ( ! empty( $campaign_id ) && ! empty( $list_ids ) ) {
 				$list_ids      = explode( ',', $list_ids );
-				$campaign_meta = ! empty( $campaign['meta'] ) ? maybe_unserialize( $campaign['meta'] ) : array();
+				$campaign_meta = ! empty( $campaign['meta'] ) ? ig_es_maybe_unserialize( $campaign['meta'] ) : array();
 				if ( empty( $campaign_meta['list_conditions'] ) ) {
 					$list_conditions      = array();
 					$list_conditions_data = array(
@@ -1805,7 +1805,7 @@ function ig_es_migrate_post_campaigns_list_settings_into_campaign_rules() {
 				if ( ! empty( $campaign['list_ids'] ) ) {
 					$list_ids      = $campaign['list_ids'];
 					$list_ids      = explode( ',', $list_ids );
-					$campaign_meta = ! empty( $campaign['meta'] ) ? maybe_unserialize( $campaign['meta'] ) : array();
+					$campaign_meta = ! empty( $campaign['meta'] ) ? ig_es_maybe_unserialize( $campaign['meta'] ) : array();
 					if ( empty( $campaign_meta['list_conditions'] ) ) {
 						$list_conditions      = array();
 						$list_conditions_data = array(
@@ -1922,7 +1922,7 @@ function ig_es_migrate_workflow_trigger_conditions_to_rules() {
 		foreach ( $workflows as $workflow ) {
 			$workflow_id     = $workflow['id'];
 			$trigger_name    = $workflow['trigger_name'];
-			$trigger_options = maybe_unserialize( $workflow['trigger_options'] );
+			$trigger_options = ig_es_maybe_unserialize( $workflow['trigger_options'] );
 			$data_to_update  = array(
 				'rules'           => maybe_serialize( array() ),
 				'trigger_options' => maybe_serialize( array() ),
@@ -2067,7 +2067,7 @@ function ig_es_migrate_post_campaigns_settings() {
 				continue;
 			}
 			$campaign_type  = $campaign['type'];
-			$campaign_meta  = maybe_unserialize( $campaign['meta'] );
+			$campaign_meta  = ig_es_maybe_unserialize( $campaign['meta'] );
 			$campaign_body  = $campaign['body'];
 			$data_to_update = array();
 			if ( ! ES_Campaign_Controller::is_using_new_category_format( $campaign_id ) ) {

@@ -452,7 +452,7 @@ class ES_DB_Campaigns extends ES_DB {
 		$meta = $this->get_column( 'meta', $id );
 
 		if ( $meta ) {
-			$meta = maybe_unserialize( $meta );
+			$meta = ig_es_maybe_unserialize( $meta );
 		}
 
 		return $meta;
@@ -530,6 +530,72 @@ class ES_DB_Campaigns extends ES_DB {
 	}
 
 	/**
+	 * Get sequence messages with statistics for a parent sequence campaign
+	 *
+	 * @param int $parent_campaign_id Parent sequence campaign ID
+	 *
+	 * @return array Array of sequence messages with stats
+	 *
+	 * @since 5.7.25
+	 */
+	public function get_sequence_messages_with_stats( $parent_campaign_id = 0 ) {
+		global $wpdb;
+		
+		if ( empty( $parent_campaign_id ) ) {
+			return array();
+		}
+		
+		// Get sequence messages for this parent campaign
+		$where = $wpdb->prepare( 'parent_id = %d AND ( deleted_at IS NULL OR deleted_at = %s )', $parent_campaign_id, '0000-00-00 00:00:00' );
+		$sequence_messages = $this->get_by_conditions( $where );
+		
+		$messages_data = array();
+		
+		if ( ! empty( $sequence_messages ) && is_array( $sequence_messages ) ) {
+			foreach ( $sequence_messages as $sequence_data ) {
+				if ( in_array( $sequence_data['type'], array( 'sequence_message', 'workflow_email' ), true ) ) {
+					$message_id = $sequence_data['id'];
+					
+					// Get sent count using actions DB
+					$total_sent = ES()->actions_db->get_count_based_on_id_type( $message_id, 0, IG_MESSAGE_SENT );
+					
+					// Calculate open and click rates
+					$total_opened = ES()->actions_db->get_count_based_on_id_type( $message_id, 0, IG_MESSAGE_OPEN );
+					$total_clicked = ES()->actions_db->get_count_based_on_id_type( $message_id, 0, IG_LINK_CLICK );
+					
+					$open_rate = ! empty( $total_sent ) ? number_format_i18n( ( ( $total_opened * 100 ) / $total_sent ), 2 ) : 0;
+					$click_rate = ! empty( $total_sent ) ? number_format_i18n( ( ( $total_clicked * 100 ) / $total_sent ), 2 ) : 0;
+					
+					// Get mailing queue hash for report link
+					$mailing_queue = $wpdb->get_row(
+						$wpdb->prepare(
+							"SELECT hash FROM {$wpdb->prefix}ig_mailing_queue WHERE campaign_id = %d LIMIT 1",
+							$message_id
+						),
+						ARRAY_A
+					);
+					
+					$messages_data[] = array(
+						'id' => $message_id,
+						'campaign_id' => $message_id,
+						'subject' => $sequence_data['subject'],
+						'type' => ucwords( str_replace( '_', ' ', $sequence_data['type'] ) ),
+						'status' => $sequence_data['status'],
+						'count' => $total_sent,
+						'start_at' => ! empty( $sequence_data['created_at'] ) ? $sequence_data['created_at'] : '',
+						'hash' => ! empty( $mailing_queue['hash'] ) ? $mailing_queue['hash'] : '',
+						'open_rate' => $open_rate,
+						'click_rate' => $click_rate,
+						'total_sent' => $total_sent,
+					);
+				}
+			}
+		}
+		
+		return $messages_data;
+	}
+
+	/**
 	 * Get posts by post type
 	 *
 	 * @param int $post_types
@@ -596,7 +662,7 @@ class ES_DB_Campaigns extends ES_DB {
 			if ( ! empty( $campaign ) ) {
 
 				if ( isset( $campaign['meta'] ) ) {
-					$meta = maybe_unserialize( $campaign['meta'] );
+					$meta = ig_es_maybe_unserialize( $campaign['meta'] );
 
 					foreach ( $meta_data as $meta_key => $meta_value ) {
 						$meta[ $meta_key ] = $meta_value;
@@ -881,7 +947,7 @@ class ES_DB_Campaigns extends ES_DB {
 			unset( $campaign['id'] );
 			unset( $campaign['created_at'] );
 
-			$campaign_meta = maybe_unserialize( $campaign['meta'] );
+			$campaign_meta = ig_es_maybe_unserialize( $campaign['meta'] );
 			unset( $campaign_meta['date'], $campaign_meta['es_schedule_date'], $campaign_meta['es_schedule_time'] );
 			$campaign['meta'] = maybe_serialize( $campaign_meta );
 
@@ -958,7 +1024,9 @@ class ES_DB_Campaigns extends ES_DB {
 		if ($do_count_only) {
 			$sql = 'SELECT count(*) as total FROM ' . IG_CAMPAIGNS_TABLE;
 		} else {
-			$sql = 'SELECT * FROM ' . IG_CAMPAIGNS_TABLE;
+			$sql = 'SELECT id, slug, name, type, subject, from_name, from_email, reply_to_email, '
+				. 'list_ids, categories, status, created_at, updated_at, meta '
+				. 'FROM ' . IG_CAMPAIGNS_TABLE;
 		}
 	
 		$query = array();
@@ -967,6 +1035,7 @@ class ES_DB_Campaigns extends ES_DB {
 	
 		$query[] = "(deleted_at IS NULL OR deleted_at = '0000-00-00 00:00:00')";
 		$query[] = "type != 'workflow_email'";
+		$query[] = "type != 'sequence_message'";
 	
 		if (!empty($args['search_text'])) {
 			$query[] = 'name LIKE %s';
@@ -1009,7 +1078,7 @@ class ES_DB_Campaigns extends ES_DB {
 				$order = 'desc';
 			}
 	
-			$default_order_by = esc_sql('created_at');
+			$default_order_by = esc_sql('id');
 	
 			$expected_order_by_values = array('name', 'type', 'created_at');
 			if (!in_array($order_by, $expected_order_by_values)) {
@@ -1060,7 +1129,7 @@ class ES_DB_Campaigns extends ES_DB {
 				$list_ids = explode( ',', $campaign['list_ids'] );
 			}
 
-			$campaign_meta = maybe_unserialize( $campaign['meta'] );
+			$campaign_meta = ig_es_maybe_unserialize( $campaign['meta'] );
 			$conditions    = isset( $campaign_meta['list_conditions'] ) ? $campaign_meta['list_conditions'] : array();
 			if ( ! empty( $conditions ) ) {
 				foreach ( $conditions as $i => $condition_group ) {
@@ -1118,7 +1187,7 @@ class ES_DB_Campaigns extends ES_DB {
 
 		if ( count($campaigns) > 0 ) {
 			foreach ($campaigns as $campaign) {
-				$campaign_meta = ( !empty( $campaign['meta'] ) ) ? maybe_unserialize($campaign['meta']) : null;
+				$campaign_meta = ( !empty( $campaign['meta'] ) ) ? ig_es_maybe_unserialize($campaign['meta']) : null;
 
 				if ( !empty( $campaign_meta ) ) {
 					$editor_type = ! empty( $campaign_meta['editor_type'] ) ? $campaign_meta['editor_type'] : IG_ES_CLASSIC_EDITOR;
@@ -1141,5 +1210,17 @@ class ES_DB_Campaigns extends ES_DB {
 			$wpdb->query($wpdb->prepare("DELETE FROM `{$wpdb->prefix}ig_sending_queue` WHERE campaign_id = %d", $campaign_id));
 		}
 	}
+
+	/**
+	 * Get stats for multiple campaigns in one query
+	 * 
+	 * @param array $campaign_ids Array of campaign IDs
+	 * @return array Map of campaign_id => stats
+	 * 
+	 * @since 5.8.0
+	 */
+
+	
+
 	
 }

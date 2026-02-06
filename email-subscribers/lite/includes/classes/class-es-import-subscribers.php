@@ -547,8 +547,8 @@ class ES_Import_Subscribers {
 				$entries                = $metadata['entries'];
 			// phpcs:enable
 
-			$first = unserialize( base64_decode( $entries->first ) );
-			$last  = unserialize( base64_decode( $entries->last ) );
+			$first = ig_es_maybe_unserialize( base64_decode( $entries->first ) );
+			$last  = ig_es_maybe_unserialize( base64_decode( $entries->last ) );
 
 			$data         = str_getcsv( $first[0], $response['data']['separator'], '"' );
 			$cols         = count( $data );

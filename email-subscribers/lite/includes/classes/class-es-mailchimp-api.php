@@ -9,6 +9,9 @@ class ES_Mailchimp_API {
 	private $domain      = 'api.mailchimp.com';
 	private $version     = '3.0';
 	private $total_items = null;
+	private $apikey;
+	private $dc;
+	private $url;
 
 	public function __construct( $apikey ) {
 
@@ -23,7 +26,7 @@ class ES_Mailchimp_API {
 		$response = $this->get( $action, $args );
 
 		if ( is_wp_error( $response ) ) {
-			wp_send_json_error( array( 'error' => $response->get_error_message() ), $response->get_error_code() );
+			return $response;
 		}
 
 		return $response;
@@ -82,6 +85,7 @@ class ES_Mailchimp_API {
 	public function get( $action, $args = array(), $timeout = 15 ) {
 		return $this->do_call( 'GET', $action, $args, $timeout );
 	}
+
 	public function post( $action, $args = array(), $timeout = 15 ) {
 		return $this->do_call( 'POST', $action, $args, $timeout );
 	}
@@ -129,9 +133,17 @@ class ES_Mailchimp_API {
 		$body = json_decode( wp_remote_retrieve_body( $response ) );
 
 		if ( 200 != $code ) {
+			$error_message = 'HTTP Error ' . $code;
+			
+			if ( $body && isset( $body->title ) && isset( $body->detail ) ) {
+				$error_message = $body->title . ': ' . $body->detail;
+			} elseif ( $body && isset( $body->error ) ) {
+				$error_message = $body->error;
+			} elseif ( $body && isset( $body->message ) ) {
+				$error_message = $body->message;
+			}
 
-			return new WP_Error( $body->status, $body->title . ': ' . $body->detail, $body );
-
+			return new WP_Error( 'mailchimp_api_error', $error_message, array( 'status' => $code, 'body' => $body ) );
 		}
 
 		if ( isset( $body->total_items ) ) {

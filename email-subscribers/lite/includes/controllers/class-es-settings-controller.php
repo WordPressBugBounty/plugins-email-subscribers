@@ -12,6 +12,13 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 		// class instance
 		public static $instance;
 
+		/**
+		 * API URL
+		 *
+		 * @var string
+		 */
+		public $api_url = 'https://api.icegram.com';
+
 		// class constructor
 		public function __construct() {
 			$this->init();
@@ -32,6 +39,763 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 		public function register_hooks() {
 		}
 
+		/**
+		 * Get the return path
+		 *
+		 * @return string
+		 */
+		public function get_return_path( $username_only = false ) {
+			$mailbox_user = get_option( 'ig_es_bounce_mailbox_user', '' );
+			if ( empty( $mailbox_user ) ) {
+				$mailbox_user = self::get_bounce_mailbox_username();
+				update_option( 'ig_es_bounce_mailbox_user', $mailbox_user );
+			}
+			if ( $username_only ) {
+				$return_path = $mailbox_user;
+			} else {
+				$return_path = $mailbox_user . '@box.icegram.com';
+			}
+
+			return apply_filters( 'ig_es_bounce_handling_get_return_path', $return_path, $this );
+		}
+
+		/**
+		 * Generate the unique mailbox username
+		 *
+		 * @return mixed|void
+		 */
+		public static function get_bounce_mailbox_username() {
+			$site_url  = get_site_url();
+			$site_url  = preg_replace( '(^https?://)', '', $site_url );
+			$prefix    = ES_Common::generate_random_string( 4 );
+			$suffix    = ES_Common::generate_random_string( 4 );
+			$unique_id = uniqid();
+			$username  = "bounce_{$site_url}_{$prefix}_{$unique_id}_$suffix";
+			$username  = str_replace( array( ':', '/', '-', '\\', '.' ), '_', $username );
+
+			return apply_filters( 'ig_es_get_bounce_mailbox_username', $username );
+		}
+
+		/**
+		 * Get the WebHook URL
+		 *
+		 * @param $esp
+		 *
+		 * @return string
+		 */
+		public function get_webhook_url( $esp ) {
+			$api_url = rtrim( $this->api_url, '/' );
+
+			return "$api_url/email/bounce/$esp/{$this->get_return_path(true)}";
+		}
+
+
+
+		/**
+		 * Display Mailjet webhook details
+		 *
+		 * @since 5.3.2
+		 */
+		public function display_mailjet_webhook_url() {
+			$this->get_webhook_url( 'mailjet' );
+		}
+
+		/**
+		 * Display Sendinblue webhook details
+		 *
+		 * @since 5.3.2
+		 */
+		public function display_sendinblue_webhook_url() {
+			$this->get_webhook_url( 'sendinblue' );
+		}
+
+		/**
+		 * Display Amazon SES webhook details
+		 */
+		public function display_amazon_ses_webhook_url() {
+			$this->get_webhook_url( 'amazon_ses' );
+		}
+
+		/**
+		 * Display PostMark webhook details
+		 */
+		public function display_postmark_webhook_url() {
+			$this->get_webhook_url( 'postmark' );
+		}
+
+		/**
+		 * Display SparkPost webhook details
+		 */
+		public function display_sparkpost_webhook_url() {
+			$this->get_webhook_url( 'sparkpost' );
+		}
+
+		/**
+		 * Display MailGun webhook details
+		 */
+		public function display_mailgun_webhook_url() {
+			$this->get_webhook_url( 'mailgun' );
+		}
+
+		/**
+		 * Display SendGrid webhook details
+		 */
+		public function display_sendgrid_webhook_url() {
+			$this->get_webhook_url( 'sendgrid' );
+		}
+
+		/**
+		 * Display PepiPost webhook details
+		 */
+		public function display_pepipost_webhook_url() {
+			$this->get_webhook_url( 'pepipost' );
+		}
+
+		/**
+		 * Get cron info data
+		 *
+		 * @return array
+		 */
+		public static function get_cron_info() {
+			$site_crons = get_option( 'cron' );
+
+			if ( empty( $site_crons ) ) {
+				return array();
+			}
+
+			$es_crons_data  = array();
+			$es_cron_events = array(
+				'ig_es_cron',
+				'ig_es_cron_worker',
+				'ig_es_cron_auto_responder',
+				'ig_es_summary_automation',
+			);
+
+			$cron_schedules = wp_get_schedules();
+			$time_offset    = get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
+			$date_format    = get_option( 'date_format' );
+			$time_format    = get_option( 'time_format' );
+
+			foreach ( $site_crons as $next_scheduled_time => $scheduled_crons ) {
+				if ( ! empty( $scheduled_crons ) && is_array( $scheduled_crons ) ) {
+					foreach ( $scheduled_crons as $cron_event => $cron_data ) {
+						if ( ! in_array( $cron_event, $es_cron_events, true ) ) {
+							continue;
+						}
+						foreach ( $cron_data as $cron_info ) {
+							if ( ! empty( $cron_info['schedule'] ) ) {
+								$cron_schedule                = $cron_info['schedule'];
+								$cron_interval                = ! empty( $cron_schedules[ $cron_schedule ]['interval'] ) ? $cron_schedules[ $cron_schedule ]['interval'] : 0;
+								$es_crons_data[ $cron_event ] = array(
+									'cron_interval'       => $cron_interval,
+									'next_scheduled_time' => $next_scheduled_time,
+								);
+							}
+						}
+					}
+				}
+			}
+
+			$cron_info_array = array();
+			if ( ! empty( $es_crons_data ) ) {
+				foreach ( $es_cron_events as $cron_event ) {
+					$cron_interval       = '';
+					$next_scheduled_time = '';
+					if ( ! empty( $es_crons_data[ $cron_event ] ) ) {
+						$es_cron_data        = $es_crons_data[ $cron_event ];
+						$cron_interval       = $es_cron_data['cron_interval'];
+						$next_scheduled_time = $es_cron_data['next_scheduled_time'];
+					} else {
+						if ( 'ig_es_cron_auto_responder' === $cron_event ) {
+							wp_schedule_event( floor( time() / 300 ) * 300 - 120, 'ig_es_cron_interval', 'ig_es_cron_auto_responder' );
+						} elseif ( 'ig_es_cron_worker' === $cron_event ) {
+							wp_schedule_event( floor( time() / 300 ) * 300, 'ig_es_cron_interval', 'ig_es_cron_worker' );
+						} elseif ( 'ig_es_cron' === $cron_event ) {
+							wp_schedule_event( strtotime( 'midnight' ) - 300, 'hourly', 'ig_es_cron' );
+						}
+						$next_scheduled_time = wp_next_scheduled( $cron_event );
+						if ( 'ig_es_cron' === $cron_event ) {
+							$cron_interval = 3600; // Hourly interval for ig_es_cron.
+						} else {
+							$cron_interval = ES()->cron->get_cron_interval();
+						}
+					}
+					if ( empty( $cron_interval ) || empty( $next_scheduled_time ) ) {
+						continue;
+					}
+
+					$cron_info_array[] = array(
+						'event'                => $cron_event,
+						'interval'             => ig_es_get_human_interval( $cron_interval ),
+						'next_execution'       => sprintf( __( 'In %s', 'email-subscribers' ), human_time_diff( time(), $next_scheduled_time ) ),
+						'next_execution_date'  => date_i18n( $date_format . ' ' . $time_format, $next_scheduled_time + $time_offset ),
+						'next_execution_utc'   => date_i18n( $date_format . ' ' . $time_format, $next_scheduled_time ),
+					);
+				}
+			}
+
+			return $cron_info_array;
+		}
+
+		/**
+		 * Check if Gmail client credentials are valid
+		 *
+		 * @return bool
+		 * @since 5.8.0
+		 */
+		private static function get_gmail_valid_credentials() {
+			if ( ! class_exists( 'ES_Gmail_Oauth_Handler' ) ) {
+				return false;
+			}
+			$es_gmail_oauth_handler = ES_Gmail_Oauth_Handler::get_instance();
+			return $es_gmail_oauth_handler->is_valid_client_credentials();
+		}
+
+		/**
+		 * Check if Gmail OAuth tokens are valid
+		 *
+		 * @return bool
+		 * @since 5.8.0
+		 */
+		private static function get_gmail_valid_tokens() {
+			if ( ! class_exists( 'ES_Gmail_Oauth_Handler' ) ) {
+				return false;
+			}
+			$es_gmail_oauth_handler = ES_Gmail_Oauth_Handler::get_instance();
+			return $es_gmail_oauth_handler->is_valid_tokens();
+		}
+
+		public static function get_ess_plan_info() {
+			$es_ess_data     = ES_Service_Email_Sending::get_ess_data();
+			$current_month   = ig_es_get_current_month();
+			$interval        = isset( $es_ess_data['interval'] ) ? $es_ess_data['interval']: '';
+			$next_reset      = isset( $es_ess_data['next_reset'] ) ? $es_ess_data['next_reset']: '';
+			$allocated_limit = isset( $es_ess_data['allocated_limit'] ) ? $es_ess_data['allocated_limit']: 0;
+			$used_limit      = isset( $es_ess_data['used_limit'][$current_month] ) ? $es_ess_data['used_limit'][$current_month] : 0;
+			$remaining_limit = $allocated_limit - $used_limit;
+			if ( $allocated_limit > 0 ) {
+				$remaining_limit_percentage = number_format_i18n( ( ( $remaining_limit * 100 ) / $allocated_limit ), 2 );
+				$used_limit_percentage = number_format_i18n( ( ( $used_limit * 100 ) / $allocated_limit ), 2 );
+			} else {
+				$remaining_limit_percentage = 0;
+				$used_limit_percentage = 0;
+			}
+			$remaining_percentage_limit = 10;   //Set email remaining percentage limit, so upsell notice box will visible.
+			$plan                       = ES_Service_Email_Sending::get_plan();
+			$premium_plans              = array( 'pro', 'max' );
+			$is_premium_plan            = in_array( $plan, $premium_plans, true );
+			$is_ess_branding_enabled    = ES_Service_Email_Sending::is_ess_branding_enabled();
+			if ( ! empty( $next_reset ) ) {
+				$next_reset = ig_es_format_date_time( $next_reset );
+			}
+			
+			return array(
+				'success' => true,
+				'data' => array(
+					'allocated_limit' => $allocated_limit,
+					'used_limit' => $used_limit,
+					'remaining_limit' => $remaining_limit,
+					'used_limit_percentage' => floatval( $used_limit_percentage ),
+					'remaining_limit_percentage' => floatval( $remaining_limit_percentage ),
+					'next_reset' => $next_reset,
+					'plan' => $plan,
+					'is_premium_plan' => $is_premium_plan,
+					'is_ess_branding_enabled' => $is_ess_branding_enabled,
+				),
+				'message' => __( 'ESS plan info retrieved successfully.', 'email-subscribers' ),
+			);
+		}
+
+		public static function send_test_email_request( $data = array() ) {
+			// Data comes as JSON string, decode it to array
+			if ( is_string( $data ) && ! empty( $data ) ) {
+				$decoded_data = json_decode( $data, true );
+				if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded_data ) ) {
+					$data = $decoded_data;
+				}
+			}
+
+			// Ensure data is an array
+			if ( ! is_array( $data ) ) {
+				$data = array();
+			}
+
+			$email = isset( $data['email'] ) ? sanitize_email( $data['email'] ) : '';
+			
+			if ( empty( $email ) || ! is_email( $email ) ) {
+				return array(
+					'success' => false,
+					'message' => __( 'Please provide a valid email address.', 'email-subscribers' ),
+				);
+			}
+			
+			$template_id = 0;
+			$campaign_id = 0;
+		
+			// Process template body
+			$content = ES_Common::es_process_template_body( $content, $template_id, $campaign_id );			$merge_tags = array();
+			
+			// Send test email using the mailer (same method used by ES_Tools)
+			$response = ES()->mailer->send_test_email( $email, $subject, $content, $merge_tags );
+			
+			if ( $response && 'SUCCESS' === $response['status'] ) {
+				return array(
+					'success' => true,
+					'message' => __( 'Test email has been sent successfully. Please check your inbox.', 'email-subscribers' ),
+				);
+			} else {
+				$error_message = is_array( $response['message'] ) ? implode( ' ', $response['message'] ) : $response['message'];
+				return array(
+					'success' => false,
+					'message' => $error_message,
+				);
+			}
+		}
+
+		public static function verify_email_authentication( $data = array() ) {
+			// First, send test email to verification mailbox
+			$mailbox = ES_Common::get_email_verify_test_email();
+			
+			if ( empty( $mailbox ) ) {
+				return array(
+					'success' => false,
+					'message' => __( 'Verification mailbox not configured.', 'email-subscribers' ),
+				);
+			}
+
+			// Send test email
+			$test_email = new ES_Send_Test_Email();
+			$params     = array( 'email' => $mailbox );
+			$send_response = $test_email->send_test_email( $params );
+
+			if ( 'error' === $send_response['status'] ) {
+				return array(
+					'success' => false,
+					'message' => isset( $send_response['error_message'] ) ? $send_response['error_message'] : __( 'Failed to send verification email.', 'email-subscribers' ),
+				);
+			}
+
+			// Wait a moment for email to be received and processed
+			sleep( 3 );
+
+			// Get authentication headers
+			$header_check = new ES_Service_Auth_Header_Check();
+			$headers_response = $header_check->get_email_authentication_headers();
+
+			if ( 'error' === $headers_response['status'] || empty( $headers_response['data'] ) ) {
+				return array(
+					'success' => false,
+					'message' => isset( $headers_response['error_message'] ) ? $headers_response['error_message'] : __( 'Failed to retrieve authentication headers.', 'email-subscribers' ),
+				);
+			}
+
+			// Parse and save the headers
+			$email_auth_headers = json_decode( $headers_response['data'], true );
+			update_option( 'ig_es_email_auth_headers', $email_auth_headers );
+
+			// Format the response for frontend using the same method used for settings
+			$formatted_headers = self::format_email_auth_headers( $email_auth_headers );
+
+			return array(
+				'success' => true,
+				'message' => __( 'Email authentication verified successfully.', 'email-subscribers' ),
+				'data' => $formatted_headers,
+			);
+		}	
+
+		/**
+		 * Format cron last hit timestamp for frontend consumption
+		 * 
+		 * @param array|int $cron_last_hit Cron last hit data (array with timestamp or Unix timestamp)
+		 * @return string Formatted date time string
+		 */
+		public static function format_cron_last_hit( $cron_last_hit ) {
+			if ( empty( $cron_last_hit ) ) {
+				return 'Never';
+			}
+
+			$timestamp = '';
+			if ( is_array( $cron_last_hit ) && isset( $cron_last_hit['timestamp'] ) ) {
+				$timestamp = $cron_last_hit['timestamp'];
+			} elseif ( is_numeric( $cron_last_hit ) ) {
+				$timestamp = $cron_last_hit;
+			}
+
+			if ( empty( $timestamp ) ) {
+				return 'Never';
+			}
+
+			// Convert Unix timestamp to MySQL datetime format
+			$date_time = gmdate( 'Y-m-d H:i:s', $timestamp );
+			return ig_es_format_date_time( $date_time );
+		}
+
+		/**
+		 * Format email auth headers for frontend consumption
+		 * 
+		 * @param array $raw_headers Raw headers from database
+		 * @return array Formatted headers
+		 */
+		public static function format_email_auth_headers( $raw_headers ) {
+			$formatted_headers = array();
+			
+			if ( ! is_array( $raw_headers ) || empty( $raw_headers ) ) {
+				return $formatted_headers;
+			}
+
+			foreach ( $raw_headers as $header ) {
+				if ( ! is_array( $header ) ) {
+					continue;
+				}
+
+				// Handle both old and new format
+				$auth_header_name = '';
+				$result = '';
+				$value = '';
+
+				// New format (from verify_email_authentication)
+				if ( isset( $header['authHeaderName'] ) ) {
+					$auth_header_name = $header['authHeaderName'];
+					$result = isset( $header['result'] ) ? $header['result'] : 'N/A';
+					$value = isset( $header['value'] ) ? $header['value'] : 'N/A';
+				}
+				// Old format (from stored option)
+				elseif ( isset( $header['header'] ) ) {
+					$auth_header_name = strtoupper( $header['header'] );
+					$result = isset( $header['test'] ) ? $header['test'] : 'N/A';
+					$value = isset( $header['record'] ) ? $header['record'] : 'N/A';
+				}
+
+				if ( ! empty( $auth_header_name ) ) {
+					$formatted_headers[] = array(
+						'authHeaderName' => $auth_header_name,
+						'result' => $result,
+						'value' => $value,
+					);
+				}
+			}
+
+			return $formatted_headers;
+		}
+
+		public static function es_settings_callback( $data = array() ) {
+			// Data comes as JSON string, decode it to array
+			if ( is_string( $data ) && ! empty( $data ) ) {
+				$decoded_data = json_decode( $data, true );
+				if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded_data ) ) {
+					$data = $decoded_data;
+				}
+			}
+
+			// Ensure data is an array
+			if ( ! is_array( $data ) ) {
+				$data = array();
+			}
+
+			// Call save_settings with the array data
+			$result = self::save_settings( $data );
+
+			return $result;
+		}
+
+		public static function get_pages( $data = array() ) {
+			// Get all published pages
+			$pages = get_pages(array(
+				'sort_column' => 'menu_order, post_title',
+				'post_status' => 'publish'
+			));
+
+			$pages_data = array();
+			foreach ( $pages as $page ) {
+				$pages_data[] = array(
+					'id' => $page->ID,
+					'title' => $page->post_title,
+					'url' => get_permalink( $page->ID )
+				);
+			}
+
+			return array(
+				'success' => true,
+				'data' => $pages_data,
+				'message' => __( 'Pages loaded successfully.', 'email-subscribers' ),
+			);
+		}
+
+		public static function get_users( $data = array() ) {
+			// Get all Users
+			$admin_users = get_users(array(
+			'role'   => 'administrator',
+			'fields' => array('ID', 'user_email', 'user_login'),
+			));
+
+			$users_data = array();
+			foreach ($admin_users as $user) {
+				$users_data[] = array(
+					'id' => $user->ID,
+					'email' => $user->user_email,
+					'username' => $user->user_login,
+				);
+			}
+
+			return array(
+				'success' => true,
+				'data' => $users_data,
+				'message' => __( 'Users loaded successfully.', 'email-subscribers' ),
+			);
+		}
+
+		public static function generate_rest_api_key_request( $data = array() ) {
+			// Data comes as JSON string, decode it to array
+			if ( is_string( $data ) && ! empty( $data ) ) {
+				$decoded_data = json_decode( $data, true );
+				if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded_data ) ) {
+					$data = $decoded_data;
+				}
+			}
+
+			// Ensure data is an array
+			if ( ! is_array( $data ) ) {
+				$data = array();
+			}
+
+			$user_id = isset( $data['user_id'] ) ? absint( $data['user_id'] ) : 0;			
+			if ( empty( $user_id ) ) {
+				return array(
+					'success' => false,
+					'message' => __( 'Please select a user.', 'email-subscribers' ),
+				);
+			}
+
+			$user = get_user_by( 'id', $user_id );
+			if ( ! $user ) {
+				return array(
+					'success' => false,
+					'message' => __( 'Selected user doesn\'t exists. Please select a different user.', 'email-subscribers' ),
+				);
+			}
+
+			$generated_api_key = ES_Rest_API_Admin::generate_rest_api_key( $user_id );
+			if ( $generated_api_key ) {
+				$rest_api_keys   = get_user_meta( $user_id, 'ig_es_rest_api_keys', true );
+				$rest_api_keys   = ! empty( $rest_api_keys ) ? $rest_api_keys : array();
+				$rest_api_keys[] = $generated_api_key;
+				update_user_meta( $user_id, 'ig_es_rest_api_keys', $rest_api_keys );
+				
+				// Get updated list of API keys
+				$api_keys_data = self::format_api_keys( $user_id );
+				
+				return array(
+					'success' => true,
+					'message' => sprintf( __( 'API key generated successfully: %s', 'email-subscribers' ), $generated_api_key ),
+					'apiKey' => $generated_api_key,
+					'apiKeys' => $api_keys_data,
+				);
+			}
+
+			return array(
+				'success' => false,
+				'message' => __( 'Failed to generate API key.', 'email-subscribers' ),
+			);
+		}
+
+		public static function get_rest_api_keys( $data = array() ) {
+			// Data comes as JSON string, decode it to array
+			if ( is_string( $data ) && ! empty( $data ) ) {
+				$decoded_data = json_decode( $data, true );
+				if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded_data ) ) {
+					$data = $decoded_data;
+				}
+			}
+
+			// Ensure data is an array
+			if ( ! is_array( $data ) ) {
+				$data = array();
+			}
+
+			$user_id = isset( $data['user_id'] ) ? absint( $data['user_id'] ) : 0;
+			
+			if ( empty( $user_id ) ) {
+				return array(
+					'success' => false,
+					'message' => __( 'User ID is required.', 'email-subscribers' ),
+				);
+			}
+
+			$api_keys_data = self::format_api_keys( $user_id );
+
+			return array(
+				'success' => true,
+				'data' => $api_keys_data,
+				'message' => __( 'API keys loaded successfully.', 'email-subscribers' ),
+			);
+		}
+
+		public static function delete_rest_api_key_request( $data = array() ) {
+			// Data comes as JSON string, decode it to array
+			if ( is_string( $data ) && ! empty( $data ) ) {
+				$decoded_data = json_decode( $data, true );
+				if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded_data ) ) {
+					$data = $decoded_data;
+				}
+			}
+
+			// Ensure data is an array
+			if ( ! is_array( $data ) ) {
+				$data = array();
+			}
+
+			$user_id = isset( $data['user_id'] ) ? absint( $data['user_id'] ) : 0;
+			$api_index = isset( $data['api_index'] ) ? absint( $data['api_index'] ) : 0;			
+			if ( empty( $user_id ) ) {
+				return array(
+					'success' => false,
+					'message' => __( 'User ID is required.', 'email-subscribers' ),
+				);
+			}
+
+			$api_key_deleted = ES_Rest_API_Admin::delete_rest_api_key( $user_id, $api_index );
+			if ( $api_key_deleted ) {
+				return array(
+					'success' => true,
+					'message' => __( 'API key deleted successfully.', 'email-subscribers' ),
+				);
+			}
+
+			return array(
+				'success' => false,
+				'message' => __( 'Failed to delete API key.', 'email-subscribers' ),
+			);
+		}
+
+		private static function format_api_keys( $user_id ) {
+			$rest_api_keys = get_user_meta( $user_id, 'ig_es_rest_api_keys', true );
+			$rest_api_keys = ! empty( $rest_api_keys ) ? $rest_api_keys : array();
+			
+			$user = get_user_by( 'id', $user_id );
+			$username = $user ? $user->user_login : '';
+			
+			$api_keys_data = array();
+			foreach ( $rest_api_keys as $index => $api_key ) {
+				// Handle both old format (string) and new format (array)
+				if ( is_string( $api_key ) ) {
+					$api_keys_data[] = array(
+						'key' => $api_key,
+						'username' => $username,
+						'created_at' => __( 'Unknown', 'email-subscribers' ),
+						'index' => $index,
+					);
+				} else if ( is_array( $api_key ) && isset( $api_key['key'] ) ) {
+					$api_keys_data[] = array(
+						'key' => $api_key['key'],
+						'username' => $username,
+						'created_at' => isset( $api_key['created_at'] ) ? $api_key['created_at'] : __( 'Unknown', 'email-subscribers' ),
+						'index' => $index,
+					);
+				}
+			}
+			
+			return $api_keys_data;
+		}
+
+	public static function get_settings( $data = array() ) {
+		$mailer_settings = get_option( 'ig_es_mailer_settings', array() );
+		$ess_email       = ! empty( $mailer_settings['icegram']['email'] ) ? $mailer_settings['icegram']['email'] : ES_Common::get_admin_email();
+
+		// Generate webhook URLs
+		$settings_controller = self::get_instance();
+		$webhook_urls = array(
+			'pepipost' => $settings_controller->get_webhook_url( 'pepipost' ),
+			'mailjet' => $settings_controller->get_webhook_url( 'mailjet' ),
+			'sendinblue' => $settings_controller->get_webhook_url( 'sendinblue' ),
+			'amazon_ses' => $settings_controller->get_webhook_url( 'amazon_ses' ),
+			'postmark' => $settings_controller->get_webhook_url( 'postmark' ),
+			'sparkpost' => $settings_controller->get_webhook_url( 'sparkpost' ),
+			'mailgun' => $settings_controller->get_webhook_url( 'mailgun' ),
+			'sendgrid' => $settings_controller->get_webhook_url( 'sendgrid' ),
+		);
+
+		// Get all the settings from WordPress options
+		$settings_data = array(
+			'ig_es_from_name' => get_option( 'ig_es_from_name', '' ),
+			'ig_es_from_email' => get_option( 'ig_es_from_email', '' ),
+			'ig_es_admin_emails' => get_option( 'ig_es_admin_emails', '' ),
+			'ig_es_post_image_size' => get_option( 'ig_es_post_image_size', 'Thumbnail' ),
+			'ig_es_enable_summary_automation' => get_option( 'ig_es_enable_summary_automation', 'no' ),
+			'ig_es_run_cron_on' => get_option( 'ig_es_run_cron_on', 'monday' ),
+			'ig_es_run_cron_time' => get_option( 'ig_es_run_cron_time', '4pm' ),
+			'ig_es_powered_by' => get_option( 'ig_es_powered_by', 'no' ),
+			'ig_es_house_keeping_enabled' => get_option( 'ig_es_house_keeping_enabled', 'no' ),
+			'ig_es_house_keeping_enabled_campaign_types' => get_option( 'ig_es_house_keeping_enabled_campaign_types', array() ),
+			'ig_es_delete_unconfirmed_contacts' => get_option( 'ig_es_delete_unconfirmed_contacts', 'no' ),
+			'ig_es_delete_plugin_data' => get_option( 'ig_es_delete_plugin_data', 'no' ),
+			// Tracking Settings
+			'ig_es_track_email_opens' => get_option( 'ig_es_track_email_opens', 'no' ),
+			'ig_es_track_link_click' => get_option( 'ig_es_track_link_click', 'no' ),
+			'ig_es_track_utm' => get_option( 'ig_es_track_utm', 'no' ),
+			'ig_es_send_time_optimizer_enabled' => get_option( 'ig_es_send_time_optimizer_enabled', 'no' ),
+			'ig_es_send_time_optimization_method' => get_option( 'ig_es_send_time_optimization_method', 'subscriber-timezone' ),
+			// Subscription Form Settings
+			'ig_es_enable_ajax_form_submission' => get_option( 'ig_es_enable_ajax_form_submission', 'no' ),
+			'ig_es_intermediate_unsubscribe_page' => get_option( 'ig_es_intermediate_unsubscribe_page', 'no' ),
+			'ig_es_show_opt_in_consent' => get_option( 'ig_es_show_opt_in_consent', 'no' ),
+			'ig_es_opt_in_consent_text' => get_option( 'ig_es_opt_in_consent_text', '' ),
+			// Opt-in Settings
+			'ig_es_optin_type' => get_option( 'ig_es_optin_type', 'double_opt_in' ),
+			'ig_es_optin_page' => get_option( 'ig_es_optin_page', 'default' ),
+			'ig_es_subscription_success_message' => get_option( 'ig_es_subscription_success_message', '' ),
+			'ig_es_subscription_error_messsage' => get_option( 'ig_es_subscription_error_messsage', '' ),
+			'ig_es_form_submission_success_message' => get_option( 'ig_es_form_submission_success_message', '' ),
+			// Unsubscribe Settings
+			'ig_es_unsubscribe_page' => get_option( 'ig_es_unsubscribe_page', 'default' ),
+			'ig_es_unsubscribe_success_message' => get_option( 'ig_es_unsubscribe_success_message', '' ),
+			'ig_es_unsubscribe_error_message' => get_option( 'ig_es_unsubscribe_error_message', '' ),
+			'ig_es_unsubscribe_link_content' => get_option( 'ig_es_unsubscribe_link_content', '' ),
+			// Security Settings
+			'ig_es_blocked_domains' => get_option( 'ig_es_blocked_domains', '' ),
+			'ig_es_track_ip_address' => get_option( 'ig_es_track_ip_address', 'yes' ),
+			'ig_es_enable_known_attackers_domains' => get_option( 'ig_es_enable_known_attackers_domains', 'yes' ),
+			'ig_es_enable_disposable_domains' => get_option( 'ig_es_enable_disposable_domains', 'yes' ),
+			'ig_es_enable_captcha' => get_option( 'ig_es_enable_captcha', 'no' ),
+			// access control settings
+			'ig_es_user_roles' => get_option( 'ig_es_user_roles', array() ),
+			// API settings
+			'ig_es_allow_api' => get_option( 'ig_es_allow_api', 'no' ),
+			// cron settings
+			'ig_es_disable_wp_cron' => get_option( 'ig_es_disable_wp_cron', 'no' ),
+			'ig_es_cronurl' => get_option( 'ig_es_cronurl', '' ),
+			'ig_es_cron_last_hit' => self::format_cron_last_hit( get_option( 'ig_es_cron_last_hit', array() ) ),
+			// email sending settings
+			'ig_es_cron_interval' => get_option( 'ig_es_cron_interval', ''),
+			'ig_es_hourly_email_send_limit' => get_option( 'ig_es_hourly_email_send_limit', ''),
+			'ig_es_max_email_send_at_once' => get_option( 'ig_es_max_email_send_at_once', ''),
+			'ig_es_mailer_settings' => get_option( 'ig_es_mailer_settings', array() ),
+			'ig_es_ess_email' => $ess_email,
+			'ig_es_ess_branding_enabled' => get_option( 'ig_es_ess_branding_enabled', 'no' ),
+			'ig_es_email_auth_headers' => self::format_email_auth_headers( get_option( 'ig_es_email_auth_headers', array() ) ),
+			// Gmail OAuth validation
+			'ig_es_gmail_valid_credentials' => self::get_gmail_valid_credentials(),
+			'ig_es_gmail_valid_tokens' => self::get_gmail_valid_tokens(),
+			// Webhook URLs for email services
+			'ig_es_webhook_urls' => $webhook_urls,
+			// Cron info
+			'ig_es_cron_info' => self::get_cron_info(),
+		);			
+			// Get pages data as well
+			$pages_result = self::get_pages();
+			$pages_data = $pages_result['success'] ? $pages_result['data'] : array();
+
+			$users_data = self::get_users();
+			$users_data = $users_data['success'] ? $users_data['data'] : array();
+
+			return array(
+				'success' => true,
+				'data' => $settings_data,
+				'pages' => $pages_data,
+				'users' => $users_data,
+				'message' => __( 'Settings loaded successfully.', 'email-subscribers' ),
+			);
+		}
+
 		public static function save_settings( $options = array() ) {
 			$options = apply_filters( 'ig_es_before_save_settings', $options );
 		
@@ -43,6 +807,11 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 			self::sanitize_and_save_options( $options );
 		
 			do_action( 'ig_es_after_settings_save', $options );
+
+			return array(
+				'success' => true,
+				'message' => __( 'Settings saved successfully.', 'email-subscribers' ),
+			);
 		}
 		
 		private static function set_default_settings( $options ) {
@@ -55,19 +824,18 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 				'ig_es_notify_admin'                => 'no',
 				'ig_es_enable_cron_admin_email'     => 'no',
 				'ig_es_delete_plugin_data'          => 'no',
-				'ig_es_run_cron_on'                 => 'monday',
-				'ig_es_run_cron_time'               => '4pm',
-				'ig_es_allow_api'                   => 'no',
-				'ig_es_powered_by'                  => 'no',
-			);
-		
+			);			
 			foreach ( $defaults as $key => $default ) {
-				$options[ $key ] = isset( $options[ $key ] ) ? $options[ $key ] : $default;
+				// Only set default if the option is not already set in the options array
+				// AND the option doesn't exist in the database yet (to preserve existing values)
+				if ( ! isset( $options[ $key ] ) && false === get_option( $key, false ) ) {
+					$options[ $key ] = $default;
+				}
 			}
 		
 			return $options;
 		}
-		
+
 		private static function set_trial_based_settings( $options ) {
 			if ( ! ES()->is_premium() && ! ES()->trial->is_trial_valid() ) {
 				$options['ig_es_allow_tracking'] = isset( $options['ig_es_allow_tracking'] ) ? $options['ig_es_allow_tracking'] : 'no';
@@ -80,7 +848,6 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 				'ig_es_from_name',
 				'ig_es_admin_emails',
 				'ig_es_email_type',
-				'ig_es_optin_type',
 				'ig_es_post_image_size',
 				'ig_es_track_email_opens',
 				'ig_es_enable_ajax_form_submission',
@@ -96,7 +863,6 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 				'ig_es_disable_wp_cron',
 				'ig_es_allow_api',
 			);
-		
 			$textarea_fields = array(
 				'ig_es_unsubscribe_link_content',
 				'ig_es_subscription_success_message',
@@ -525,26 +1291,26 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 		}
 
 		/**
-	 * Get HTML for workflow migration
-	 *
-	 * @return string
-	 */
+		 * Get HTML for workflow migration
+		 *
+		 * @return string
+		 */
 		public static function get_workflow_migration_notice_html() {
 			ob_start();
 			$workflow_url = admin_url( 'admin.php?page=es_workflows' );
 			?>
-		<style>
-			#tabs-signup_confirmation .es-settings-submit-btn {
-				display: none;
-			}
-		</style>
-		<p class="pb-2 text-sm font-normal text-gray-500">
-			<?php echo esc_html__( 'Now you can control all your notifications through workflows.', 'email-subscribers' ); ?>
-			<?php
-				/* translators: 1. Anchor start tag 2. Anchor end tag */
-				echo sprintf( esc_html__( 'Click %1$shere%2$s to go to workflows.', 'email-subscribers' ), '<a href="' . esc_url( $workflow_url ) . '" class="text-indigo-600" target="_blank">', '</a>' );
-			?>
-		</p>
+			<style>
+				#tabs-signup_confirmation .es-settings-submit-btn {
+					display: none;
+				}
+			</style>
+			<p class="pb-2 text-sm font-normal text-gray-500">
+				<?php echo esc_html__( 'Now you can control all your notifications through workflows.', 'email-subscribers' ); ?>
+				<?php
+					/* translators: 1. Anchor start tag 2. Anchor end tag */
+					echo sprintf( esc_html__( 'Click %1$shere%2$s to go to workflows.', 'email-subscribers' ), '<a href="' . esc_url( $workflow_url ) . '" class="text-indigo-600" target="_blank">', '</a>' );
+				?>
+			</p>
 			<?php
 			$html = ob_get_clean();
 			return $html;
@@ -557,13 +1323,13 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 			return $html;
 		}
 
-	/**
-	 * Prepare Mailers Setting
-	 *
-	 * @return string
-	 *
-	 * @modify 4.3.12
-	 */
+		/**
+		 * Prepare Mailers Setting
+		 *
+		 * @return string
+		 *
+		 * @modify 4.3.12
+		 */
 		public static function mailers_html() {
 			$html                     = '';
 			$es_email_type            = get_option( 'ig_es_email_type', '' );

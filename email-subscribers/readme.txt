@@ -1,12 +1,12 @@
-===  Email Subscribers & Newsletters – Powerful Email Marketing, Post Notification & Newsletter Plugin for WordPress & WooCommerce ===
+===  Email Subscribers & Newsletters - Email Marketing, Post Notifications & Newsletter Plugin for WordPress ===
 Contributors: icegram, niravmehta, sandhyam, storeapps, Mansi Shah, kishanranawat, shubhanshukandani
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BMFRMVXQ87JWA&source=url
 Author URI: https://www.icegram.com/
-Tags: email subscribers, newsletter, subscription form, post notifications, woocommerce email, email autoresponder
+Tags: email marketing, newsletter, email subscribers, email automation, post notifications, WooCommerce emails, lead generation, email sending plugin
 Requires at least: 3.9
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 5.9.4
+Stable tag: 5.9.15
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -15,27 +15,47 @@ Add subscription forms on the website and send newsletters & automatically send 
 
 == Description ==
 
-**Icegram Express** makes email marketing simple and effective.
-This powerful WordPress email marketing plugin lets you grow your list with subscription forms, send beautiful newsletters, and automate follow-ups without any coding required.
-Perfect for bloggers, small businesses, and online stores, it's the all-in-one email marketing solution to engage subscribers, boost conversions, and build lasting relationships right inside WordPress.
+**Icegram Express** makes email marketing simple, effective, and fully WordPress native.
+This powerful email marketing plugin helps you grow your subscriber list using high converting opt-in forms, send beautiful newsletters, and automate follow-ups all without writing a single line of code.
+
+Built for bloggers, small businesses, and online stores, Icegram Express is an all-in-one solution to engage subscribers, increase conversions, and build long-term relationships directly from your WordPress dashboard.
+
+Grow your impact. Stop worrying about email 📬
 
 == Overview ==
 
-###Icegram Express is the most popular all-in-one email marketing plugin.
+**Collect leads, build your email list, send newsletters, post notifications, and automated emails all from your WordPress dashboard.**
 
-Grow subscribers, send newsletters, automate follow-ups, and recover abandoned carts inside WordPress. Design beautiful emails with a drag and drop editor, create unlimited opt-in forms, and set up smart automations.
+[Icegram Express](https://www.icegram.com/express/?utm_source=ig_express_wp_readme&utm_medium=mailpoet_anchor_text&utm_campaign=ig_express_wp_readme_traffic) is a powerful yet beginner-friendly WordPress email marketing and newsletter plugin designed for bloggers, businesses, and WooCommerce stores. It helps you grow subscribers, engage audiences, and convert visitors into loyal customers without recurring SaaS costs.
 
-Trusted by over 100,000+ users for simple, reliable, and powerful email marketing.
+With Icegram Express, you can:
 
-- Unlimited subscribers and email campaigns
-- Opt-in forms with GDPR compliance and spam protection
+- Create and embed **high-converting subscription forms**
+- **Automatically send new post notification emails**
+- Send **newsletters and broadcast emails**
 - Automation for welcome emails, follow-ups, Birthday offers, and abandoned cart recovery
-- Open and click tracking with reports
-- Works with all SMTP plugins and email sending services
-- One click unsubscribe and privacy compliance
+- Segment lists and target the right subscribers
+- **Easy drag and drop editor to design forms and email campaigns**
 - REST API and tools for developers
 
-**Icegram Express** helps you grow your list, send emails, and connect with your audience inside WordPress.
+It works seamlessly with popular themes, plugins, and **SMTP / email service providers**, making setup easy and reliable.
+
+**Trusted by 100000+ users**, Icegram Express is a pocket-friendly alternative to expensive tools like Mailchimp, without compromising on features or control.
+
+**Icegram Express can be accessed in the following languages:**
+
+- Czech
+- Dutch
+- English (UK)
+- English (US) 
+- German
+- Hungarian
+- Polish
+- Russian
+- Spanish (Mexico)
+- Spanish (Spain)
+- And Spanish (Venezuela)  
+
 
 ### 💌 Why others love Icegram Express?
 
@@ -341,13 +361,88 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.4 =
+= 5.9.15 =
 
-* New: Simplified onboarding so you can focus on what matters most
-* Improvements: Prevented unnecessary cron job scheduling when WordPress cron is disabled in the plugin settings
-* Update: Resolved "Toolset Forms" plugin conflict when sending campaigns with attachments
+* Improvement: Improved performance of the Audience page for faster loading.
+* Improvement: Improved performance of the Campaign page for faster loading.
+* Fix: Double opt-in confirmation emails were not being sent.
+* Fix: Gmail sender API key authorization issues.
+* Fix: SMTP email sender configuration issues.
+* Fix: List loading issue when adding or editing subscribers.
+* Fix: Redirection URL issue when clicking the new post published link.
+* Fix: Statistics on the Reports page.
 
 == Changelog ==
+
+**5.9.15 (28.01.2026)**
+
+* Improvement: Improved performance of the Audience page for faster loading.
+* Improvement: Improved performance of the Campaign page for faster loading.
+* Fix: Double opt-in confirmation emails were not being sent.
+* Fix: Gmail sender API key authorization issues.
+* Fix: SMTP email sender configuration issues.
+* Fix: List loading issue when adding or editing subscribers.
+* Fix: Redirection URL issue when clicking the new post published link.
+* Fix: Statistics on the Reports page.
+
+**5.9.14 (08.01.2026)**
+
+* Improvement: Enhanced performance on the Audience page for faster loading.
+* Improvement: Reports performance optimizations
+* Fix: "Send Now" issue in the Reports alert section.
+* Fix: Incorrect reports statistics, and growth value calculations.
+* Fix: Last Viewed column issue in the Activity Info table. 
+
+**5.9.13 (31.12.2025)**
+
+* New: Revamped settings page UI
+* Fix: Fixed incorrect count showing in "Sent" column for campaign reports
+
+**5.9.12 (18.12.2025)**
+
+* New: Revamped campaign reports interface for clearer insights
+* Update: Tested up to WordPress 6.9
+* Fix: Fixed default content loading while editing a campaign in some cases
+* Fix: Fixed the incorrect contact count shown while filtering contacts using advanced filters
+
+**5.9.11 (13.11.2025)**
+
+* Fix: Fixed missing auth and nonce check vulnerability in background task processing library [Thanks to WordFence team]
+* Fix: Fixed PHP Object injection vulnerability in forms [Thanks to Patchstack team]
+
+**5.9.10 (11.11.2025)**
+
+* New: Revamped campaign edit interface for a smoother user experience  
+* Improvement: Enhanced audience dashboard UI for better usability  
+* Fix: Fixed broken links on the main dashboard page
+
+**5.9.9 (04.11.2025)**
+
+* New: Added a "Status" filter to easily view contacts by Subscribed, Unconfirmed, or Unsubscribed status.  
+* Fix: Fixed an issue where the full contacts list was not visible when editing a contact.
+
+**5.9.8 (23.10.2025)**
+
+* Fix: Resolved an issue with campaign sorting
+
+**5.9.7 (17.10.2025)**
+
+* Fix: HTML tags showing instead of subscription form
+
+**5.9.6 (16.10.2025)**
+
+* New: Revamped Campaign Dashboard UI for a more modern and intuitive experience
+* Improvements: Audience dashboard now loads faster
+* Fix: Pagination issue fixed on the Audience page
+* Fix: Emails were not sent correctly to manually added contacts
+* Fix: Fixed bug where clicking the "Subscribe" button unintentionally created a new form
+* Fix: Fixed GDPR and Captcha field configuration problems
+* Fix: Subscribers now added only to selected lists when subscribing
+
+**5.9.5 (07.10.2025)**
+
+* New: Revamped Audience Dashboard UI for clearer insights
+* Fix: Dashboard not loading due to "MonsterInsights – Google Analytics" plugin conflict
 
 **5.9.4 (23.09.2025)**
 

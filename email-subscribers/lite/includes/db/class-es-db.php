@@ -624,7 +624,7 @@ abstract class ES_DB {
 		if ( ! empty( $where ) ) {
 			$query .= " WHERE $where";
 		}
-
+		
 		if ( true === $use_cache ) {
 
 			$cache_key = $this->generate_cache_key( $query );
@@ -663,35 +663,46 @@ abstract class ES_DB {
 			return false;
 		}
 
-		// Get the first value from an array to check data structure
-		$first_value = array_slice( $values, 0, 1 );
+	// Initialise column format array
+	$column_formats = $this->get_columns();
 
-		$data = array_shift( $first_value );
+	// Remove primary key as we don't require while inserting data
+	unset( $column_formats[ $this->primary_key ] );
 
-		// Set default values
-		$data = wp_parse_args( $data, $this->get_column_defaults() );
+	// Get proper default values for columns
+	$column_defaults = $this->get_column_defaults();
 
-		// Initialise column format array
-		$column_formats = $this->get_columns();
-
-		// Remove primary key as we don't require while inserting data
-		unset( $column_formats[ $this->primary_key ] );
-
+	// Normalize all records and collect all possible fields
+	$all_fields = array();
+	$normalized_values = array();
+	
+	foreach ( $values as $single_value ) {
 		// Force fields to lower case
-		$data = array_change_key_case( $data );
+		$single_value = array_change_key_case( $single_value );
+		// White list columns - only keep valid database columns
+		$single_value = array_intersect_key( $single_value, $column_formats );
+		$normalized_values[] = $single_value;
+		$all_fields = array_merge( $all_fields, array_keys( $single_value ) );
+	}
+	$all_fields = array_unique( $all_fields );
+	
+	// If no fields found, nothing to insert
+	if ( empty( $all_fields ) ) {
+		return false;
+	}
+	
+	// Update column_formats to include only the fields present in the data
+	$column_formats = array_intersect_key( $column_formats, array_flip( $all_fields ) );
+	
+	// Create default values for all fields using proper column defaults
+	$default_values = array();
+	foreach ( $all_fields as $field ) {
+		$default_values[ $field ] = isset( $column_defaults[ $field ] ) ? $column_defaults[ $field ] : null;
+	}
 
-		// White list columns
-		$data = array_intersect_key( $data, $column_formats );
-
-		// Reorder $column_formats to match the order of columns given in $data
-		$data = wp_parse_args( $data, $this->get_column_defaults() );
-
-		$data_keys = array_keys( $data );
-
-		$fields = array_keys( array_merge( array_flip( $data_keys ), $column_formats ) );
-
-		// Convert Batches into smaller chunk
-		$batches = array_chunk( $values, $length );
+	// Get field names for SQL query
+	$fields = array_keys( $column_formats );		// Convert Batches into smaller chunk
+		$batches = array_chunk( $normalized_values, $length );
 
 		$error_flag = false;
 
@@ -707,8 +718,11 @@ abstract class ES_DB {
 			foreach ( $batch as $value ) {
 
 				$formats = array();
+				// Merge default NULL values with actual record values
+				$value_with_defaults = array_merge( $default_values, $value );
+				
 				foreach ( $column_formats as $column => $format ) {
-					$final_values[] = isset( $value[ $column ] ) ? $value[ $column ] : $data[ $column ]; // set default if we don't have
+					$final_values[] = isset( $value_with_defaults[ $column ] ) ? $value_with_defaults[ $column ] : null;
 					$formats[]      = $format;
 				}
 

@@ -127,7 +127,7 @@ class ES_Handle_Sync_Wp_User {
 
 		if ( ! empty( $ig_es_sync_wp_users ) ) {
 
-			$ig_es_sync_wp_users = maybe_unserialize( $ig_es_sync_wp_users );
+			$ig_es_sync_wp_users = ig_es_maybe_unserialize( $ig_es_sync_wp_users );
 
 			$ig_es_registered = ( ! empty( $ig_es_sync_wp_users['es_registered'] ) ) ? $ig_es_sync_wp_users['es_registered'] : 'NO';
 
@@ -172,7 +172,7 @@ class ES_Handle_Sync_Wp_User {
 
 		if ( ! empty( $ig_es_sync_wp_users ) ) {
 
-			$ig_es_sync_wp_users = maybe_unserialize( $ig_es_sync_wp_users );
+			$ig_es_sync_wp_users = ig_es_maybe_unserialize( $ig_es_sync_wp_users );
 
 			$ig_es_registered = ( ! empty( $ig_es_sync_wp_users['es_registered'] ) ) ? $ig_es_sync_wp_users['es_registered'] : 'NO';
 

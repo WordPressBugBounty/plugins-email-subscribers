@@ -157,7 +157,7 @@ if ( ! class_exists( 'ES_Workflows_Controller' ) ) {
 				$run_workflow = ig_es_get_request_data( 'run_workflow', 'no' );
 				if ( 'no' === $run_workflow ) {
 					$existing_meta = ES()->workflows_db->get_column( 'meta', $workflow_id );
-					$existing_meta = maybe_unserialize( $existing_meta );
+					$existing_meta = ig_es_maybe_unserialize( $existing_meta );
 					if ( ! empty( $existing_meta['last_ran_at'] ) ) {
 						// Don't update the workflow last run time unless admin check the run workflow option.
 						$workflow_meta['last_ran_at'] = $existing_meta['last_ran_at'];

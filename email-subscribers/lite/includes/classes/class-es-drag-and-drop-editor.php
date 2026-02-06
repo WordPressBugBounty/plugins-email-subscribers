@@ -42,7 +42,7 @@ class ES_Drag_And_Drop_Editor {
 						$form_id = ig_es_get_request_data( 'form' );
 						if ( ! empty( $form_id ) ) {
 							$form_data          = ES()->forms_db->get( $form_id );
-							$settings_data      = maybe_unserialize( $form_data['settings'] );
+							$settings_data      = ig_es_maybe_unserialize( $form_data['settings'] );
 							$editor_type        = ! empty( $settings_data['editor_type'] ) ? $settings_data['editor_type'] : '';
 							$is_dnd_editor_page = IG_ES_DRAG_AND_DROP_EDITOR === $editor_type;
 						}

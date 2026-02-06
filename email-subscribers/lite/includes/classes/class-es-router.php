@@ -42,7 +42,7 @@ if ( ! class_exists( 'ES_Router' ) ) {
 		 */
 		public function handle_ajax_request() {
 
-			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' ); //For testing we need to comment
+			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 		
 			$can_access_audience  = ES_Common::ig_es_can_access( 'audience' );
 			$can_access_campaign  = ES_Common::ig_es_can_access( 'campaigns' );
@@ -53,36 +53,46 @@ if ( ! class_exists( 'ES_Router' ) ) {
 			if ( ! ( $can_access_audience || $can_access_campaign || $can_access_forms || $can_access_sequence || $can_access_reports || $can_access_workflows ) ) {
 				return 0;
  			}
-			$response = array();
-			$request = $_REQUEST;
-			
-			$handler       = ig_es_get_data( $request, 'handler' );
-			$handler_class = 'ES_' . str_replace( ' ', '_', ucwords( str_replace( '-', ' ', $handler ) ) ) . '_Controller';
-			
-			if ( empty( $handler ) || ! class_exists( $handler_class ) ) {
-				$response = array(
-					'message' => __( 'No request handler found.', 'email-subscribers' ),
-				);
-				wp_send_json_error( $response );
-			}
+		$response = array();
+		$request = $_REQUEST;
+		
+		$handler       = ig_es_get_data( $request, 'handler' );
+		$handler_class = 'ES_' . str_replace( ' ', '_', ucwords( str_replace( '-', ' ', $handler ) ) ) . '_Controller';
+		
+		if ( empty( $handler ) || ! class_exists( $handler_class ) ) {
+			$response = array(
+				'message' => __( 'No request handler found.', 'email-subscribers' ),
+			);
+			wp_send_json_error( $response );
+		}
 
-			$method = ig_es_get_data( $request, 'method' );
-			
-			if ( ! method_exists( $handler_class, $method ) || ! is_callable( array( $handler_class, $method ) ) ) {
+		$method = ig_es_get_data( $request, 'method' );			if ( ! method_exists( $handler_class, $method ) || ! is_callable( array( $handler_class, $method ) ) ) {
 				$response = array(
 					'message' => __( 'No request method found.', 'email-subscribers' ),
 				);
 				wp_send_json_error( $response );
 			}
 			
-			$data   = ig_es_get_request_data( 'data', array(), false );
-			if ( isset( $_FILES['async-upload']['tmp_name'] ) ) {
-				$data['file'] =  sanitize_text_field( $_FILES['async-upload']['tmp_name'] );
+		$data   = ig_es_get_request_data( 'data', array(), false );
+		
+		// Decode JSON data if it's a string
+		if ( is_string( $data ) && ! empty( $data ) ) {
+			$decoded = json_decode( $data, true );
+			$data = is_array( $decoded ) ? $decoded : array();
+		}
+		
+		if ( isset( $_FILES['async-upload']['tmp_name'] ) ) {
+			// Ensure $data is an array when handling file uploads
+			if ( ! is_array( $data ) ) {
+				$data = array();
 			}
-			
-			$result = call_user_func( array( $handler_class, $method ), $data );
+			$data['file'] =  sanitize_text_field( $_FILES['async-upload']['tmp_name'] );
+		}			$result = call_user_func( array( $handler_class, $method ), $data );
 
-			if ( $result ) {
+			if ( is_array( $result ) && isset( $result['error'] ) ) {
+				$response['success'] = false;
+				$response['message'] = $result['error'];
+			} elseif ( $result !== false && $result !== null ) {
 				$response['success'] = true;
 				$response['data']    = $result;
 			} else {

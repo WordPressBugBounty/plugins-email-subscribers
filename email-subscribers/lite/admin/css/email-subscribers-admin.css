@@ -3396,7 +3396,37 @@ body.icegram-express_page_es_forms #wpcontent {
 	overflow-y: hidden;
 }
 
+@keyframes fadeIn {
+    0% {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes fadeOut {
+    0% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    100% {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+  }
+  
+  .toplevel_page_es_onboarding .es-animate-fadeIn {
+    animation: fadeIn 1s ease-in-out;
+  }
+  
+  .toplevel_page_es_onboarding .es-animate-fadeOut {
+    animation: fadeOut 1s ease-in-out;
+  }
 
-ul#adminmenu li#toplevel_page_es_dashboard ul li:nth-child(6){
-   display:none;
-}
+ .toplevel_page_es_dashboard .ig_es_offer_container {
+	background: #f6f5f8;
+	margin: 0;
+ } 

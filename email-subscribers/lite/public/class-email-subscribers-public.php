@@ -320,14 +320,14 @@ class Email_Subscribers_Public {
 						if ( ! empty( $message_id ) ) {
 							$notification = ES_DB_Mailing_Queue::get_mailing_queue_by_id( $message_id );
 							if ( ! empty( $notification ) ) {
-								$notificaion_meta = maybe_unserialize( $notification['meta'] );
+								$notificaion_meta = ig_es_maybe_unserialize( $notification['meta'] );
 								$survey           = ! empty( $notificaion_meta['survey'] ) ? $notificaion_meta['survey'] : array();
 								$message          = $survey[$survey_number]['message'];
 							}
 						} elseif ( ! empty( $campaign_id ) ) {
 							$campaign = ES()->campaigns_db->get( $campaign_id );
 							if ( ! empty( $campaign ) ) {
-								$campaign_meta    = maybe_unserialize( $campaign['meta'] );
+								$campaign_meta    = ig_es_maybe_unserialize( $campaign['meta'] );
 								$survey           = ! empty( $campaign_meta['survey'] ) ? $campaign_meta['survey'] : array();
 								$message          = $survey[$survey_number]['message'];
 							}

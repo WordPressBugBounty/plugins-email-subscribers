@@ -68,6 +68,24 @@ class ES_Common {
 	}
 
 	/**
+	 * Decode arguments from JSON string or array to array
+	 *
+	 * @param mixed $args Arguments that could be JSON string or array
+	 * @return array Decoded array
+	 *
+	 * @since 4.0.0
+	 */
+	public static function decode_args( $args ) {
+		if ( is_string( $args ) ) {
+			$args = json_decode( $args, true );
+		}
+		if ( ! is_array( $args ) ) {
+			$args = array();
+		}
+		return $args;
+	}
+
+	/**
 	 * Process the email template and get variable fallbacks
 	 *
 	 * @param $template
@@ -1124,7 +1142,7 @@ class ES_Common {
 	 */
 	public static function convert_categories_string_to_array( $categories_str = '', $keep_ids = true ) {
 		$categories = array();
-		if ( strlen( $categories_str ) > 0 ) {
+		if ( ! empty( $categories_str ) && strlen( $categories_str ) > 0 ) {
 			$categories_str = trim( trim( $categories_str ), '##' );
 			$categories     = explode( '##', $categories_str );
 			$categories     = str_replace( '{a}', '', $categories );
@@ -1321,7 +1339,7 @@ class ES_Common {
 
 		$es_3_widget_option_data = get_option( $es_3_widget_option, '' );
 		if ( ! empty( $es_3_widget_option_data ) ) {
-			$es_3_widget_option_data = maybe_unserialize( $es_3_widget_option_data );
+			$es_3_widget_option_data = ig_es_maybe_unserialize( $es_3_widget_option_data );
 
 			if ( is_array( $es_3_widget_option_data ) ) {
 				foreach ( $es_3_widget_option_data as $key => $data ) {
@@ -1369,7 +1387,7 @@ class ES_Common {
 
 		$es_4_widget_option_data = get_option( $es_4_widget_option, '' );
 		if ( ! empty( $es_4_widget_option_data ) ) {
-			$es_4_widget_option_data = maybe_unserialize( $es_4_widget_option_data );
+			$es_4_widget_option_data = ig_es_maybe_unserialize( $es_4_widget_option_data );
 
 			if ( is_array( $es_4_widget_option_data ) ) {
 				foreach ( $es_4_widget_option_data as $key => $data ) {
@@ -1415,7 +1433,7 @@ class ES_Common {
 		// Update sidebars_widgets options.
 		$sidebars_widgets = get_option( 'sidebars_widgets', '' );
 		if ( ! empty( $sidebars_widgets ) ) {
-			$widgets_data = maybe_unserialize( $sidebars_widgets );
+			$widgets_data = ig_es_maybe_unserialize( $sidebars_widgets );
 
 			if ( is_array( $widgets_data ) && count( $widgets_data ) > 0 ) {
 				foreach ( $widgets_data as $key => $data ) {
@@ -1992,7 +2010,7 @@ class ES_Common {
 
 			if ( ! empty( $settings ) ) {
 
-				$settings = maybe_unserialize( $settings );
+				$settings = ig_es_maybe_unserialize( $settings );
 
 				// Check if this is a WYSIWYG form (editor_type = wysiwyg)
 				if ( isset( $settings['editor_type'] ) && 'wysiwyg' === $settings['editor_type'] ) {
@@ -2838,7 +2856,7 @@ class ES_Common {
 			$month_name_value = $record['MONTHNAME(`start_at`)'];
 			$year_value 	  = $record['YEAR(`start_at`)'];
 
-			$field_key   = $year_value . gmdate( 'm', strtotime($month_name_value));
+			$field_key   = $year_value . ( ! empty( $month_name_value ) ? gmdate( 'm', strtotime( $month_name_value ) ) : '01' );
 			$field_value = $month_name_value . ' ' . $year_value;
 
 			$field_options[$field_key] = $field_value;

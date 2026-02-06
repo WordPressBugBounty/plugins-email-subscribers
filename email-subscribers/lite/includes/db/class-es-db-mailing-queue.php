@@ -123,8 +123,8 @@ class ES_DB_Mailing_Queue {
 
 		if ( ! empty( $notification ) ) {
 
-			$meta = maybe_unserialize( $notification['meta'] );
-			if ( ! empty( $meta ) ) {
+			$meta = ig_es_maybe_unserialize( $notification['meta'] );
+			if ( ! empty( $meta ) && ! empty( $meta['type'] ) ) {
 
 				$filter  = 'ig_es_refresh_' . $meta['type'] . '_content';
 				$post_id = ! empty( $meta['post_id'] ) ? $meta['post_id'] : 0;
@@ -166,7 +166,7 @@ class ES_DB_Mailing_Queue {
 	//Add batch count 
 	public static function update_batch_count( $notification = array() ) {
 		if ( ! empty( $notification ) ) {
-			$meta = maybe_unserialize( $notification['meta'] );
+			$meta = ig_es_maybe_unserialize( $notification['meta'] );
 	
 			if ( empty( $meta['batch_count'] ) ) {
 				$meta['batch_count'] = 0;
@@ -334,6 +334,48 @@ class ES_DB_Mailing_Queue {
 		);
 // phpcs:enable
 		return $result[0];
+	}
+
+	/**
+	 * Count notifications with optional filters.
+	 *
+	 * Supported args:
+	 * - campaign_id: int
+	 * - statuses: array of status strings
+	 *
+	 * @since 5.0.0
+	 * @param array $args
+	 * @return int
+	 */
+	public static function count_notifications( $args = array() ) {
+		global $wpbd;
+
+		$campaign_id = isset( $args['campaign_id'] ) ? absint( $args['campaign_id'] ) : 0;
+		$statuses    = isset( $args['statuses'] ) && is_array( $args['statuses'] ) ? array_filter( $args['statuses'] ) : array();
+
+		$where_clauses = array();
+		$params        = array();
+
+		if ( $campaign_id ) {
+			$where_clauses[] = '`campaign_id` = %d';
+			$params[]        = $campaign_id;
+		}
+
+		if ( ! empty( $statuses ) ) {
+			$placeholders    = implode( ',', array_fill( 0, count( $statuses ), '%s' ) );
+			$where_clauses[] = 'status IN( ' . $placeholders . ' )';
+			$params          = array_merge( $params, $statuses );
+		}
+
+		$where = 'WHERE 1';
+		if ( ! empty( $where_clauses ) ) {
+			$where = 'WHERE ' . $wpbd->prepare( implode( ' AND ', $where_clauses ), $params );
+		}
+
+		$query = "SELECT COUNT(*) FROM `{$wpbd->prefix}ig_mailing_queue` {$where}";
+
+		$count = (int) $wpbd->get_var( $query );
+		return $count;
 	}
 
 	public static function delete( $ids ) {
@@ -684,8 +726,11 @@ class ES_DB_Mailing_Queue {
 		$fields         = ! empty( $args['fields'] ) ? $args['fields']                 : array();
 		$date_query     = ! empty( $args['date_query'] ) ? $args['date_query']         : array();
 		$campaign_types = ! empty( $args['campaign_types'] ) ? $args['campaign_types'] : array();
+		$campaign_ids   = ! empty( $args['campaign_ids'] ) ? $args['campaign_ids']     : array();
 		$statuses       = ! empty( $args['statuses'] ) ? $args['statuses'      ] : array();
 		$orders         = ! empty( $args['orders'] ) ? $args['orders']: array();
+		$group_by       = ! empty( $args['group_by'] ) ? $args['group_by']             : '';
+		$keyed_by       = ! empty( $args['keyed_by'] ) ? $args['keyed_by']             : '';
 
 		$select = 'SELECT';
 
@@ -707,6 +752,14 @@ class ES_DB_Mailing_Queue {
 			}
 			$campaign_type_where = implode( ' OR ', array_unique( $campaign_type_where ) );
 			$wheres[] = 'AND ( ' . $campaign_type_where . ' )';
+		}
+
+		if ( ! empty( $campaign_ids ) && is_array( $campaign_ids ) ) {
+			$campaign_ids = array_map( 'intval', $campaign_ids );
+			$campaign_ids_str = implode( ',', $campaign_ids );
+			// phpcs:disable WordPress.DB.PreparedSQL.InterpolatedNotPrepared -- campaign_ids are sanitized via intval
+			$wheres[] = "AND campaign_id IN ({$campaign_ids_str})";
+			// phpcs:enable WordPress.DB.PreparedSQL.InterpolatedNotPrepared
 		}
 
 		if ( ! empty( $statuses ) ) {
@@ -731,12 +784,17 @@ class ES_DB_Mailing_Queue {
 			$where = 'WHERE 1=1 ' . implode( "\n  ", array_unique( $wheres ) );
 		}
 
+		$group_by_clause = '';
+		if ( ! empty( $group_by ) ) {
+			$group_by_clause = 'GROUP BY ' . $group_by;
+		}
+
 		$order = '';
 		if ( ! empty( $orders ) ) {
 			$order = 'ORDER BY ' . implode( ', ', array_unique( $orders ) );
 		}
 
-		$query = $select . ' ' . $from . ' ' . $where . ' ' . $order;
+		$query = $select . ' ' . $from . ' ' . $where . ' ' . $group_by_clause . ' ' . $order;
 
 		if ( count( $fields ) === 1 ) {
 			$result = $wpbd->get_var(
@@ -747,6 +805,17 @@ class ES_DB_Mailing_Queue {
 				$query,
 				ARRAY_A
 			);
+			
+			// If keyed_by is specified, convert to keyed array
+			if ( ! empty( $keyed_by ) && is_array( $result ) ) {
+				$keyed_result = array();
+				foreach ( $result as $row ) {
+					if ( isset( $row[ $keyed_by ] ) ) {
+						$keyed_result[ $row[ $keyed_by ] ] = $row;
+					}
+				}
+				return $keyed_result;
+			}
 		}
 
 		return $result;

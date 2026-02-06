@@ -135,6 +135,66 @@ class ES_DB_Lists extends ES_DB {
 	}
 
 	/**
+	 * Get bulk list names for multiple campaigns
+	 * Optimized method to fetch list names for multiple campaigns in fewer queries
+	 * 
+	 * @param array $campaigns Array of campaign arrays with 'id' and 'list_ids' keys
+	 * @return array Map of campaign_id => array of list names
+	 * 
+	 * @since 5.8.0
+	 */
+	public function get_list_names_for_campaigns( $campaigns ) {
+		if ( empty( $campaigns ) || ! is_array( $campaigns ) ) {
+			return array();
+		}
+		
+		// Get all unique list IDs across all campaigns
+		$all_list_ids = array();
+		foreach ( $campaigns as $campaign ) {
+			if ( ! empty( $campaign['list_ids'] ) ) {
+				$campaign_list_ids = is_array( $campaign['list_ids'] ) 
+					? $campaign['list_ids'] 
+					: explode( ',', $campaign['list_ids'] );
+				$all_list_ids = array_merge( $all_list_ids, $campaign_list_ids );
+			}
+		}
+		
+		$all_list_ids = array_unique( array_filter( array_map( 'intval', $all_list_ids ) ) );
+		
+		if ( empty( $all_list_ids ) ) {
+			return array();
+		}
+		
+		// Fetch all list names in one query
+		$list_id_name_map = $this->get_list_id_name_map();
+		
+		// Map list names to each campaign
+		$campaign_list_names = array();
+		foreach ( $campaigns as $campaign ) {
+			$campaign_id = $campaign['id'];
+			$campaign_list_ids = array();
+			
+			if ( ! empty( $campaign['list_ids'] ) ) {
+				$campaign_list_ids = is_array( $campaign['list_ids'] ) 
+					? $campaign['list_ids'] 
+					: explode( ',', $campaign['list_ids'] );
+				$campaign_list_ids = array_filter( array_map( 'intval', $campaign_list_ids ) );
+			}
+			
+			$list_names = array();
+			foreach ( $campaign_list_ids as $list_id ) {
+				if ( isset( $list_id_name_map[ $list_id ] ) ) {
+					$list_names[] = $list_id_name_map[ $list_id ];
+				}
+			}
+			
+			$campaign_list_names[ $campaign_id ] = $list_names;
+		}
+		
+		return $campaign_list_names;
+	}
+
+	/**
 	 * Get list by name
 	 *
 	 * @param $name

@@ -391,7 +391,7 @@ if ( ! class_exists( 'ES_Admin' ) ) {
 													</style>
 													<textarea id="campaign-dnd-editor-data" name="data[meta][es_dnd_editor_data]" style="display:none;">
 														<?php
-															$dnd_editor_data = ! empty( $template_data['meta']['es_dnd_editor_data'] ) ? wp_json_encode(maybe_unserialize( $template_data['meta']['es_dnd_editor_data'] )) : '';
+															$dnd_editor_data = ! empty( $template_data['meta']['es_dnd_editor_data'] ) ? wp_json_encode(ig_es_maybe_unserialize( $template_data['meta']['es_dnd_editor_data'] )) : '';
 															echo esc_html( $dnd_editor_data );
 														?>
 													</textarea>

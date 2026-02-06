@@ -107,6 +107,15 @@ if ( ! class_exists( 'ES_Message' ) ) {
 		public $reply_to_email = '';
 
 		/**
+		 * Reply to name
+		 *
+		 * Added for compatibility with Icegram Mailer, avoids undefined property warnings.
+		 *
+		 * @since 5.0.6
+		 */
+		public $reply_to_name = '';
+
+		/**
 		 * Character set
 		 *
 		 * @since 4.6.7

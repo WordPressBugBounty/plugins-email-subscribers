@@ -457,14 +457,6 @@ class ES_Reports_Table extends ES_List_Table {
 
 		$per_page     = $this->get_items_per_page( 'reports_per_page', 20 );
 		$current_page = $this->get_pagenum();
-		$total_items  = $this->get_notifications( 0, 0, true );
-
-		$this->set_pagination_args(
-			array(
-				'total_items' => $total_items, // WE have to calculate the total number of items
-				'per_page'    => $per_page, // WE have to determine how many items to show on a page
-			)
-		);
 
 		$order_by                          = sanitize_sql_orderby( ig_es_get_request_data( 'orderby' ) );
 		$order                             = ig_es_get_request_data( 'order' );
@@ -473,6 +465,25 @@ class ES_Reports_Table extends ES_List_Table {
 		$filter_reports_by_campaign_status = ig_es_get_request_data( 'filter_reports_by_status' );
 		$filter_reports_by_campaign_type   = ig_es_get_request_data( 'filter_reports_by_campaign_type' );
 		$filter_reports_by_month_year	   = ig_es_get_request_data( 'filter_reports_by_date' );
+
+		// Get total count
+		$count_args = array(
+			'do_count_only'                      => true,
+			'campaign_id'                        => $campaign_id,
+			'search'                             => $search,
+			'filter_reports_by_campaign_status'  => $filter_reports_by_campaign_status,
+			'filter_reports_by_campaign_type'    => $filter_reports_by_campaign_type,
+			'filter_reports_by_month_year'       => $filter_reports_by_month_year,
+		);
+		
+		$total_items = ES_Reports_Controller::get_notifications( $count_args );
+
+		$this->set_pagination_args(
+			array(
+				'total_items' => $total_items,
+				'per_page'    => $per_page,
+			)
+		);
 
 		$args = array(
 			'per_page'                           => $per_page,

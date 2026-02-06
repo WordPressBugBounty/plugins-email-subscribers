@@ -3,7 +3,7 @@ const adminData = (window as any).icegramExpressAdminData;
 // Image assets
 export const sidebarNav = adminData.baseUrl + "/images/sidebar-nav.png";
 export const headerBg = adminData.baseUrl + "/images/header-bg.png";
-export const videoThumbnail = adminData.baseUrl + "/images/video-thumbnail.png";
+export const videoThumbnail = adminData.baseUrl + "/images/video-thumbnail.jpg";
 export const emailPreview = adminData.baseUrl + "/images/email-preview.png";
 export const postIcon = adminData.baseUrl + "/images/post-icon.png";
 export const dropdownIcon = adminData.baseUrl + "/images/dropdown-icon.png";
@@ -22,13 +22,12 @@ export const freeEmailIcon = adminData.baseUrl + "/images/free-email-icon.svg";
 export const settingsIcon = adminData.baseUrl + "/images/settings-icon.svg";
 export const workflowsIcon = adminData.baseUrl + "/images/workflows-icon.svg";
 
+
 // Form-related icons
 export const mailCheckIcon = adminData.baseUrl + "/images/mail-check-icon.svg";
 export const contactIcon = adminData.baseUrl + "/images/contact-icon.svg";
 export const mailOpenIcon = adminData.baseUrl + "/images/mail-open-icon.svg";
 export const filePenIcon = adminData.baseUrl + "/images/file-pen-icon.svg";
-export const chevronRightIcon = adminData.baseUrl + "/images/chevron-right-icon.svg";
-export const chevronDownIcon = adminData.baseUrl + "/images/chevron-down-icon.svg";
 export const emptyFormsIllustration = adminData.baseUrl + "/images/empty-forms-illustration.svg";
 export const plusIcon = adminData.baseUrl + "/images/plus-icon.svg";
 export const importIcon = adminData.baseUrl + "/images/import-icon.svg";
@@ -61,72 +60,135 @@ export const blogBg1 = adminData.baseUrl + "/images/blog-bg-1.png";
 export const blogBg2 = adminData.baseUrl + "/images/blog-bg-2.png";
 export const tutorialVideoOverlay = adminData.baseUrl + "/images/tutorial-video-overlay.png";
 
-// Figma-extracted icons
-export const chevronDownFigma = adminData.baseUrl + "/images/chevron-down-figma.svg";
-export const plusIconFigma = adminData.baseUrl + "/images/plus-icon-figma.svg";
-export const copyIconFigma = adminData.baseUrl + "/images/copy-icon-figma.svg";
-export const editIconFigma = adminData.baseUrl + "/images/edit-icon-figma.svg";
-export const deleteIconFigma = adminData.baseUrl + "/images/delete-icon-figma.svg";
-export const fileStackIconFigma = adminData.baseUrl + "/images/file-stack-icon-figma.svg";
-export const chevronLeftFigma = adminData.baseUrl + "/images/chevron-left-figma.svg";
-export const chevronRightFigma = adminData.baseUrl + "/images/chevron-right-figma.svg";
-export const ellipsisIconFigma = adminData.baseUrl + "/images/ellipsis-icon-figma.svg";
-export const playIconWhite = adminData.baseUrl + "/images/play-icon-white.svg";
+// Additional Figma icons for AudienceDashboard
+export const warningIcon = adminData.baseUrl + "/images/warning-icon.svg";
+export const chevronDownIcon = adminData.baseUrl + "/images/chevron-down-icon.svg";
+export const chevronLeftIcon = adminData.baseUrl + "/images/chevron-left-icon.svg";
+export const chevronRightIcon = adminData.baseUrl + "/images/chevron-right-icon.svg";
+export const filePlusIcon = adminData.baseUrl + "/images/file-plus-icon.svg";
+export const lightbulbIcon = adminData.baseUrl + "/images/lightbulb-icon.svg";
+export const arrowUpIcon = adminData.baseUrl + "/images/arrow-up-icon.svg";
+export const arrowDownIcon = adminData.baseUrl + "/images/arrow-down-icon.svg";
+export const circlePlusIcon = adminData.baseUrl + "/images/circle-plus-icon.svg";
+export const ellipsisIcon = adminData.baseUrl + "/images/ellipsis-icon.svg";
+export const indiaFlagIcon = adminData.baseUrl + "/images/india-flag.svg";
+export const usaFlagIcon = adminData.baseUrl + "/images/usa-flag.svg";
+export const russiaFlagIcon = adminData.baseUrl + "/images/russia-flag.svg";
+export const brazilFlagIcon = adminData.baseUrl + "/images/brazil-flag.svg";
+export const canadaFlagIcon = adminData.baseUrl + "/images/canada-flag.svg";
+export const radialChartBg = adminData.baseUrl + "/images/radial-chart-bg.svg";
+export const radialChartFill = adminData.baseUrl + "/images/radial-chart-fill.svg";
 
-// Creating form section icons
-export const mailCheckIconFigma = adminData.baseUrl + "/images/mail-check-icon-figma.svg";
-export const contactIconFigma = adminData.baseUrl + "/images/contact-icon-figma.svg";
-export const mailOpenIconFigma = adminData.baseUrl + "/images/mail-open-icon-figma.svg";
-export const chevronRightIconFigma = adminData.baseUrl + "/images/chevron-right-icon-figma.svg";
+// Additional icons for ImportContact
+export const arrowLeftIcon = adminData.baseUrl + "/images/arrow-left-icon.svg";
+export const uploadCloudIcon = adminData.baseUrl + "/images/upload-cloud-icon.svg";
+export const addUserIcon = adminData.baseUrl + "/images/add-user-icon.svg";
+export const mailchimpIcon = adminData.baseUrl + "/images/mailchimp-icon.svg";
+export const wordpressIcon = adminData.baseUrl + "/images/wordpress-icon.svg";
+export const woocommerceIcon = adminData.baseUrl + "/images/woocommerce-icon.svg";
+export const videoPlayIcon = adminData.baseUrl + "/images/video-play-icon.svg";
+export const checkCircleIcon = adminData.baseUrl + "/images/check-circle-icon.svg";
 
-// Video tutorial card assets
-export const videoTutorialBg = adminData.baseUrl + "/images/video-tutorial-bg.png";
-export const videoTutorialOverlay = adminData.baseUrl + "/images/video-tutorial-overlay.jpg";
-export const playButtonIcon = adminData.baseUrl + "/images/play-button-icon.svg";
+// Additional assets for UploadFile page
+export const uploadIcon = adminData.baseUrl + "/images/upload-icon.svg";
+export const arrowLeftIconNew = adminData.baseUrl + "/images/arrow-left-icon.svg";
+export const checkWhiteIcon = adminData.baseUrl + "/images/check-white-icon.svg";
+export const chevronRightGray = adminData.baseUrl + "/images/chevron-right-gray.svg";
+export const sidebarBg = adminData.baseUrl + "/images/sidebar-bg.png";
+export const headerStripe = adminData.baseUrl + "/images/header-stripe.png";
+export const fileSpreadsheetIcon = adminData.baseUrl + "/images/file-spreadsheet-icon.svg";
+export const circleXIcon = adminData.baseUrl + "/images/circle-x-icon.svg";
+export const trashIcon = adminData.baseUrl + "/images/trash-icon.svg";
+export const circleAlertIcon = adminData.baseUrl + "/images/circle-alert-icon.svg";
+export const arrowRightIcon = adminData.baseUrl + "/images/arrow-right-icon.svg";
 
-// Forms tutorial card assets (Figma extracted)
-export const formsTutorialBg = adminData.baseUrl + "/images/forms-tutorial-bg.png";
-export const formsTutorialOverlay = adminData.baseUrl + "/images/forms-tutorial-overlay.png";
-export const playIconWhiteFigma = adminData.baseUrl + "/images/play-icon-white-figma.svg";
+// New Figma mapping icons
+export const chevronDownIconNew = adminData.baseUrl + "/images/chevron-down-icon.svg";
+export const chevronLeftIconNew = adminData.baseUrl + "/images/chevron-left-icon.svg";
+export const chevronRightIconNew = adminData.baseUrl + "/images/chevron-right-icon.svg";
+export const ellipsisIconNew = adminData.baseUrl + "/images/ellipsis-icon.svg";
+export const chevronDownFieldIcon = adminData.baseUrl + "/images/chevron-down-field.svg";
 
-// Campaign table status icons
-export const activeStatusIcon = adminData.baseUrl + "/images/active-status-icon.svg";
-export const draftStatusIcon = adminData.baseUrl + "/images/draft-status-icon.svg";
-export const inactiveStatusIcon = adminData.baseUrl + "/images/inactive-status-icon.svg";
-export const scheduledStatusIcon = adminData.baseUrl + "/images/scheduled-status-icon.svg";
-export const sendingStatusIcon = adminData.baseUrl + "/images/sending-status-icon.svg";
-export const pausedStatusIcon = adminData.baseUrl + "/images/paused-status-icon.svg";
-export const sentStatusIcon = adminData.baseUrl + "/images/sent-status-icon.svg";
-export const tableChevronRight = adminData.baseUrl + "/images/table-chevron-right.svg";
+// Modal icons
+export const circleCheckIcon = adminData.baseUrl + "/images/circle-check.svg";
+export const circleAlertIconNew = adminData.baseUrl + "/images/circle-alert.svg";
+export const circleCheckPurpleIcon = adminData.baseUrl + "/images/circle-check-purple.svg";
 
-// Chart assets (CSS-based implementations)
-// Note: Using CSS-based chart elements instead of SVG assets
+// MailChimp import page icons
+export const arrowLeftIconMailchimp = adminData.baseUrl + "/images/arrow-left-icon-new.svg";
+export const checkVectorIcon = adminData.baseUrl + "/images/check-vector-icon.svg";
+export const separatorLineIcon = adminData.baseUrl + "/images/separator-line.svg";
 
-// Forms table status icons (CSS-based implementations)
-export const formActiveStatus = adminData.baseUrl + "/images/form-active-status.svg";
-export const formInactiveStatus = adminData.baseUrl + "/images/form-inactive-status.svg";
-export const formsChevronRight = adminData.baseUrl + "/images/forms-chevron-right.svg";
+// WordPress import page icons
+export const arrowLeftWordpressIcon = adminData.baseUrl + "/images/arrow-left-wordpress.svg";
+export const checkWhiteWordpressIcon = adminData.baseUrl + "/images/check-white-wordpress.svg";
+export const chevronRightWordpressIcon = adminData.baseUrl + "/images/chevron-right-wordpress.svg";
+export const checkBlackWordpressIcon = adminData.baseUrl + "/images/check-black-wordpress.svg";
 
-// Forms table status icons (Figma assets)
-export const formsActiveStatus = adminData.baseUrl + "/images/forms-active-status.svg";
-export const formsInactiveStatus = adminData.baseUrl + "/images/forms-inactive-status.svg";
-export const formsChevronRightIcon = adminData.baseUrl + "/images/forms-chevron-right.svg";
+// New WordPress mapping step icons
+export const circleAlertIconMapping = adminData.baseUrl + "/images/circle-alert-icon.svg";
+export const arrowRightIconMapping = adminData.baseUrl + "/images/arrow-right-icon.svg";
+export const chevronDownFieldIconMapping = adminData.baseUrl + "/images/chevron-down-field-icon.svg";
+export const chevronLeftIconNewMapping = adminData.baseUrl + "/images/chevron-left-icon-new.svg";
+export const chevronRightIconNewMapping = adminData.baseUrl + "/images/chevron-right-icon-new.svg";
+export const ellipsisIconNewMapping = adminData.baseUrl + "/images/ellipsis-icon-new.svg";
 
-// Onboarding section assets
-export const onboardingVideoThumbnail = adminData.baseUrl + "/images/onboarding-video-thumbnail.png";
-export const checkIconOnboarding = adminData.baseUrl + "/images/check-icon-onboarding.svg";
-export const freeEmailIconOnboarding = adminData.baseUrl + "/images/free-email-icon-onboarding.svg";
-export const chevronDownOnboarding = adminData.baseUrl + "/images/chevron-down-onboarding.svg";
-export const chevronDownFaq = adminData.baseUrl + "/images/chevron-down-faq.svg";
+// WordPress import complete modal icon
+export const circleCheckPurpleIconNew = adminData.baseUrl + "/images/circle-check-purple-icon.svg";
 
-// Alert section assets
-export const alertIcon = "/alert-icon.svg";
+// WooCommerce import page icons
+export const arrowLeftWoocommerceIcon = adminData.baseUrl + "/images/arrow-left-woocommerce.svg";
+export const checkWhiteWoocommerceIcon = adminData.baseUrl + "/images/check-white-woocommerce.svg";
+export const chevronRightWoocommerceIcon = adminData.baseUrl + "/images/chevron-right-woocommerce.svg";
+export const chevronDownWoocommerceIcon = adminData.baseUrl + "/images/chevron-down-woocommerce.svg";
+export const checkBlackWoocommerceIcon = adminData.baseUrl + "/images/check-black-woocommerce.svg";
+export const searchIconWoocommerce = adminData.baseUrl + "/images/search-icon-woocommerce.svg";
+export const searchIconFigma = adminData.baseUrl + "/images/search-icon-figma.svg";
+export const circleCheckPurpleSuccess = adminData.baseUrl + "/images/circle-check-purple-success.svg";
 
-// Chart assets
-export const chartAreaFill = adminData.baseUrl + "/images/chart-area-fill.svg";
-export const chartStrokeLine = adminData.baseUrl + "/images/chart-stroke-line.svg";
-export const chartDot = adminData.baseUrl + "/images/chart-dot.svg";
-export const couponIcon = adminData.baseUrl + "/images/coupon-icon.svg";
-export const chevronDownPurple = adminData.baseUrl + "/images/chevron-down-purple.svg";
-export const chevronDownIconPurple = adminData.baseUrl + "/images/chevron-down-icon-purple.svg";
-export const chevronDownPurpleCustom = adminData.baseUrl + "/images/chevron-down-purple-custom.svg";
+// New Customers Table Assets
+export const newCustomersAvatar1 = adminData.baseUrl + "/images/new-customers-avatar-1.png";
+export const newCustomersAvatar2 = adminData.baseUrl + "/images/new-customers-avatar-2.png";
+export const newCustomersAvatar3 = adminData.baseUrl + "/images/new-customers-avatar-3.png";
+export const newCustomersAvatar4 = adminData.baseUrl + "/images/new-customers-avatar-4.png";
+export const newCustomersAvatar5 = adminData.baseUrl + "/images/new-customers-avatar-5.png";
+export const editIconNew = adminData.baseUrl + "/images/edit-icon-new.svg";
+export const deleteIconNew = adminData.baseUrl + "/images/delete-icon-new.svg";
+
+// AddManually page new Figma assets
+export const arrowLeftNew = adminData.baseUrl + "/images/arrow-left-new.svg";
+export const checkWhiteNew = adminData.baseUrl + "/images/check-white-new.svg";
+export const chevronRightGrayNew = adminData.baseUrl + "/images/chevron-right-gray-new.svg";
+export const xCloseNew = adminData.baseUrl + "/images/x-close-new.svg";
+export const plusPurpleNew = adminData.baseUrl + "/images/plus-purple-new.svg";
+export const plusPurpleFigma = adminData.baseUrl + "/images/plus-purple-figma.svg";
+export const checkPurpleNew = adminData.baseUrl + "/images/check-purple-new.svg";
+export const circleCheckPurpleModal = adminData.baseUrl + "/images/circle-check-purple-modal.svg";
+
+// UploadFile Figma assets
+export const fileSpreadsheetFigma = adminData.baseUrl + "/images/file-spreadsheet-icon.svg";
+export const circleXFigma = adminData.baseUrl + "/images/circle-x-close-icon.svg";
+
+// WooCommerce search icon Figma asset
+export const searchIconFigmaNew = adminData.baseUrl + "/images/search-icon-figma-new.svg";
+
+// Modal close icon Figma asset  
+export const closeIconFigma = adminData.baseUrl + "/images/x-close-new.svg";
+
+// Edit Customer Modal Figma assets
+export const editModalCloseIcon = adminData.baseUrl + "/images/close-icon.svg";
+export const editModalChevronDownIcon = adminData.baseUrl + "/images/chevron-down-icon.svg";
+
+// Add To List Modal Figma assets  
+export const removeIcon = adminData.baseUrl + "/images/remove-icon.svg";
+export const closeIconModal = adminData.baseUrl + "/images/close-icon-modal.svg";
+
+// Customer Modal assets using existing images
+// Note: customerProfile assets were intended for Figma downloads but fallback to existing avatars
+export const customerProfile1 = adminData.baseUrl + "/images/new-customers-avatar-1.png";
+export const customerProfile2 = adminData.baseUrl + "/images/new-customers-avatar-2.png";
+
+// List status dot icons
+export const listDotRed = adminData.baseUrl + "/images/list-dot-red.svg";
+export const listDotOrange = adminData.baseUrl + "/images/list-dot-orange.svg";
+export const listDotGreen = adminData.baseUrl + "/images/list-dot-green.svg";

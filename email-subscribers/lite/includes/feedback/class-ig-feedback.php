@@ -1852,7 +1852,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 
 			$feedback_option = $plugin_abbr . '_feedback_data';
 
-			$feedback_data = maybe_unserialize( get_option( $feedback_option, array() ) );
+			$feedback_data = ig_es_maybe_unserialize( get_option( $feedback_option, array() ) );
 
 			$data['created_on'] = gmdate( 'Y-m-d H:i:s' );
 

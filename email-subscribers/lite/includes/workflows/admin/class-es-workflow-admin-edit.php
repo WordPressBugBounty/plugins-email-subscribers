@@ -652,7 +652,7 @@ class ES_Workflow_Admin_Edit {
 	public static function update_campaign_data_in_workflow( $workflow_id, $workflow_data = array() ) {
 
 		if ( ! empty( $workflow_data['actions'] ) ) {
-			$workflow_actions     = maybe_unserialize( $workflow_data['actions'] );
+			$workflow_actions     = ig_es_maybe_unserialize( $workflow_data['actions'] );
 			$actions_data_updated = false;
 			if ( ! empty( $workflow_actions ) ) {
 				$parent_campaign_id           = ES()->workflows_db->get_workflow_parent_campaign_id( $workflow_id );
@@ -780,7 +780,7 @@ class ES_Workflow_Admin_Edit {
 		if ( $is_optin_email_trigger ) {
 			$workflow_has_actions = ! empty( $workflow_data['actions'] );
 			if ( $workflow_has_actions ) {
-				$workflow_actions = maybe_unserialize( $workflow_data['actions'] );
+				$workflow_actions = ig_es_maybe_unserialize( $workflow_data['actions'] );
 				foreach ( $workflow_actions as $action_index => $action ) {
 					$action_name = ! empty( $action['action_name'] ) ? $action['action_name'] : '';
 					if ( 'ig_es_send_email' === $action_name ) {

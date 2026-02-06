@@ -264,7 +264,7 @@ class ES_DB_Contacts extends ES_DB {
 	 * @since 4.3.2
 	 */
 	public function update_contact( $contact_id = 0, $data = array() ) {
-
+		
 		if ( ! empty( $contact_id ) ) {
 
 			$email = ! empty( $data['email'] ) ? sanitize_email( $data['email'] ) : '';
@@ -284,8 +284,7 @@ class ES_DB_Contacts extends ES_DB {
 					if ( strpos( $key, 'cf_') !== false ) {
 						$data_to_update[$key] = sanitize_text_field( $value );
 					}
-				}
-
+				}  
 
 				$this->update( $contact_id, $data_to_update );
 			}
@@ -371,42 +370,6 @@ class ES_DB_Contacts extends ES_DB {
 	}
 
 	/**
-	 * Get active contacts by list_id and excluding contacts from sending queue having given mailing_queue_id
-	 *
-	 * @param $list_id
-	 * @param $mailing_queue_id
-	 *
-	 * @return array|object|null
-	 *
-	 * @since 4.6.3
-	 */
-	public function get_active_contacts_by_list_and_mailing_queue_id( $list_id, $mailing_queue_id = 0 ) {
-
-		if ( empty( $list_id ) ) {
-			return array();
-		}
-
-		global $wpbd;
-
-		// Check if we have got array of list ids.
-		if ( is_array( $list_id ) ) {
-			$ids_count        = count( $list_id );
-			$ids_placeholders = array_fill( 0, $ids_count, '%d' );
-			$query_args       = $list_id;
-			$query_args[]     = $mailing_queue_id;
-			$where            = $wpbd->prepare(
-				"id IN (SELECT contact_id FROM {$wpbd->prefix}ig_lists_contacts WHERE list_id IN( " . implode( ',', $ids_placeholders ) . " ) AND status IN ('subscribed', 'confirmed')) AND id NOT IN(SELECT contact_id FROM {$wpbd->prefix}ig_sending_queue WHERE mailing_queue_id = %d )",
-				$query_args
-			);
-		} else {
-			$where = $wpbd->prepare( "id IN (SELECT contact_id FROM {$wpbd->prefix}ig_lists_contacts WHERE list_id = %d AND status IN ('subscribed', 'confirmed')) AND id NOT IN(SELECT contact_id FROM {$wpbd->prefix}ig_sending_queue WHERE mailing_queue_id = %d )", $list_id, $mailing_queue_id );
-		}
-
-		return $this->get_by_conditions( $where );
-	}
-
-
-	/**
 	 * Get contacts by ids
 	 *
 	 * @param $ids
@@ -438,6 +401,10 @@ class ES_DB_Contacts extends ES_DB {
 	 * @return string|null
 	 *
 	 * @since 4.2.4
+	 * @modified 5.7.25 Optimized query - removed DISTINCT, uses COUNT(*) for better performance
+	 * 
+	 * Note: If this query is slow, ensure the following index exists:
+	 * ALTER TABLE ig_lists_contacts ADD INDEX idx_list_status (list_id, status);
 	 */
 	public function count_active_contacts_by_list_id( $list_id = '' ) {
 
@@ -447,9 +414,9 @@ class ES_DB_Contacts extends ES_DB {
 			// phpcs:disable
 			$subscribers = $wpdb->get_var(
 				$wpdb->prepare(
-					"SELECT count(distinct(contact_id)) as total_subscribers FROM {$wpdb->prefix}ig_lists_contacts WHERE status = %s AND list_id = %d",
-					'subscribed',
-					$list_id
+					"SELECT COUNT(*) as total_subscribers FROM {$wpdb->prefix}ig_lists_contacts WHERE list_id = %d AND status = %s",
+					$list_id,
+					'subscribed'
 				)
 			);
 			// phpcs:enable
@@ -457,7 +424,7 @@ class ES_DB_Contacts extends ES_DB {
 			// phpcs:disable
 			$subscribers = $wpdb->get_var(
 				$wpdb->prepare(
-					"SELECT count(distinct(contact_id)) as total_subscribers FROM {$wpdb->prefix}ig_lists_contacts WHERE status = %s",
+					"SELECT COUNT(DISTINCT contact_id) as total_subscribers FROM {$wpdb->prefix}ig_lists_contacts WHERE status = %s",
 					'subscribed'
 				)
 			);
@@ -503,7 +470,7 @@ class ES_DB_Contacts extends ES_DB {
 	public function delete_contacts_by_ids( $contact_ids = array() ) {
 
 		$ids_str = $this->prepare_for_in_query( $contact_ids );
-
+ 
 		$where = "id IN ($ids_str)";
 
 		$delete = $this->delete_by_condition( $where );
@@ -1072,7 +1039,7 @@ class ES_DB_Contacts extends ES_DB {
 		// phpcs:enable
 		// If we have subscribers?
 		if ( $total > 0 ) {
-// phpcs:disable
+        // phpcs:disable
 			$wpdb->query(
 				"UPDATE {$wpdb->prefix}ig_contacts AS contact_data
 				LEFT JOIN {$wpdb->prefix}ig_lists_contacts AS list_data
@@ -1215,4 +1182,439 @@ class ES_DB_Contacts extends ES_DB {
 
 		return intval( $count );
 	}
+
+	public static function get_top_countries_by_days_and_list( $args = array()) { 
+			
+		global $wpdb;
+
+		if ( is_string( $args ) ) {
+			$decoded = json_decode( $args, true );
+			if ( $decoded ) {
+				$args = $decoded;
+			}
+		}
+
+		$limit_count = isset( $args['countries_count'] ) ? intval( $args['countries_count'] ) : 5;
+		$days = isset( $args['days'] ) ? intval( $args['days'] ) : 7; 
+		$list_id = isset( $args['list_id'] ) ? $args['list_id'] : 'all';
+
+		$where = "WHERE c.country_code IS NOT NULL AND c.country_code != '' AND lc.status = 'subscribed'";
+		$query_params = array();
+
+		if ( $days > 0 ) {
+			$where .= " AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY)";
+			$query_params[] = $days;
+		}
+
+		if ( $list_id != 'all' && $list_id > 0 ) {
+			$where .= " AND lc.list_id = %d";
+			$query_params[] = intval( $list_id );
+		}
+
+		$query_params[] = $limit_count;
+
+		$query = "SELECT c.country_code AS code, COUNT(DISTINCT c.id) AS total_subscribers
+				  FROM {$wpdb->prefix}ig_contacts c
+				  INNER JOIN {$wpdb->prefix}ig_lists_contacts lc ON c.id = lc.contact_id
+				  {$where}
+				  GROUP BY c.country_code
+				  ORDER BY total_subscribers DESC
+				  LIMIT %d";
+
+		// phpcs:disable
+		$prepared_query = $wpdb->prepare( $query, $query_params );
+		$results = $wpdb->get_results( $prepared_query, ARRAY_A );
+		// phpcs:enable
+
+		$top_countries = array();
+
+		if ( ! empty( $results ) ) {
+			foreach ( $results as $country ) {
+				$country_code = $country['code'];
+				$total_subscribers = intval( $country['total_subscribers'] );
+
+				$top_countries[ $country_code ] = $total_subscribers;
+			}
+		} 
+
+		return $top_countries;
+	}
+
+	/**
+	 * Get total subscribed contacts with advanced filtering options
+	 *
+	 * @param array $args Filter arguments
+	 * @return int Total count of subscribed contacts
+	 * 
+	 * @since 5.7.24
+	 */
+	public function get_total_subscribed_contacts_with_filters( $args = array() ) {
+		global $wpdb;
+		
+		$list_id = ! empty( $args['list_id'] ) ? intval( $args['list_id'] ) : 0;
+		$days    = ! empty( $args['days'] ) ? intval( $args['days'] ) : 0;
+		
+		$query = "SELECT COUNT(DISTINCT lc.contact_id) 
+				  FROM {$wpdb->prefix}ig_lists_contacts lc 
+				  INNER JOIN {$wpdb->prefix}ig_contacts c ON lc.contact_id = c.id 
+				  WHERE lc.status = 'subscribed'";
+		
+		$query_args = array();
+		
+		if ( $list_id > 0 ) {
+			$query .= " AND lc.list_id = %d";
+			$query_args[] = $list_id;
+		}
+		
+		if ( $days > 0 ) {
+			$query .= " AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY)";
+			$query_args[] = $days;
+		}
+		
+		if ( ! empty( $query_args ) ) {
+			$query = $wpdb->prepare( $query, $query_args );
+		}
+		
+		$result = $wpdb->get_var( $query );
+		return $result ? intval( $result ) : 0;
+	}
+
+	/**
+	 * Get contacts with advanced query arguments
+	 *
+	 * @param array $args Query arguments
+	 * @return array
+	 */
+	public function get_filtered_contacts( $args = array() ) {
+
+		global $wpdb;
+
+		$defaults = array(
+			'order_by'    => 'created_at',
+			'order'       => 'DESC',
+			'per_page'    => 5,
+			'page_number' => 1,
+			'search'      => '',
+			'contact_ids' => array(),
+			'list_ids'    => array(),
+			'filters'     => array(),
+		);
+
+		$args = wp_parse_args( $args, $defaults );
+
+		if (
+			isset( $args['contact_ids'] ) &&
+			is_array( $args['contact_ids'] ) &&
+			empty( $args['contact_ids'] ) &&
+			empty( $args['all_contacts'] )
+		) {
+			return array();
+		}
+
+		$sql          = "SELECT c.* FROM {$this->table_name} c";
+		$where_clause = '';
+		
+		$join_params   = array();
+		$where_params  = array();
+		$search_params = array();
+
+		if ( ! empty( $args['list_ids'] ) && is_array( $args['list_ids'] ) ) {
+			$list_ids = array_values( array_map( 'intval', $args['list_ids'] ) );
+
+			if ( ! empty( $list_ids ) ) {
+				$placeholders = implode( ', ', array_fill( 0, count( $list_ids ), '%d' ) );
+
+				$sql .= " INNER JOIN {$wpdb->prefix}ig_lists_contacts lc
+						ON lc.contact_id = c.id
+						AND lc.list_id IN ( {$placeholders} )";
+
+				$join_params = $list_ids;
+			}
+		}
+
+		if ( ! empty( $args['contact_ids'] ) ) {
+			$contact_ids  = array_map( 'intval', $args['contact_ids'] );
+			$placeholders = implode( ',', array_fill( 0, count( $contact_ids ), '%d' ) );
+
+			$where_clause .= " AND c.id IN ( {$placeholders} )";
+			$where_params  = $contact_ids;
+		}
+
+		if ( ! empty( $args['search'] ) && 'none' !== $args['search'] ) {
+			$where_clause .= ' AND ( c.first_name LIKE %s OR c.last_name LIKE %s OR c.email LIKE %s )';
+
+			$search = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+			$search_params = array( $search, $search, $search );
+		}
+
+		if ( ! empty( $where_clause ) ) {
+			$sql .= ' WHERE 1=1 ' . $where_clause;
+		}
+
+		$order_by = esc_sql( $args['order_by'] );
+		$order    = in_array( strtoupper( $args['order'] ), array( 'ASC', 'DESC' ), true )
+			? strtoupper( $args['order'] )
+			: 'DESC';
+
+		$sql .= " ORDER BY c.{$order_by} {$order}";
+
+		$offset = ( max( 1, (int) $args['page_number'] ) - 1 ) * (int) $args['per_page'];
+		$sql   .= " LIMIT {$offset}, " . (int) $args['per_page'];
+
+		$query_params = array_merge(
+			$join_params,
+			$where_params,
+			$search_params
+		);
+
+		if ( ! empty( $query_params ) ) {
+			$sql = $wpdb->prepare( $sql, $query_params );
+		}
+
+		return $wpdb->get_results( $sql, ARRAY_A );
+	}
+
+	/**
+	 * Get contacts count with query arguments
+	 *
+	 * @param array $args Query arguments
+	 * @return int
+	 */
+	public function get_filtered_contacts_count( $args = array() ) {
+
+		global $wpdb;
+
+		$sql          = "SELECT COUNT(DISTINCT c.id) FROM {$this->table_name} c";
+		$where_clause = '';
+
+		$join_params   = array();
+		$where_params  = array();
+		$search_params = array();
+
+		if ( ! empty( $args['list_ids'] ) && is_array( $args['list_ids'] ) ) {
+			$list_ids = array_values( array_map( 'intval', $args['list_ids'] ) );
+
+			if ( ! empty( $list_ids ) ) {
+				$placeholders = implode( ', ', array_fill( 0, count( $list_ids ), '%d' ) );
+
+				$sql .= " INNER JOIN {$wpdb->prefix}ig_lists_contacts lc
+						ON lc.contact_id = c.id
+						AND lc.list_id IN ( {$placeholders} )";
+
+				$join_params = $list_ids;
+			}
+		}
+
+		if ( ! empty( $args['contact_ids'] ) ) {
+			$contact_ids  = array_map( 'intval', $args['contact_ids'] );
+			$placeholders = implode( ',', array_fill( 0, count( $contact_ids ), '%d' ) );
+
+			$where_clause .= " AND c.id IN ( {$placeholders} )";
+			$where_params  = $contact_ids;
+		}
+
+		if ( ! empty( $args['search'] ) && 'none' !== $args['search'] ) {
+			$where_clause .= ' AND ( c.first_name LIKE %s OR c.last_name LIKE %s OR c.email LIKE %s )';
+
+			$search = '%' . $wpdb->esc_like( $args['search'] ) . '%';
+			$search_params = array( $search, $search, $search );
+		}
+
+		if ( ! empty( $where_clause ) ) {
+			$sql .= ' WHERE 1=1 ' . $where_clause;
+		}
+
+		$query_params = array_merge(
+			$join_params,
+			$where_params,
+			$search_params
+		);
+
+		if ( ! empty( $query_params ) ) {
+			$sql = $wpdb->prepare( $sql, $query_params );
+		}
+
+		return (int) $wpdb->get_var( $sql );
+	}
+
+	private static function get_contacts_by_direct_sql( $advanced_filter ) {
+
+		global $wpdb;
+		
+		$contacts_table = IG_CONTACTS_TABLE;
+		$where_conditions = array();
+		 
+		foreach ( $advanced_filter as $condition ) {
+			$field = str_replace( 'subscribers.', '', $condition['field'] );
+			$operator = $condition['operator'];
+			$value = $condition['value'];
+			 
+			switch ( $operator ) {
+				case 'is':
+					if ( is_array( $value ) ) {
+						$placeholders = implode( ',', array_fill( 0, count( $value ), '%s' ) );
+						$where_conditions[] = $wpdb->prepare( "{$field} IN ({$placeholders})", $value );
+					} else {
+						$where_conditions[] = $wpdb->prepare( "{$field} = %s", $value );
+					}
+					break;
+					
+				case 'is_not':
+					if ( is_array( $value ) ) {
+						$placeholders = implode( ',', array_fill( 0, count( $value ), '%s' ) );
+						$where_conditions[] = $wpdb->prepare( "{$field} NOT IN ({$placeholders})", $value );
+					} else {
+						$where_conditions[] = $wpdb->prepare( "{$field} != %s", $value );
+					}
+					break;
+					
+				case 'contains':
+					$where_conditions[] = $wpdb->prepare( "{$field} LIKE %s", '%' . $value . '%' );
+					break;
+					
+				case 'in':
+					if ( is_array( $value ) ) {
+						$placeholders = implode( ',', array_fill( 0, count( $value ), '%s' ) );
+						$where_conditions[] = $wpdb->prepare( "{$field} IN ({$placeholders})", $value );
+					}
+					break;
+			}
+		}
+		
+		if ( empty( $where_conditions ) ) {
+ 			return array();
+		}
+		
+		// Preserve controller behavior: combine conditions using OR
+		$where_sql = implode( ' OR ', $where_conditions );
+		$sql = "SELECT id FROM {$contacts_table} WHERE {$where_sql}";
+		 
+		$results = $wpdb->get_col( $sql ); 
+		
+		return $results ? array_map( 'intval', $results ) : array();
+	}
+	
+	public function get_all_total_contacts_with_filters( $args = array() ) {
+		global $wpdb;
+		
+		$list_id = ! empty( $args['list_id'] ) ? intval( $args['list_id'] ) : 0;
+		$days    = ! empty( $args['days'] ) ? intval( $args['days'] ) : 0;
+		
+		$query = "SELECT COUNT(DISTINCT lc.contact_id) 
+				  FROM {$wpdb->prefix}ig_lists_contacts lc 
+				  INNER JOIN {$wpdb->prefix}ig_contacts c ON lc.contact_id = c.id 
+				  WHERE 1 = 1";
+		
+		$query_args = array();
+		
+		if ( $list_id > 0 ) {
+			$query .= " AND lc.list_id = %d";
+			$query_args[] = $list_id;
+		}
+		
+		if ( $days > 0 ) {
+			$query .= " AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY)";
+			$query_args[] = $days;
+		}
+		
+		if ( ! empty( $query_args ) ) {
+			$query = $wpdb->prepare( $query, $query_args );
+		}
+		
+		$result = $wpdb->get_var( $query );
+		return $result ? intval( $result ) : 0;
+	}
+
+	/**
+	 * Get audience health stats counts (total and verified contacts)
+	 *
+	 * @return array { total_contacts: int, verified_contacts: int }
+	 *
+	 * @since 5.9.14
+	 */
+	public function get_audience_health_stats_counts() {
+		global $wpdb;
+		// phpcs:disable
+		$results = $wpdb->get_row(
+			"SELECT 
+				COUNT(*) as total_contacts,
+				COUNT(CASE WHEN is_verified = 1 THEN 1 END) as verified_contacts
+				FROM {$wpdb->prefix}ig_contacts",
+			ARRAY_A
+		);
+		// phpcs:enable
+		if ( empty( $results ) ) {
+			return array( 'total_contacts' => 0, 'verified_contacts' => 0 );
+		}
+		return array(
+			'total_contacts' => intval( $results['total_contacts'] ),
+			'verified_contacts' => intval( $results['verified_contacts'] ),
+		);
+	}
+
+	/**
+	 * Public wrapper to get contact IDs by advanced filter conditions
+	 *
+	 * @param array $advanced_filter Conditions built from UI filters
+	 * @return array Contact IDs
+	 *
+	 * @since 5.9.14
+	 */
+	public function get_contact_ids_by_advanced_filter( $advanced_filter ) {
+		return self::get_contacts_by_direct_sql( $advanced_filter );
+	}
+
+	/**
+	 * Get all audience insights counts in a single optimized query
+	 * 
+	 * @param int $list_id List ID (0 for all lists)
+	 * @param int $days Number of days for current period
+	 * @return array Array with all counts
+	 */
+	public function get_audience_insights_batch_counts( $list_id = 0, $days = 7 ) {
+		global $wpdb;
+		
+		$list_id = intval( $list_id );
+		$days = intval( $days );
+		$double_days = $days * 2;
+		
+		$query = "SELECT 
+			COUNT(DISTINCT lc.contact_id) as total_contacts,
+			COUNT(DISTINCT CASE WHEN lc.status = 'subscribed' AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY) THEN lc.contact_id END) as current_subscribed,
+			COUNT(DISTINCT CASE WHEN lc.status = 'subscribed' AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY) THEN lc.contact_id END) as double_subscribed,
+			COUNT(DISTINCT CASE WHEN lc.status = 'unsubscribed' AND lc.unsubscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY) THEN lc.contact_id END) as current_unsubscribed,
+			COUNT(DISTINCT CASE WHEN lc.status = 'unsubscribed' AND lc.unsubscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY) THEN lc.contact_id END) as double_unsubscribed
+			FROM {$wpdb->prefix}ig_lists_contacts lc 
+			INNER JOIN {$wpdb->prefix}ig_contacts c ON lc.contact_id = c.id 
+			WHERE 1 = 1";
+		
+		$query_args = array( $days, $double_days, $days, $double_days );
+		
+		if ( $list_id > 0 ) {
+			$query .= " AND lc.list_id = %d";
+			$query_args[] = $list_id;
+		}
+		
+		$query = $wpdb->prepare( $query, $query_args );
+		$result = $wpdb->get_row( $query, ARRAY_A );
+		
+		if ( ! $result ) {
+			return array(
+				'total_contacts' => 0,
+				'current_subscribed' => 0,
+				'double_subscribed' => 0,
+				'current_unsubscribed' => 0,
+				'double_unsubscribed' => 0,
+			);
+		}
+		
+		return array(
+			'total_contacts' => intval( $result['total_contacts'] ),
+			'current_subscribed' => intval( $result['current_subscribed'] ),
+			'double_subscribed' => intval( $result['double_subscribed'] ),
+			'current_unsubscribed' => intval( $result['current_unsubscribed'] ),
+			'double_unsubscribed' => intval( $result['double_unsubscribed'] ),
+		);
+	}
+
 }

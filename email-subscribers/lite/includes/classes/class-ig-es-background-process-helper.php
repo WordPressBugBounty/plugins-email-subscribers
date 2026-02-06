@@ -171,15 +171,16 @@ if ( ! class_exists( 'IG_ES_Background_Process_Helper' ) ) {
 				$time      = ! empty( $time ) ? $time : time();
 				$action_id = as_schedule_single_action( $time, $action, array( $action_args ), 'email-subscribers' );
 
-				if ( ! empty( $action_id ) ) {
+				if ( ! empty( $action_id ) ) {	
 					if ( $process_asynchronously ) {
 						$request_args = array(
 							'action'    => 'ig_es_run_action_scheduler_task',
 							'action_id' => $action_id,
+							'guid' => ES()->cron->get_cron_guid(),
 						);
 						self::send_async_ajax_request( $request_args, $should_wait );
 					}
-					return $action_id;
+					return $action_id;	
 				}
 			}
 
@@ -194,13 +195,24 @@ if ( ! class_exists( 'IG_ES_Background_Process_Helper' ) ) {
 		public static function run_action_scheduler_task() {
 
 			$action_id = ig_es_get_request_data( 'action_id' );
+			$guid      = ig_es_get_request_data( 'guid' );
 
-			if ( ! empty( $action_id ) ) {
-				if ( class_exists( 'ActionScheduler_QueueRunner' ) ) {
-					$queue_runner = ActionScheduler_QueueRunner::instance();
-					$queue_runner->process_action( $action_id, 'email-subscribers' );
-				}
+			if ( empty( $action_id ) ) {
+				return;
 			}
+
+			if ( empty( $guid ) || ! ES()->cron->is_valid_request( $guid ) ) {
+				return;
+			}
+
+			if ( class_exists( 'ActionScheduler_QueueRunner' ) ) {
+				$queue_runner = ActionScheduler_QueueRunner::instance();
+				$queue_runner->process_action( $action_id, 'email-subscribers' );
+			}
+					
+				 
+				
+			
 		}
 
 		/**
