@@ -1024,7 +1024,7 @@ class ES_DB_Campaigns extends ES_DB {
 		if ($do_count_only) {
 			$sql = 'SELECT count(*) as total FROM ' . IG_CAMPAIGNS_TABLE;
 		} else {
-			$sql = 'SELECT id, slug, name, type, subject, from_name, from_email, reply_to_email, '
+			$sql = 'SELECT id, slug, name, type, subject, body, from_name, from_email, reply_to_email, '
 				. 'list_ids, categories, status, created_at, updated_at, meta '
 				. 'FROM ' . IG_CAMPAIGNS_TABLE;
 		}

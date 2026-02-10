@@ -710,14 +710,30 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 				'type' => 'checkbox',
 				'name' => 'GDPR Consent',
 				'label' => 'GDPR Consent',
-				'placeholder' => '',
+				'placeholder' => 'I agree to the <a href="/privacy-policy">terms and conditions</a>',
 				'required' => true,
 				'enabled' => true,
 				'order' => 3,
 				'options' => array(),
-				'value' => ''
+				'value' => '',
+				'gdprText' => 'I agree to the <a href="/privacy-policy">terms and conditions</a>'
 			);
 		}
+		
+		// Add submit button field - essential for form submission
+		$button_order = $gdpr_enabled ? 4 : 3;
+		$form_body[] = array(
+			'id' => 'button',
+			'type' => 'submit',
+			'name' => 'Button',
+			'label' => 'Subscribe',
+			'placeholder' => '',
+			'required' => false,
+			'enabled' => true,
+			'order' => $button_order,
+			'options' => array(),
+			'value' => 'Subscribe'
+		);
 
 		$settings = array(
 			'editor_type' => 'wysiwyg',
@@ -731,14 +747,15 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 			'form_style' => 'inherit',
 			'gdpr' => array(
 				'consent' => $gdpr_enabled ? 'yes' : 'no',
-				'consent_text' => __( 'I agree to receive emails and accept the terms and conditions.', 'email-subscribers' )
+				'consent_text' => 'I agree to the <a href="/privacy-policy">terms and conditions</a>'
 			),
 			'captcha' => 'no',
 			'action_after_submit' => 'show_success_message',
 			'redirect_to_url' => 'no',
 			'show_message' => 'no',
 			'is_embed_form_enabled' => 'no',
-			'embed_form_remote_urls' => array()
+			'embed_form_remote_urls' => array(),
+			'show_logo' => 'yes'
 		);
 
 		$styles = array(

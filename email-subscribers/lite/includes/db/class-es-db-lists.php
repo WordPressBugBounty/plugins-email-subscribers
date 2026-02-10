@@ -165,8 +165,19 @@ class ES_DB_Lists extends ES_DB {
 			return array();
 		}
 		
-		// Fetch all list names in one query
-		$list_id_name_map = $this->get_list_id_name_map();
+		// Fetch ONLY the lists needed for these campaigns
+		global $wpdb;
+		$list_ids_placeholders = implode( ',', array_fill( 0, count( $all_list_ids ), '%d' ) );
+		$query = $wpdb->prepare(
+			"SELECT id, name FROM {$wpdb->prefix}ig_lists WHERE id IN ($list_ids_placeholders) AND (deleted_at IS NULL OR deleted_at = '0000-00-00 00:00:00')",
+			$all_list_ids
+		);
+		$lists_results = $wpdb->get_results( $query, ARRAY_A );
+		
+		$list_id_name_map = array();
+		foreach ( $lists_results as $list ) {
+			$list_id_name_map[ $list['id'] ] = $list['name'];
+		}
 		
 		// Map list names to each campaign
 		$campaign_list_names = array();
@@ -391,7 +402,13 @@ class ES_DB_Lists extends ES_DB {
 			'hash' 		  => ES_Common::generate_hash( 12 ),
 		);
 
-		return $this->insert( $data );
+		$list_id = $this->insert( $data );
+		
+		if ( $list_id ) {
+			ES()->lists_contacts_db->clear_list_counts_cache();
+		}
+		
+		return $list_id;
 
 		/*
 		$list_table = IG_LISTS_TABLE;
@@ -442,7 +459,13 @@ class ES_DB_Lists extends ES_DB {
 			'updated_at' 	=> ig_get_current_date_time(),
 		);
 
-		return $this->update( $row_id, $data );
+		$updated = $this->update( $row_id, $data );
+		
+		if ( $updated ) {
+			ES()->lists_contacts_db->clear_list_counts_cache();
+		}
+		
+		return $updated;
 	}
 
 	/**

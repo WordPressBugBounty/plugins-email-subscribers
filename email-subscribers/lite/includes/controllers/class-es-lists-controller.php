@@ -147,6 +147,11 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 			
 			$skip_cache = ! empty( $args['_t'] );
 			$all_counts = $lists_contacts_db->get_list_contact_counts_batch( $list_ids, $skip_cache );
+			
+			if ( ! is_array( $all_counts ) ) {
+				$all_counts = array();
+			}
+			
                 foreach ( $lists as $list ) {
                     $list_id = (int) $list['id'];
                     $counts = isset( $all_counts[ $list_id ] ) ? $all_counts[ $list_id ] : array(

@@ -23,12 +23,17 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 		/**
 		 * Get campaign templates
 		 */
-		public static function get_gallery_items() {
+		public static function get_gallery_items( $data = array() ) {
 			$response = array();
 			$gallery_items = array();
 			$blog_charset = get_option( 'blog_charset' );
 
-			$campaign_templates = ES_Common::get_templates();
+			$data = ES_Common::decode_args( $data );
+			$limit = ! empty( $data['limit'] ) ? absint( $data['limit'] ) : -1;
+			$campaign_type = ! empty( $data['campaign_type'] ) ? sanitize_text_field( $data['campaign_type'] ) : '';
+			$include_remote = isset( $data['include_remote'] ) ? filter_var( $data['include_remote'], FILTER_VALIDATE_BOOLEAN ) : true;
+
+			$campaign_templates = ES_Common::get_templates( $campaign_type, '', $limit );
 			
 			if ( !empty( $campaign_templates ) ) {
 				foreach ( $campaign_templates as $campaign_template) {
@@ -58,7 +63,8 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 				}
 			}
 
-			$remote_gallery_items = self::get_remote_gallery_items();
+			// Only fetch remote items if requested and limit is -1 (all items)
+			$remote_gallery_items = ( $include_remote && $limit === -1 ) ? self::get_remote_gallery_items() : array();
 			if ( ! empty( $remote_gallery_items ) ) {
 				foreach ( $remote_gallery_items as $item ) {
 					$template_version = $item->template_version;

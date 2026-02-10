@@ -221,30 +221,13 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 					$query_args['contact_ids'] = $filtered_contact_ids;
 				}
 
-			} else if ( ! empty( $filter_by_list_id ) ) {
-				// this is for direct list filter without advanced filter
-				$list_contact_args = array();
-				
-				if ( ! empty( $filter_by_list_id ) && $filter_by_list_id !== 'all' ) {
-					$list_contact_args['list_id'] = intval( $filter_by_list_id );
-				} 
-			
-				// Get contact IDs from lists_contacts table
-				$filtered_contact_ids = $lists_contacts_db->get_contact_ids_by_criteria( $list_contact_args );
-				 
-				if ( isset( $query_args['contact_ids'] ) ) {
-					// Intersect with existing contact IDs from advanced filter
-					$query_args['contact_ids'] = array_intersect( $query_args['contact_ids'], $filtered_contact_ids );
-				} else {
-					$query_args['contact_ids'] = $filtered_contact_ids;
-				}
-				 
-			}  
+			} else if ( ! empty( $filter_by_list_id ) && $filter_by_list_id !== 'all' ) {
+				$query_args['list_ids'] = array( intval( $filter_by_list_id ) );
+			}
   
 			if ( $do_count_only ) { 
 				$result = $contacts_db->get_filtered_contacts_count( $query_args );
 			} else { 
-				
 				$result = $contacts_db->get_filtered_contacts( $query_args );
     
 				if ( ! empty( $result ) ) {
@@ -274,8 +257,14 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 						if ( isset( $contact['created_at'] ) ) {
     				        $contact['created_at'] = ig_es_format_date_time( $contact['created_at'] );
     				    }
-    				    if ( isset( $contact['average_opened_at'] ) ) {
-    				        $contact['average_opened_at'] = ig_es_format_date_time( $contact['average_opened_at'] );
+    				    
+    			    if ( ! empty( $contact['last_opened_at'] ) && $contact['last_opened_at'] > 0 ) {
+    			        $gmt_offset = ig_es_get_gmt_offset( true );
+    			        $timestamp_with_offset = (int) $contact['last_opened_at'] + $gmt_offset;
+    			        $now_ts = current_time( 'timestamp' );
+    			        $contact['average_opened_at'] = human_time_diff( $timestamp_with_offset, $now_ts ) . ' ' . __( 'ago', 'email-subscribers' );
+    				    } else {
+    				        $contact['average_opened_at'] = '—';
     				    }
 					}
 				}
@@ -619,6 +608,33 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 		public static function get_countries() {
 		$countries = ES_Geolocation::get_countries();
 		return $countries;
+	}
+
+	/**
+	 * Get countries for filter dropdown
+	 * 
+	 * @param array $args
+	 * @return array
+	 * 
+	 * @since 5.7.54
+	 */
+	public static function get_countries_for_filter( $args = array() ) {
+		try {
+			$countries = ES_Geolocation::get_countries();
+			
+			// Transform countries array to the expected format for dropdown
+			$formatted_countries = array();
+			foreach ( $countries as $code => $name ) {
+				$formatted_countries[] = array(
+					'code' => $code,
+					'name' => $name
+				);
+			}
+			
+			return $formatted_countries;
+		} catch ( Exception $e ) {
+			return array();
+		}
 	}
 
 	/**

@@ -643,7 +643,7 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 			IG_MESSAGE_OPEN,
 			);
 
-			$selects[] = $wpbd->prepare( $action_query, ...$query_args );
+			$selects[] = $wpbd->prepare( $action_query, $query_args );
 
 			if ( $return_count ) {
 				$notification_query = 'SELECT count(*) FROM ( ';

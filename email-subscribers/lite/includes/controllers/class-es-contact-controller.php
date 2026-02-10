@@ -178,10 +178,9 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 			} 
 
 			//Update contact list 
-			self::update_contact_lists( $id, $lists, $is_new );
-		
-			// Return result
-			return array(
+			self::update_contact_lists( $id, $lists, $is_new );		
+		ES_Cache::flush();
+					return array(
 				'id'              => $id,
 				'is_new'          => $is_new,
 				'contact'         => $contact,

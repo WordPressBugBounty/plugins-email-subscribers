@@ -827,6 +827,11 @@ if ( ! class_exists( 'ES_Contact_Import_Controller' ) ) {
 								$bulkdata['updated_contacts'] += $updated_contacts; 
 							}
 						}
+					} else {
+						if ( ! empty( $existing_contacts_email_id_map ) ) {
+							$existing_contacts = array_intersect_key( $contacts_data, $existing_contacts_email_id_map );
+							$bulkdata['existing_contacts'] += count( $existing_contacts );
+						}
 					}
 				
 
@@ -874,7 +879,17 @@ if ( ! class_exists( 'ES_Contact_Import_Controller' ) ) {
 								}
 
 								foreach ( $list_data as $status => $contact_emails ) {
-									$contact_id_date = ES()->contacts_db->get_contact_ids_created_at_date_by_emails( $contact_emails );
+									// If update is disabled, filter out existing contacts to prevent status changes
+									$filtered_emails = $contact_emails;
+									if ( ! $need_to_update_subscribers_data && ! empty( $existing_contacts_email_id_map ) ) {
+										$filtered_emails = array_values( array_diff( $contact_emails, array_keys( $existing_contacts_email_id_map ) ) );
+									}
+									
+									if ( empty( $filtered_emails ) ) {
+										continue;
+									}
+									
+									$contact_id_date = ES()->contacts_db->get_contact_ids_created_at_date_by_emails( $filtered_emails );
 									$contact_ids     = array_keys( $contact_id_date );
 									if ( count( $contact_ids ) > 0 ) {
 										ES()->lists_contacts_db->remove_contacts_from_lists( $contact_ids, $list_id );
@@ -911,8 +926,14 @@ if ( ! class_exists( 'ES_Contact_Import_Controller' ) ) {
 
 					if ( $bulkdata['updated_contacts'] > 0 ) {
 						/* translators: 1. Total updated contacts */
-						$return['html'] .= sprintf( esc_html__( '%1$s contacts updated.', 'email-subscribers' ), '<span class="font-medium">' . number_format_i18n( $bulkdata['updated_contacts'] ) . '</span>' );
-					}				
+						$return['html'] .= sprintf( esc_html__( '%1$s contacts updated.', 'email-subscribers' ) . ' ', '<span class="font-medium">' . number_format_i18n( $bulkdata['updated_contacts'] ) . '</span>' );
+					}
+					
+					if ( $bulkdata['existing_contacts'] > 0 ) {
+						$existing_contact_string = _n( 'contact', 'contacts', $bulkdata['existing_contacts'], 'email-subscribers' );
+						/* translators: 1. Existing contacts count. 2. Contact or contacts string based on existing contacts count. */
+						$return['html'] .= sprintf( esc_html__( '%1$s existing %2$s skipped (update disabled).', 'email-subscribers' ) . ' ', '<span class="font-medium">' . number_format_i18n( $bulkdata['existing_contacts'] ) . '</span>', $existing_contact_string );
+					}
 
 					if ( $bulkdata['duplicate_emails_count'] ) {
 						$duplicate_email_string = _n( 'email', 'emails', $bulkdata['duplicate_emails_count'], 'email-subscribers' );
@@ -1199,9 +1220,13 @@ if ( ! class_exists( 'ES_Contact_Import_Controller' ) ) {
 					ES()->lists_contacts_db->insert( $list_contact_data );
 				}
 				
+				ES()->contacts_db->invalidate_query_cache();
 				ES()->lists_contacts_db->clear_list_counts_cache( $list_ids );
-					do_action( 'ig_es_contact_subscribe', $contact_id, $list_ids );
-					
+			ES_Cache::flush();
+			wp_cache_flush();
+			
+			if ( 'yes' !== $send_optin_emails ) {
+				try {
 					$subscriber_options = array();
 					$subscriber_options[ $contact_id ]['type'] = 'optin_welcome_email';
 					
@@ -1221,29 +1246,32 @@ if ( ! class_exists( 'ES_Contact_Import_Controller' ) ) {
 						'action' => 'ig_es_process_queue',
 					);
 					IG_ES_Background_Process_Helper::send_async_ajax_request( $request_args, true );
+				} catch ( Exception $e ) {
 				}
-
-				return array(
-					'success'    => true,
-					'contact_id' => $contact_id,
-					'message'    => __( 'Contact added successfully.', 'email-subscribers' ),
-				);
-			} else {
-				return array(
-					'success' => false,
-					'message' => __( 'Failed to add contact. Please try again.', 'email-subscribers' )
-				);
 			}
 		}
 
-		/**
-		 * Verify Mailchimp API key
-		 *
-		 * @param array $args Arguments containing API key
-		 * @return array Response array
-		 * @since 5.0.0
-		 */
-		public static function mailchimp_verify_api_key( $args = array() ) {
+		return array(
+			'success'    => true,
+			'contact_id' => $contact_id,
+			'message'    => __( 'Contact added successfully.', 'email-subscribers' ),
+		);
+	} else {
+		return array(
+			'success' => false,
+			'message' => __( 'Failed to add contact. Please try again.', 'email-subscribers' )
+		);
+	}
+}
+
+/**
+ * Verify Mailchimp API key
+ *
+ * @param array $args Arguments containing API key
+ * @return array Response array
+ * @since 5.0.0
+ */
+public static function mailchimp_verify_api_key( $args = array() ) {
 			$args = self::sanitize_args( $args );
 			
 			$api_key = isset( $args['mailchimp_api_key'] ) ? sanitize_text_field( $args['mailchimp_api_key'] ) : '';

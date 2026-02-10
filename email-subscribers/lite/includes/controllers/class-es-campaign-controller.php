@@ -1254,6 +1254,7 @@ public static function add_campaign_body_data( $campaign_data ) {			$template_id
 
 
 	public static function get_matching_recipients_count ( $recipient_rule) {
+		global $wpdb;
 
 		// Decode JSON string if needed
 		if ( is_string( $recipient_rule ) && ! empty( $recipient_rule ) ) {
@@ -1264,19 +1265,22 @@ public static function add_campaign_body_data( $campaign_data ) {			$template_id
 		}
 
 		$can_access_audience = ES_Common::ig_es_can_access( 'audience' );
-	$can_access_campaign = ES_Common::ig_es_can_access( 'campaigns' );
-	if ( ! ( $can_access_audience || $can_access_campaign ) ) {
-		return 0;
-	}
-	
-	$status     = isset( $recipient_rule['status'] ) ? $recipient_rule['status'] : 'subscribed';
-	$conditions = isset( $recipient_rule['list_conditions'] ) ? $recipient_rule['list_conditions'] : array();
 
-	$expected_statuses = array( 'subscribed', 'unsubscribed', 'unconfirmed', 'confirmed', 'all' );
+		$can_access_campaign = ES_Common::ig_es_can_access( 'campaigns' );
+		if ( ! ( $can_access_audience || $can_access_campaign ) ) {
+			return 0;
+		}
+		
+		$status     = isset( $recipient_rule['status'] ) ? $recipient_rule['status'] : 'subscribed';
+		$conditions = isset( $recipient_rule['list_conditions'] ) ? $recipient_rule['list_conditions'] : array();
 
-	if ( ! in_array( $status, $expected_statuses, true ) ) {
-		return 0;
-	}		$response_data = array();
+		$expected_statuses = array( 'subscribed', 'unsubscribed', 'unconfirmed', 'confirmed', 'all' );
+
+		if ( ! in_array( $status, $expected_statuses, true ) ) {
+			return 0;
+		}		
+		
+		$response_data = array();
 
 		if ( ! empty( $conditions ) ) {
 			$conditions = IG_ES_Campaign_Rules::remove_empty_conditions( $conditions );

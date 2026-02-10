@@ -6,7 +6,7 @@ Tags: email marketing, newsletter, email subscribers, email automation, post not
 Requires at least: 3.9
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 5.9.15
+Stable tag: 5.9.16
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,18 +361,28 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.15 =
+= 5.9.16 =
 
+* Improvement: Improved performance of the Campaign Templates for faster loading.
 * Improvement: Improved performance of the Audience page for faster loading.
 * Improvement: Improved performance of the Campaign page for faster loading.
-* Fix: Double opt-in confirmation emails were not being sent.
-* Fix: Gmail sender API key authorization issues.
-* Fix: SMTP email sender configuration issues.
-* Fix: List loading issue when adding or editing subscribers.
-* Fix: Redirection URL issue when clicking the new post published link.
-* Fix: Statistics on the Reports page.
+* Fix: Advanced filter issues.
+* Fix: Default sample template loading issue in the campaign editor.
+* Fix: Failed reports incorrectly showing an In Queue status.
+* Fix: Pagination issues in campaigns.
+* Fix: Contact import issues.
 
 == Changelog ==
+
+**5.9.16 (09.02.2026)**
+* Improvement: Improved performance of the Campaign Templates for faster loading.
+* Improvement: Improved performance of the Audience page for faster loading.
+* Improvement: Improved performance of the Campaign page for faster loading.
+* Fix: Advanced filter issues.
+* Fix: Default sample template loading issue in the campaign editor.
+* Fix: Failed reports incorrectly showing an In Queue status.
+* Fix: Pagination issues in campaigns.
+* Fix: Contact import issues.
 
 **5.9.15 (28.01.2026)**
 

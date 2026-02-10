@@ -287,6 +287,8 @@ class ES_DB_Contacts extends ES_DB {
 				}  
 
 				$this->update( $contact_id, $data_to_update );
+				
+				$this->invalidate_query_cache();
 			}
 		}
 
@@ -482,7 +484,10 @@ class ES_DB_Contacts extends ES_DB {
 			$contacts_deleted_from_lists = ES()->lists_contacts_db->delete_by_condition( $where );
 			
 			if ( $contacts_deleted_from_lists ) {
+				$this->invalidate_query_cache();
+				
 				do_action( 'ig_es_contacts_deleted', $contact_ids );
+				ES()->lists_contacts_db->clear_list_counts_cache();
 				return true;
 			}
 		}
@@ -1142,6 +1147,9 @@ class ES_DB_Contacts extends ES_DB {
 			}
 		}
 		$contact_id = parent::insert( $data, $type );
+		
+		$this->invalidate_query_cache();
+		
 		do_action( 'ig_es_new_contact_inserted', $contact_id );
 		return $contact_id;
 	}
@@ -1302,21 +1310,30 @@ class ES_DB_Contacts extends ES_DB {
 
 		$args = wp_parse_args( $args, $defaults );
 
+		$cache_key = ES_Cache::generate_key( 'get_filtered_contacts_' . serialize( $args ) );
+		
+		if ( ES_Cache::is_exists( $cache_key, 'query' ) ) {
+			return ES_Cache::get( $cache_key, 'query' );
+		}
+
 		if (
 			isset( $args['contact_ids'] ) &&
 			is_array( $args['contact_ids'] ) &&
 			empty( $args['contact_ids'] ) &&
-			empty( $args['all_contacts'] )
+			empty( $args['all_contacts'] ) &&
+			empty( $args['list_ids'] )
 		) {
 			return array();
 		}
 
-		$sql          = "SELECT c.* FROM {$this->table_name} c";
+		$sql          = "SELECT c.*, MAX(actions.created_at) as last_opened_at FROM {$this->table_name} c";
 		$where_clause = '';
 		
 		$join_params   = array();
 		$where_params  = array();
 		$search_params = array();
+		
+		$sql .= " LEFT JOIN {$wpdb->prefix}ig_actions actions ON actions.contact_id = c.id AND actions.type = " . IG_MESSAGE_OPEN;
 
 		if ( ! empty( $args['list_ids'] ) && is_array( $args['list_ids'] ) ) {
 			$list_ids = array_values( array_map( 'intval', $args['list_ids'] ) );
@@ -1350,6 +1367,7 @@ class ES_DB_Contacts extends ES_DB {
 		if ( ! empty( $where_clause ) ) {
 			$sql .= ' WHERE 1=1 ' . $where_clause;
 		}
+		$sql .= ' GROUP BY c.id';
 
 		$order_by = esc_sql( $args['order_by'] );
 		$order    = in_array( strtoupper( $args['order'] ), array( 'ASC', 'DESC' ), true )
@@ -1371,7 +1389,11 @@ class ES_DB_Contacts extends ES_DB {
 			$sql = $wpdb->prepare( $sql, $query_params );
 		}
 
-		return $wpdb->get_results( $sql, ARRAY_A );
+		$results = $wpdb->get_results( $sql, ARRAY_A );
+		
+		ES_Cache::set( $cache_key, $results, 'query' );
+		
+		return $results;
 	}
 
 	/**
@@ -1383,6 +1405,12 @@ class ES_DB_Contacts extends ES_DB {
 	public function get_filtered_contacts_count( $args = array() ) {
 
 		global $wpdb;
+
+		$cache_key = ES_Cache::generate_key( 'get_filtered_contacts_count_' . serialize( $args ) );
+		
+		if ( ES_Cache::is_exists( $cache_key, 'query' ) ) {
+			return ES_Cache::get( $cache_key, 'query' );
+		}
 
 		$sql          = "SELECT COUNT(DISTINCT c.id) FROM {$this->table_name} c";
 		$where_clause = '';
@@ -1434,7 +1462,11 @@ class ES_DB_Contacts extends ES_DB {
 			$sql = $wpdb->prepare( $sql, $query_params );
 		}
 
-		return (int) $wpdb->get_var( $sql );
+		$count = (int) $wpdb->get_var( $sql );
+		
+		ES_Cache::set( $cache_key, $count, 'query' );
+		
+		return $count;
 	}
 
 	private static function get_contacts_by_direct_sql( $advanced_filter ) {
@@ -1579,19 +1611,18 @@ class ES_DB_Contacts extends ES_DB {
 		$double_days = $days * 2;
 		
 		$query = "SELECT 
-			COUNT(DISTINCT lc.contact_id) as total_contacts,
-			COUNT(DISTINCT CASE WHEN lc.status = 'subscribed' AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY) THEN lc.contact_id END) as current_subscribed,
-			COUNT(DISTINCT CASE WHEN lc.status = 'subscribed' AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY) THEN lc.contact_id END) as double_subscribed,
-			COUNT(DISTINCT CASE WHEN lc.status = 'unsubscribed' AND lc.unsubscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY) THEN lc.contact_id END) as current_unsubscribed,
-			COUNT(DISTINCT CASE WHEN lc.status = 'unsubscribed' AND lc.unsubscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY) THEN lc.contact_id END) as double_unsubscribed
-			FROM {$wpdb->prefix}ig_lists_contacts lc 
-			INNER JOIN {$wpdb->prefix}ig_contacts c ON lc.contact_id = c.id 
+			COUNT(DISTINCT contact_id) as total_contacts,
+			SUM(IF(status = 'subscribed' AND subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY), 1, 0)) as current_subscribed,
+			SUM(IF(status = 'subscribed' AND subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY) AND subscribed_at < DATE_SUB(NOW(), INTERVAL %d DAY), 1, 0)) as double_subscribed,
+			SUM(IF(status = 'unsubscribed' AND unsubscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY), 1, 0)) as current_unsubscribed,
+			SUM(IF(status = 'unsubscribed' AND unsubscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY) AND unsubscribed_at < DATE_SUB(NOW(), INTERVAL %d DAY), 1, 0)) as double_unsubscribed
+			FROM {$wpdb->prefix}ig_lists_contacts 
 			WHERE 1 = 1";
 		
-		$query_args = array( $days, $double_days, $days, $double_days );
+		$query_args = array( $days, $double_days, $days, $days, $double_days, $days );
 		
 		if ( $list_id > 0 ) {
-			$query .= " AND lc.list_id = %d";
+			$query .= " AND list_id = %d";
 			$query_args[] = $list_id;
 		}
 		
@@ -1615,6 +1646,10 @@ class ES_DB_Contacts extends ES_DB {
 			'current_unsubscribed' => intval( $result['current_unsubscribed'] ),
 			'double_unsubscribed' => intval( $result['double_unsubscribed'] ),
 		);
+	}
+
+	public function invalidate_query_cache() {
+		wp_cache_flush_group( 'ig_es_query' );
 	}
 
 }

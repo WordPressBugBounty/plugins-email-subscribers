@@ -91,18 +91,13 @@ class ES_List_Cleanup {
 			$es_clean_list = Email_Subscribers_Utils::es_list_cleanup( $emails );
 			if ( ! empty( $es_clean_list['status'] ) && 'SUCCESS' === $es_clean_list['status'] && is_array( $es_clean_list['data'] ) ) {
 				$this->update_contacts_status( $es_clean_list['data'] );
+				
+				$this->add_cleanup_task( $data );
 			} else {
-				// Scheduling clean task after 12 Hours in case error occurs.
 				$schedule_time = time() + 12 * HOUR_IN_SECONDS;
 				$this->add_cleanup_task( $data, $schedule_time );
 				return;
 			}
-		}
-
-		$emails = $this->get_contact_emails_for_cleanup( $data );
-		
-		if ( ! empty( $emails ) ) {
-			$this->add_cleanup_task( $data );
 		} else {
 			$last_cleanup_time = time();
 			update_option( 'ig_es_last_cleanup_time', $last_cleanup_time );
@@ -137,46 +132,54 @@ class ES_List_Cleanup {
 			return $result;
 		}
 
-		$is_rolebased   = array();
-		$is_disposable  = array();
-		$is_deliverable = array();
-		$is_sendsafely  = array();
-		$status         = array();
-		$is_webmail     = array();
-		$is_verified    = array();
-		$updated_at     = array();
-		$emails         = array();
-		foreach ( $emails_data as $email ) {
-			$emails[]    = sanitize_email( $email['_given'] );
-			$role_based  = ( ! empty( $email['attributes']['roleBased'] ) ) ? $email['attributes']['roleBased'] : 0;
-			$webmail     = ( ! empty( $email['attributes']['webmail'] ) ) ? $email['attributes']['webmail'] : 0;
-			$disposable  = ( ! empty( $email['attributes']['disposable'] ) ) ? $email['attributes']['disposable'] : 0;
-			$deliverable = ( ! empty( $email['attributes']['deliverable'] ) ) ? $email['attributes']['deliverable'] : 0;
-			$sendSafely  = ( ! empty( $email['attributes']['sendSafely'] ) ) ? $email['attributes']['sendSafely'] : 0;
-			// sql
+		$batch_size = 100;
+		$batches = array_chunk( $emails_data, $batch_size );
+		
+		foreach ( $batches as $batch ) {
+			$is_rolebased   = array();
+			$is_disposable  = array();
+			$is_deliverable = array();
+			$is_sendsafely  = array();
+			$status         = array();
+			$is_webmail     = array();
+			$is_verified    = array();
+			$updated_at     = array();
+			$emails         = array();
+			
+			foreach ( $batch as $email ) {
+				$emails[]    = sanitize_email( $email['_given'] );
+				$role_based  = ( ! empty( $email['attributes']['roleBased'] ) ) ? $email['attributes']['roleBased'] : 0;
+				$webmail     = ( ! empty( $email['attributes']['webmail'] ) ) ? $email['attributes']['webmail'] : 0;
+				$disposable  = ( ! empty( $email['attributes']['disposable'] ) ) ? $email['attributes']['disposable'] : 0;
+				$deliverable = ( ! empty( $email['attributes']['deliverable'] ) ) ? $email['attributes']['deliverable'] : 0;
+				$sendSafely  = ( ! empty( $email['attributes']['sendSafely'] ) ) ? $email['attributes']['sendSafely'] : 0;
 
-			$is_rolebased []   = ' WHEN email = "' . $email['_given'] . '" THEN ' . $role_based;
-			$is_disposable []  = ' WHEN email = "' . $email['_given'] . '" THEN ' . $disposable;
-			$is_deliverable [] = ' WHEN email = "' . $email['_given'] . '" THEN ' . $deliverable;
-			$is_sendsafely []  = ' WHEN email = "' . $email['_given'] . '" THEN ' . $sendSafely;
+				$is_rolebased []   = ' WHEN email = "' . $email['_given'] . '" THEN ' . $role_based;
+				$is_disposable []  = ' WHEN email = "' . $email['_given'] . '" THEN ' . $disposable;
+				$is_deliverable [] = ' WHEN email = "' . $email['_given'] . '" THEN ' . $deliverable;
+				$is_sendsafely []  = ' WHEN email = "' . $email['_given'] . '" THEN ' . $sendSafely;
 
-			$status[]       = ' WHEN email = "' . $email['_given'] . '" AND ( ' . $disposable . ' = 1 OR ' . $deliverable . ' = 0 )  THEN "spam"';
-			$is_webmail []  = ' WHEN email = "' . $email['_given'] . '" THEN ' . $webmail;
-			$is_verified [] = ' WHEN email = "' . $email['_given'] . '" THEN 1';
-			$updated_at []  = ' WHEN email = "' . $email['_given'] . '" THEN "' . gmdate( 'Y-m-d H:i:s' ) . '"';
+				$status[]       = ' WHEN email = "' . $email['_given'] . '" AND ( ' . $disposable . ' = 1 OR ' . $deliverable . ' = 0 )  THEN "spam"';
+				$is_webmail []  = ' WHEN email = "' . $email['_given'] . '" THEN ' . $webmail;
+				$is_verified [] = ' WHEN email = "' . $email['_given'] . '" THEN 1';
+				$updated_at []  = ' WHEN email = "' . $email['_given'] . '" THEN "' . gmdate( 'Y-m-d H:i:s' ) . '"';
+			}
+
+			$update_sql = 'UPDATE ' . $wpbd->prefix . 'ig_contacts SET
+			is_rolebased = (CASE ' . implode( ' ', $is_rolebased ) . ' ELSE is_rolebased END),
+			is_disposable = (CASE ' . implode( ' ', $is_disposable ) . ' ELSE is_disposable  END),
+			is_deliverable = (CASE ' . implode( ' ', $is_deliverable ) . ' ELSE is_deliverable  END),
+			is_sendsafely = (CASE ' . implode( ' ', $is_sendsafely ) . ' ELSE is_sendsafely  END),
+			status = (CASE ' . implode( ' ', $status ) . ' ELSE "verified"  END),
+			is_webmail = (CASE ' . implode( ' ', $is_webmail ) . ' ELSE is_webmail  END),
+			is_verified = (CASE ' . implode( ' ', $is_verified ) . ' ELSE is_verified  END),
+			updated_at = (CASE ' . implode( ' ', $updated_at ) . ' ELSE updated_at  END) WHERE email IN( \'' . implode( '\',\'', $emails ) . '\')';
+
+			$result = $wpbd->query( $update_sql );
+			
+			unset( $is_rolebased, $is_disposable, $is_deliverable, $is_sendsafely, $status, $is_webmail, $is_verified, $updated_at, $emails, $update_sql );
 		}
-
-		$update_sql = 'UPDATE ' . $wpbd->prefix . 'ig_contacts SET
-        is_rolebased = (CASE ' . implode( ' ', $is_rolebased ) . ' ELSE is_rolebased END),
-        is_disposable = (CASE ' . implode( ' ', $is_disposable ) . ' ELSE is_disposable  END),
-        is_deliverable = (CASE ' . implode( ' ', $is_deliverable ) . ' ELSE is_deliverable  END),
-        is_sendsafely = (CASE ' . implode( ' ', $is_sendsafely ) . ' ELSE is_sendsafely  END),
-        status = (CASE ' . implode( ' ', $status ) . ' ELSE "verified"  END),
-        is_webmail = (CASE ' . implode( ' ', $is_webmail ) . ' ELSE is_webmail  END),
-        is_verified = (CASE ' . implode( ' ', $is_verified ) . ' ELSE is_verified  END),
-        updated_at = (CASE ' . implode( ' ', $updated_at ) . ' ELSE updated_at  END) WHERE email IN( \'' . implode( '\',\'', $emails ) . '\')';
-
-		$result = $wpbd->query( $update_sql );
+		
 		return $result;
 	}
 

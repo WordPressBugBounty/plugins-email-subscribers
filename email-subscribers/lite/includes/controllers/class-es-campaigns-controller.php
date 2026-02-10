@@ -33,29 +33,28 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 			$args = ES_Common::decode_args( $args );
 			
 			$per_page = ! empty( $args['per_page'] ) ? (int) $args['per_page'] : 20;
-			$current_page = ! empty( $args['currentPage'] ) ? $args['currentPage'] : 1;
-			
+		$current_page = ! empty( $args['current_page'] ) ? $args['current_page'] : 1;
 			$filter_args = array();
 			
 			if ( ! empty( $args['search'] ) ) {
 				$filter_args['search_text'] = sanitize_text_field( $args['search'] );
 			}
 			
-			// Handle include_types (old Mithril approach) - convert array to single campaign_type for get_lists
+			// Handle include_types - pass array of campaign types
 			if ( ! empty( $args['include_types'] ) && is_array( $args['include_types'] ) ) {
-				// Use first type from include_types array for get_lists method
-				$filter_args['campaign_type'] = sanitize_text_field( $args['include_types'][0] );
+				// Pass all types from include_types array
+				$filter_args['campaign_type'] = array_map( 'sanitize_text_field', $args['include_types'] );
 			} elseif ( ! empty( $args['type'] ) ) {
 				// New React approach - single type parameter
 				$filter_args['campaign_type'] = sanitize_text_field( $args['type'] );
 			}
 			
-			// Handle status arrays (old Mithril approach) - convert array to single campaign_status for get_lists
+			// Handle status arrays - pass array of statuses
 			if ( ! empty( $args['status'] ) && is_array( $args['status'] ) ) {
-				// Use first status from status array for get_lists method
-				$filter_args['campaign_status'] = sanitize_text_field( $args['status'][0] );
+				// Pass all statuses from status array
+				$filter_args['campaign_status'] = array_map( 'sanitize_text_field', $args['status'] );
 			} elseif ( isset( $args['status'] ) && ! is_array( $args['status'] ) ) {
-				// New React approach - single status parameter
+				// Single status parameter
 				$filter_args['campaign_status'] = sanitize_text_field( $args['status'] );
 			}
 			
@@ -85,16 +84,21 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 				$filter_args['search_text'] = sanitize_text_field( $args['search'] );
 			}
 			
+			// Handle include_types - pass array of campaign types
 			if ( ! empty( $args['include_types'] ) && is_array( $args['include_types'] ) ) {
-				$filter_args['campaign_type'] = sanitize_text_field( $args['include_types'][0] );
+				// Pass all types from include_types array
+				$filter_args['campaign_type'] = array_map( 'sanitize_text_field', $args['include_types'] );
 			} elseif ( ! empty( $args['type'] ) ) {
+				// New React approach - single type parameter
 				$filter_args['campaign_type'] = sanitize_text_field( $args['type'] );
 			}
 			
+			// Handle status arrays - pass array of statuses
 			if ( ! empty( $args['status'] ) && is_array( $args['status'] ) ) {
-				$filter_args['campaign_status'] = sanitize_text_field( $args['status'][0] );
+				// Pass all statuses from status array
+				$filter_args['campaign_status'] = array_map( 'sanitize_text_field', $args['status'] );
 			} elseif ( isset( $args['status'] ) && ! is_array( $args['status'] ) ) {
-				// New React approach - single status parameter
+				// Single status parameter
 				$filter_args['campaign_status'] = sanitize_text_field( $args['status'] );
 			}
 			
@@ -570,6 +574,25 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 				}
 			}
 			return false; 
+		}
+
+		public static function get_countries_for_filter( $args = array() ) {
+			try {
+				$countries = ES_Geolocation::get_countries();
+				
+				// Transform countries array to the expected format for dropdown
+				$formatted_countries = array();
+				foreach ( $countries as $code => $name ) {
+					$formatted_countries[] = array(
+						'code' => $code,
+						'name' => $name
+					);
+				}
+				
+				return $formatted_countries;
+			} catch ( Exception $e ) {
+				return array();
+			}
 		}
 
 		/**

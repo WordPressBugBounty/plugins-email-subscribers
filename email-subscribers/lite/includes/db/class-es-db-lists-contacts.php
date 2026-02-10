@@ -59,6 +59,13 @@ class ES_DB_Lists_Contacts extends ES_DB {
 	 */
 	public function init() {
 		add_action( 'ig_es_list_deleted', array( $this, 'delete_contacts_from_list' ) );
+		add_action( 'ig_es_list_counts_cache_cleared', array( $this, 'clear_dashboard_batch_cache' ) );
+		add_action( 'ig_es_campaign_deleted', array( $this, 'clear_dashboard_batch_cache' ) );
+		add_action( 'ig_es_after_campaign_status_updated', array( $this, 'clear_dashboard_batch_cache' ) );
+	}
+
+	public function clear_dashboard_batch_cache( $list_ids = array() ) {
+		ES_Cache::flush();
 	}
 
 	/**
@@ -130,6 +137,8 @@ class ES_DB_Lists_Contacts extends ES_DB {
 					return false;
 				}
 			}
+			
+			ES()->contacts_db->invalidate_query_cache();
 		}
 
 		return true;
@@ -208,6 +217,8 @@ class ES_DB_Lists_Contacts extends ES_DB {
 
 			$result = $this->bulk_insert( $contact_data );
 			$this->clear_list_counts_cache( array( $list_id ) );
+			
+			ES()->contacts_db->invalidate_query_cache();
 
 			return $result;
 		}
@@ -241,6 +252,8 @@ class ES_DB_Lists_Contacts extends ES_DB {
 			
 			$result = $this->bulk_insert( $contact_data );
 			$this->clear_list_counts_cache( array( $list_id ) );
+			
+			ES()->contacts_db->invalidate_query_cache();
 
 			return $result;
 		}
@@ -351,6 +364,8 @@ class ES_DB_Lists_Contacts extends ES_DB {
 			if ( ! empty( $list_ids_to_clear ) ) {
 				$this->clear_list_counts_cache( $list_ids_to_clear );
 			}
+			
+			ES()->contacts_db->invalidate_query_cache();
 
 			return $result;
 		}
@@ -406,6 +421,7 @@ class ES_DB_Lists_Contacts extends ES_DB {
 		} else {
 			$this->clear_list_counts_cache();
 		}
+		ES()->contacts_db->invalidate_query_cache();
 
 		return $result;
 	}
@@ -698,7 +714,13 @@ class ES_DB_Lists_Contacts extends ES_DB {
 				return false; 
 		}
 	
-		return $query ? $wpbd->query( $query ) : false;
+		$result = $query ? $wpbd->query( $query ) : false;
+		
+		if ( $result ) {
+			$this->clear_list_counts_cache( $list_ids );
+		}
+		
+		return $result;
 	}
 
 	/**
@@ -1090,6 +1112,13 @@ class ES_DB_Lists_Contacts extends ES_DB {
 		}
 
 		$contact_ids = array_map( 'intval', $contact_ids );
+		
+		$cache_key = ES_Cache::generate_key( 'list_statuses_' . md5( serialize( $contact_ids ) ) );
+		
+		if ( ES_Cache::is_exists( $cache_key, 'query' ) ) {
+			return ES_Cache::get( $cache_key, 'query' );
+		}
+		
 		$placeholders = implode( ',', array_fill( 0, count( $contact_ids ), '%d' ) );
 		
 		$sql = "SELECT lc.contact_id, lc.list_id, l.name as list_name, lc.status 
@@ -1111,6 +1140,8 @@ class ES_DB_Lists_Contacts extends ES_DB {
 			
 			$grouped[ $contact_id ][] = $row;
 		}
+		
+		ES_Cache::set( $cache_key, $grouped, 'query' );
 		
 		return $grouped;
 	}
@@ -1152,12 +1183,16 @@ class ES_DB_Lists_Contacts extends ES_DB {
 		$placeholders = implode( ',', array_fill( 0, count( $list_ids ), '%d' ) );
 		
 		$sql = "SELECT 
-					list_id,
-					status,
+					lc.list_id,
+					lc.status,
 					COUNT(*) as count
-				FROM {$this->table_name}
-				WHERE list_id IN ( $placeholders )
-				GROUP BY list_id, status";
+				FROM {$this->table_name} lc
+				WHERE lc.list_id IN ( $placeholders )
+					AND EXISTS (
+						SELECT 1 FROM {$wpdb->prefix}ig_contacts c 
+						WHERE c.id = lc.contact_id
+					)
+				GROUP BY lc.list_id, lc.status";
 		
 		$sql = $wpdb->prepare( $sql, $list_ids );
 		$results = $wpdb->get_results( $sql, 'ARRAY_A' );
@@ -1170,6 +1205,10 @@ class ES_DB_Lists_Contacts extends ES_DB {
 				'unsubscribed' => 0,
 				'unconfirmed' => 0,
 			);
+		}
+		
+		if ( null === $results || false === $results ) {
+			return $counts;
 		}
 		
 		// Populate counts from results
@@ -1202,13 +1241,18 @@ class ES_DB_Lists_Contacts extends ES_DB {
 	 */
 	public function get_contact_ids_by_criteria( $args = array() ) {
 		
-		global $wpdb; 
+		global $wpdb;
+		
+		$cache_key = ES_Cache::generate_key( 'contact_ids_by_criteria_' . md5( serialize( $args ) ) );
+		
+		if ( ES_Cache::is_exists( $cache_key, 'query' ) ) {
+			return ES_Cache::get( $cache_key, 'query' );
+		}
 
 		$where_clause = '';
 		$query_params = array();
 		
 		if ( ! empty( $args['list_id'] ) ) {
-			// Support single list ID or an array of list IDs
 			if ( is_array( $args['list_id'] ) ) {
 				$sanitized_ids = array_values( array_map( 'intval', $args['list_id'] ) );
 				if ( ! empty( $sanitized_ids ) ) {
@@ -1245,7 +1289,11 @@ class ES_DB_Lists_Contacts extends ES_DB {
 
 		$ids = $wpdb->get_col( $sql );
 
-		return array_values( array_map( 'intval', array_filter( (array) $ids, 'is_numeric' ) ) );
+		$result = array_values( array_map( 'intval', array_filter( (array) $ids, 'is_numeric' ) ) );
+		
+		ES_Cache::set( $cache_key, $result, 'query' );
+		
+		return $result;
   
 	}
 
@@ -1267,62 +1315,56 @@ class ES_DB_Lists_Contacts extends ES_DB {
 			return array();
 		}
 
-		// Sanitize status values
+		$cache_key = ES_Cache::generate_key( 'contact_ids_by_status_' . md5( serialize( array( $status_values, $list_id, $operator ) ) ) );
+		
+		if ( ES_Cache::is_exists( $cache_key, 'query' ) ) {
+			return ES_Cache::get( $cache_key, 'query' );
+		}
+
 		$status_values = array_map( 'sanitize_text_field', $status_values );
 		$status_count = count( $status_values );
 
-		// Base query
 		$sql = "SELECT DISTINCT contact_id FROM {$this->table_name} WHERE 1=1";
 
-		// Add list filter if specified
 		if ( ! empty( $list_id ) ) {
 			$sql .= $wpdb->prepare( " AND list_id = %d", intval( $list_id ) );
 		}
 
-		// Build status condition based on operator
 		switch ( $operator ) {
 			case 'is equal to':
-				// Match any of the provided statuses
 				$placeholders = implode( ', ', array_fill( 0, $status_count, '%s' ) );
 				$sql .= " AND status IN ($placeholders)";
 				break;
 
 			case 'is not equal to':
-				// Exclude all provided statuses
 				$placeholders = implode( ', ', array_fill( 0, $status_count, '%s' ) );
 				$sql .= " AND status NOT IN ($placeholders)";
 				break;
 
 			case 'contains':
-				// Same as 'is equal to' for status (exact match values)
 				$placeholders = implode( ', ', array_fill( 0, $status_count, '%s' ) );
 				$sql .= " AND status IN ($placeholders)";
 				break;
 
 			case 'does not contain':
-				// Same as 'is not equal to' for status (exclude values)
 				$placeholders = implode( ', ', array_fill( 0, $status_count, '%s' ) );
 				$sql .= " AND status NOT IN ($placeholders)";
 				break;
 
-			// TODO: Add support for additional operators:
-			// - 'starts with': Use LIKE 'value%'
-			// - 'ends with': Use LIKE '%value'
-			// - 'is empty': Use IS NULL or = ''
-			// - 'is not empty': Use IS NOT NULL and != ''
-
 			default:
-				// Fallback to 'is equal to'
 				$placeholders = implode( ', ', array_fill( 0, $status_count, '%s' ) );
 				$sql .= " AND status IN ($placeholders)";
 				break;
 		}
 
-		// Prepare and execute query
 		$params = array_merge( array( $sql ), $status_values );
 		$prepared_sql = call_user_func_array( array( $wpdb, 'prepare' ), $params );
 		$ids = $wpdb->get_col( $prepared_sql );
 
-		return array_values( array_map( 'intval', array_filter( (array) $ids, 'is_numeric' ) ) );
+		$result = array_values( array_map( 'intval', array_filter( (array) $ids, 'is_numeric' ) ) );
+		
+		ES_Cache::set( $cache_key, $result, 'query' );
+		
+		return $result;
 	}
 }

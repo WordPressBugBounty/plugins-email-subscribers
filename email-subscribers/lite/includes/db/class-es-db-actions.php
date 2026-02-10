@@ -385,18 +385,88 @@ class ES_DB_Actions extends ES_DB {
 		
 		$where_sql = ' WHERE ' . implode( ' AND ', $where_conditions );
 		
-		$query = "SELECT type, contact_id FROM {$wpbd->prefix}ig_actions" . $where_sql;
+		$group_by_campaign = ! empty( $args['campaign_ids'] ) && is_array( $args['campaign_ids'] );
+		
+		if ( $group_by_campaign ) {
+		// Use SQL aggregation to avoid loading thousands of rows into PHP memory
+		$query = "SELECT 
+			campaign_id,
+			type,
+			CASE 
+				WHEN type IN (" . IG_MESSAGE_OPEN . ", " . IG_LINK_CLICK . ", " . IG_CONTACT_UNSUBSCRIBE . ") 
+				THEN COUNT(DISTINCT contact_id)
+				ELSE COUNT(*)
+			END as action_count
+			FROM {$wpbd->prefix}ig_actions" . $where_sql . "
+			GROUP BY campaign_id, type";
 		
 		$rows = $wpbd->get_results( $query );
 		
-		$sent = 0;
-		$opened = array();
-		$clicked = array();
-		$unsubscribed = array();
-		$hard_bounced = 0;
-		$soft_bounced = 0;
-		$subscribed = 0;
+		$campaign_results = array();
+		foreach ( $args['campaign_ids'] as $cid ) {
+			$campaign_results[ $cid ] = array(
+				'subscribed'   => 0,
+				'sent'         => 0,
+				'opened'       => 0,
+				'clicked'      => 0,
+				'unsubscribed' => 0,
+				'soft_bounced' => 0,
+				'hard_bounced' => 0,
+			);
+		}
 		
+		// Fill in the aggregated counts from MySQL
+		if ( ! empty( $rows ) ) {
+			foreach ( $rows as $row ) {
+				$campaign_id = (int) $row->campaign_id;
+				$type = (int) $row->type;
+				$count = (int) $row->action_count;
+				
+				if ( ! isset( $campaign_results[ $campaign_id ] ) ) {
+					continue;
+				}
+				
+				switch ( $type ) {
+					case IG_CONTACT_SUBSCRIBE:
+						$campaign_results[ $campaign_id ]['subscribed'] = $count;
+						break;
+					case IG_MESSAGE_SENT:
+						$campaign_results[ $campaign_id ]['sent'] = $count;
+						break;
+					case IG_MESSAGE_OPEN:
+						$campaign_results[ $campaign_id ]['opened'] = $count;
+						break;
+					case IG_LINK_CLICK:
+						$campaign_results[ $campaign_id ]['clicked'] = $count;
+						break;
+					case IG_CONTACT_UNSUBSCRIBE:
+						$campaign_results[ $campaign_id ]['unsubscribed'] = $count;
+						break;
+					case IG_MESSAGE_SOFT_BOUNCE:
+					$campaign_results[ $campaign_id ]['soft_bounced'] = $count;
+					break;
+				case IG_MESSAGE_HARD_BOUNCE:
+					$campaign_results[ $campaign_id ]['hard_bounced'] = $count;
+					break;
+			}
+		}
+	}
+	
+	ES_Cache::set( $cache_key, $campaign_results, 'query', 300 );
+	return $campaign_results;
+}
+
+// For single campaign or backward compatibility
+$query = "SELECT type, contact_id FROM {$wpbd->prefix}ig_actions" . $where_sql;
+$rows = $wpbd->get_results( $query );
+
+$sent = 0;
+$opened = array();
+$clicked = array();
+$unsubscribed = array();
+$hard_bounced = 0;
+$soft_bounced = 0;
+$subscribed = 0;
 		if ( ! empty( $rows ) ) {
 			foreach ( $rows as $row ) {
 				$type = (int) $row->type;
@@ -412,7 +482,6 @@ class ES_DB_Actions extends ES_DB {
 						break;
 					
 					case IG_MESSAGE_OPEN:
-						// Use array keys for efficient deduplication
 						$opened[ $contact_id ] = true;
 						break;
 					
@@ -469,6 +538,11 @@ class ES_DB_Actions extends ES_DB {
 		
 		if ( isset( $args['campaign_id'] ) ) {
 			$where[] = $wpbd->prepare( 'campaign_id = %d', esc_sql( $args['campaign_id'] ) );
+		}
+		
+		if ( ! empty( $args['campaign_ids'] ) && is_array( $args['campaign_ids'] ) ) {
+			$campaign_ids_placeholders = implode( ',', array_fill( 0, count( $args['campaign_ids'] ), '%d' ) );
+			$where[] = $wpbd->prepare( "campaign_id IN ($campaign_ids_placeholders)", $args['campaign_ids'] );
 		}
 		
 		if ( ! empty( $args['message_id'] ) || ( isset( $args['message_id'] ) && 0 === $args['message_id'] ) ) {

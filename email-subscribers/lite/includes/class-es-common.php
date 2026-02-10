@@ -671,10 +671,10 @@ class ES_Common {
 	 *
 	 * @since 4.0.0
 	 */
-	public static function get_templates( $type = '', $editor_type = '' ) {
+	public static function get_templates( $type = '', $editor_type = '', $limit = -1 ) {
 // phpcs:diable WordPressVIPMinimum.Performance.WPQueryParams.SuppressFilters_suppress_filters
 		$es_args = array(
-			'posts_per_page'   => - 1,
+			'posts_per_page'   => $limit,
 			'post_type'        => 'es_template',
 			'orderby'          => 'date',
 			'order'            => 'DESC',
