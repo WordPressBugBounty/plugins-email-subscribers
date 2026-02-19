@@ -770,7 +770,7 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 			'ig_es_max_email_send_at_once' => get_option( 'ig_es_max_email_send_at_once', ''),
 			'ig_es_mailer_settings' => get_option( 'ig_es_mailer_settings', array() ),
 			'ig_es_ess_email' => $ess_email,
-			'ig_es_ess_branding_enabled' => get_option( 'ig_es_ess_branding_enabled', 'no' ),
+			'ig_es_ess_branding_enabled' => get_option( 'ig_es_ess_branding_enabled', 'yes' ),
 			'ig_es_email_auth_headers' => self::format_email_auth_headers( get_option( 'ig_es_email_auth_headers', array() ) ),
 			// Gmail OAuth validation
 			'ig_es_gmail_valid_credentials' => self::get_gmail_valid_credentials(),
@@ -817,7 +817,7 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 		private static function set_default_settings( $options ) {
 			$defaults = array(
 				'ig_es_disable_wp_cron'             => 'no',
-				'ig_es_ess_branding_enabled'        => 'no',
+				'ig_es_ess_branding_enabled'        => 'yes',
 				'ig_es_track_email_opens'           => 'no',
 				'ig_es_enable_ajax_form_submission' => 'no',
 				'ig_es_enable_welcome_email'        => 'no',
@@ -848,7 +848,6 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 				'ig_es_from_name',
 				'ig_es_admin_emails',
 				'ig_es_email_type',
-				'ig_es_post_image_size',
 				'ig_es_track_email_opens',
 				'ig_es_enable_ajax_form_submission',
 				'ig_es_enable_welcome_email',
@@ -862,6 +861,9 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 				'ig_es_hourly_email_send_limit',
 				'ig_es_disable_wp_cron',
 				'ig_es_allow_api',
+				'ig_es_ess_branding_enabled',
+				'ig_es_delete_plugin_data',
+				'ig_es_allow_tracking',
 			);
 			$textarea_fields = array(
 				'ig_es_unsubscribe_link_content',
@@ -888,7 +890,10 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 		
 				$value = stripslashes_deep( $value );
 		
-				if ( in_array( $key, $text_fields, true ) ) {
+				// Special handling for image size - convert display names to slugs
+				if ( 'ig_es_post_image_size' === $key ) {
+					$value = self::convert_image_size_to_slug( $value );
+				} elseif ( in_array( $key, $text_fields, true ) ) {
 					$value = sanitize_text_field( $value );
 				} elseif ( in_array( $key, $textarea_fields, true ) ) {
 					$value = wp_kses_post( $value );
@@ -898,6 +903,47 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 		
 				update_option( $key, wp_unslash( $value ), false );
 			}
+		}
+
+		/**
+		 * Convert image size display name to WordPress slug
+		 * 
+		 * @param string $value The image size value (could be display name or slug)
+		 * @return string The WordPress image size slug
+		 * @since 5.7.55
+		 */
+		private static function convert_image_size_to_slug( $value ) {
+			// Already a valid slug, return as is
+			$valid_slugs = array( 'thumbnail', 'medium', 'medium_large', 'large', 'full', '1536x1536', '2048x2048' );
+			if ( in_array( $value, $valid_slugs, true ) ) {
+				return $value;
+			}
+			
+			// Map display names to slugs for backward compatibility
+			$display_name_map = array(
+				'Thumbnail'     => 'thumbnail',
+				'Medium'        => 'medium',
+				'Medium Size'   => 'medium',
+				'Medium large'  => 'medium_large',
+				'Large'         => 'large',
+				'Full Size'     => 'full',
+				'1536×1536'     => '1536x1536',
+				'2048×2048'     => '2048x2048',
+			);
+			
+			if ( isset( $display_name_map[ $value ] ) ) {
+				return $display_name_map[ $value ];
+			}
+			
+			// Try to convert any string to a potential slug (lowercase, replace spaces/special chars with underscore)
+			$slug = strtolower( str_replace( array( ' ', '×', '-' ), array( '_', 'x', '_' ), $value ) );
+			$slug = preg_replace( '/[^a-z0-9_x]/', '', $slug );
+			
+			if ( ! in_array( $slug, $valid_slugs, true ) ) {
+				$slug = 'thumbnail';
+			}
+			
+			return $slug;
 		}
 		
 		public static function get_registered_settings() {

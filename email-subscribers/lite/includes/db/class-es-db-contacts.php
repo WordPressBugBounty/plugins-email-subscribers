@@ -358,14 +358,21 @@ class ES_DB_Contacts extends ES_DB {
 
 		global $wpdb;
 
-		// Check if we have got array of list ids.
+		// Sanitize and prepare list IDs for safe SQL query
 		if ( is_array( $list_id ) ) {
-			$list_ids_str = implode( ',', $list_id );
+			$list_id = array_map( 'absint', $list_id );
+			$placeholders = implode( ',', array_fill( 0, count( $list_id ), '%d' ) );
+			$where = $wpdb->prepare(
+				"id IN (SELECT contact_id FROM {$wpdb->prefix}ig_lists_contacts WHERE list_id IN({$placeholders}) AND status IN ('subscribed', 'confirmed'))",
+				$list_id
+			);
 		} else {
-			$list_ids_str = $list_id;
+			$list_id = absint( $list_id );
+			$where = $wpdb->prepare(
+				"id IN (SELECT contact_id FROM {$wpdb->prefix}ig_lists_contacts WHERE list_id = %d AND status IN ('subscribed', 'confirmed'))",
+				$list_id
+			);
 		}
-
-		$where = "id IN (SELECT contact_id FROM {$wpdb->prefix}ig_lists_contacts WHERE list_id IN({$list_ids_str}) AND status IN ('subscribed', 'confirmed'))";
 
 		return $this->get_by_conditions( $where );
 
@@ -508,14 +515,23 @@ class ES_DB_Contacts extends ES_DB {
 	 * @since 4.3.4 Use prepare_for_in_query instead of array_to_str
 	 */
 	public function edit_contact_global_status( $ids = array(), $unsubscribed = 0 ) {
-		global $wpbd;
+		global $wpdb;
 
-		$ids_str = implode( ',', array_map( 'absint', $ids ) );
+		// Validate IDs array is not empty
+		if ( empty( $ids ) || ! is_array( $ids ) ) {
+			return false;
+		}
 
-		return $wpbd->query(
-			$wpbd->prepare(
-				"UPDATE {$wpbd->prefix}ig_contacts SET unsubscribed = %d WHERE id IN({$ids_str})",
-				$unsubscribed
+		// Sanitize IDs and prepare placeholders for safe SQL query
+		$ids = array_map( 'absint', $ids );
+		$placeholders = implode( ',', array_fill( 0, count( $ids ), '%d' ) );
+		$unsubscribed = absint( $unsubscribed );
+		$query_params = array_merge( array( $unsubscribed ), $ids );
+
+		return $wpdb->query(
+			$wpdb->prepare(
+				"UPDATE {$wpdb->prefix}ig_contacts SET unsubscribed = %d WHERE id IN( {$placeholders} )",
+				$query_params
 			)
 		);
 	}
@@ -532,7 +548,7 @@ class ES_DB_Contacts extends ES_DB {
 	 * @since 4.3.4 Used prepare_for_in_query instead of array_to_str
 	 */
 	public function is_contact_exist_in_list( $email, $list_id ) {
-		global $wpbd;
+		global $wpdb;
 
 		// Flush cache to ensure we have latest results.
 		ES_Cache::flush();
@@ -543,16 +559,20 @@ class ES_DB_Contacts extends ES_DB {
 		if ( ! empty( $contact_id ) ) {
 			$data['contact_id'] = $contact_id;
 
+			// Ensure list_id is array and sanitize
 			if ( ! is_array( $list_id ) ) {
 				$list_id = array( $list_id );
 			}
+			$list_id = array_map( 'absint', $list_id );
+			$placeholders = implode( ',', array_fill( 0, count( $list_id ), '%d' ) );
 
-			$list_ids_str = implode( ',', $list_id );
+			// Merge parameters: all list IDs first, then contact_id
+			$query_params = array_merge( $list_id, array( absint( $contact_id ) ) );
 
-			$list_contact_count = $wpbd->get_var(
-				$wpbd->prepare(
-					"SELECT count(*) as count FROM {$wpbd->prefix}ig_lists_contacts WHERE list_id IN ($list_ids_str) AND contact_id = %d",
-					$contact_id
+			$list_contact_count = $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT count(*) as count FROM {$wpdb->prefix}ig_lists_contacts WHERE list_id IN ($placeholders) AND contact_id = %d",
+					$query_params
 				)
 			);
 
@@ -904,14 +924,14 @@ class ES_DB_Contacts extends ES_DB {
 	 * @since 4.4.2
 	 */
 	public function get_total_subscribed_contacts_by_date( $days = 60 ) {
-		global $wpbd;
+		global $wpdb;
 
 		$columns = array( 'DATE(created_at) as date', 'count(DISTINCT(id)) as total' );
 		$where   = 'unsubscribed = %d';
-		$args[]  = 0;
+		$args    = array( 0 );
 
 		if ( 0 != $days ) {
-			$days   = esc_sql( $days );
+			$days   = absint( $days );
 			$where .= ' AND created_at >= DATE_SUB(NOW(), INTERVAL %d DAY)';
 			$args[] = $days;
 		}
@@ -920,7 +940,7 @@ class ES_DB_Contacts extends ES_DB {
 
 		$where .= $group_by;
 
-		$where = $wpbd->prepare( $where, $args );
+		$where = $wpdb->prepare( $where, $args );
 
 		$results = $this->get_columns_by_condition( $columns, $where );
 
@@ -944,19 +964,19 @@ class ES_DB_Contacts extends ES_DB {
 	 * @since 4.4.2
 	 */
 	public function get_total_subscribed_contacts_before_days( $days = 60 ) {
-		global $wpbd;
+		global $wpdb;
 
 		$columns = array( 'count(DISTINCT(id)) as total' );
 		$where   = 'unsubscribed = %d';
-		$args[]  = 0;
+		$args    = array( 0 );
 
 		if ( 0 != $days ) {
-			$days   = esc_sql( $days );
+			$days   = absint( $days );
 			$where .= ' AND created_at < DATE_SUB(NOW(), INTERVAL %d DAY)';
 			$args[] = $days;
 		}
 
-		$where = $wpbd->prepare( $where, $args );
+		$where = $wpdb->prepare( $where, $args );
 
 		$results = $this->get_columns_by_condition( $columns, $where );
 
@@ -976,20 +996,20 @@ class ES_DB_Contacts extends ES_DB {
 	 * @since 4.4.2
 	 */
 	public function get_total_subscribed_contacts_between_days( $days = 60 ) {
-		global $wpbd;
+		global $wpdb;
 
 		$columns = array( 'count(DISTINCT(id)) as total' );
 		$where   = 'unsubscribed = %d';
-		$args[]  = 0;
+		$args    = array( 0 );
 
 		if ( 0 != $days ) {
-			$days   = esc_sql( $days );
+			$days   = absint( $days );
 			$where .= ' AND created_at > DATE_SUB(NOW(), INTERVAL %d DAY) AND created_at < DATE_SUB(NOW(), INTERVAL %d DAY) ';
 			$args[] = $days * 2;
 			$args[] = $days;
 		}
 
-		$where = $wpbd->prepare( $where, $args );
+		$where = $wpdb->prepare( $where, $args );
 
 		$results = $this->get_columns_by_condition( $columns, $where );
 
@@ -1028,6 +1048,32 @@ class ES_DB_Contacts extends ES_DB {
 
 		return $total_subscribers;
 
+	}
+
+	public function get_subscriber_counts_by_form_ids( $form_ids = array() ) {
+		global $wpdb;
+		
+		if ( empty( $form_ids ) || ! is_array( $form_ids ) ) {
+			return array();
+		}
+		
+		$form_ids = array_map( 'intval', $form_ids );
+		$placeholders = implode( ',', array_fill( 0, count( $form_ids ), '%d' ) );
+		
+		$results = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT form_id, COUNT(DISTINCT id) as total FROM {$wpdb->prefix}ig_contacts WHERE form_id IN ($placeholders) AND unsubscribed = 0 GROUP BY form_id",
+				$form_ids
+			),
+			ARRAY_A
+		);
+		
+		$counts = array();
+		foreach ( $results as $row ) {
+			$counts[ $row['form_id'] ] = intval( $row['total'] );
+		}
+		
+		return $counts;
 	}
 
 	/**
@@ -1411,7 +1457,7 @@ class ES_DB_Contacts extends ES_DB {
 		if ( ES_Cache::is_exists( $cache_key, 'query' ) ) {
 			return ES_Cache::get( $cache_key, 'query' );
 		}
-
+		
 		$sql          = "SELECT COUNT(DISTINCT c.id) FROM {$this->table_name} c";
 		$where_clause = '';
 
@@ -1504,6 +1550,26 @@ class ES_DB_Contacts extends ES_DB {
 					$where_conditions[] = $wpdb->prepare( "{$field} LIKE %s", '%' . $value . '%' );
 					break;
 					
+				case 'does_not_contain':
+					$where_conditions[] = $wpdb->prepare( "{$field} NOT LIKE %s", '%' . $value . '%' );
+					break;
+					
+				case 'starts_with':
+					$where_conditions[] = $wpdb->prepare( "{$field} LIKE %s", $value . '%' );
+					break;
+					
+				case 'ends_with':
+					$where_conditions[] = $wpdb->prepare( "{$field} LIKE %s", '%' . $value );
+					break;
+					
+				case 'is_greater_than':
+					$where_conditions[] = $wpdb->prepare( "{$field} > %s", $value );
+					break;
+					
+				case 'is_less_than':
+					$where_conditions[] = $wpdb->prepare( "{$field} < %s", $value );
+					break;
+					
 				case 'in':
 					if ( is_array( $value ) ) {
 						$placeholders = implode( ',', array_fill( 0, count( $value ), '%s' ) );
@@ -1514,13 +1580,13 @@ class ES_DB_Contacts extends ES_DB {
 		}
 		
 		if ( empty( $where_conditions ) ) {
- 			return array();
+			return array();
 		}
 		
 		// Preserve controller behavior: combine conditions using OR
 		$where_sql = implode( ' OR ', $where_conditions );
 		$sql = "SELECT id FROM {$contacts_table} WHERE {$where_sql}";
-		 
+		
 		$results = $wpdb->get_col( $sql ); 
 		
 		return $results ? array_map( 'intval', $results ) : array();

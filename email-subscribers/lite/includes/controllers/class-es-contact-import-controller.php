@@ -1225,7 +1225,7 @@ if ( ! class_exists( 'ES_Contact_Import_Controller' ) ) {
 			ES_Cache::flush();
 			wp_cache_flush();
 			
-			if ( 'yes' !== $send_optin_emails ) {
+			if ( 'yes' === $send_optin_emails ) {
 				try {
 					$subscriber_options = array();
 					$subscriber_options[ $contact_id ]['type'] = 'optin_welcome_email';

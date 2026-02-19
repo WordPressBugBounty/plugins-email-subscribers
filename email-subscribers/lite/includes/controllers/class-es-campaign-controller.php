@@ -314,11 +314,20 @@ if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 						$email_queued = self::queue_emails( $mailing_queue_id, $mailing_queue_hash, $campaign_id );
 						if ( $email_queued ) {
 							$response['success']              = true;
-							$response['data']['redirect_url'] = admin_url( 'admin.php?page=es_campaigns&id=' . $campaign_id . '&action=campaign_scheduled' );
+							$response['data']['redirect_url'] = admin_url( 'admin.php?page=es_dashboard#campaigns' );
+
+							// Check if this is immediate send (schedule_now) to trigger sending from frontend
+							$scheduling_option = ! empty( $campaign_data['scheduling_option'] ) ? $campaign_data['scheduling_option'] : 'schedule_now';
+							if ( 'schedule_now' === $scheduling_option ) {
+								$response['data']['should_trigger_sending'] = true;
+								$response['data']['mailing_queue_id']       = $mailing_queue_id;
+								$response['data']['mailing_queue_hash']     = $mailing_queue_hash;
+							} else {
+								// For scheduled campaigns, WordPress cron will handle sending
+								$response['data']['should_trigger_sending'] = false;
+							}
 						}
 					}
-
-					self::maybe_send_mailing_queue( $mailing_queue_id, $mailing_queue_hash );
 				}
 			}
 
@@ -581,6 +590,36 @@ if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 			}
 		}
 
+		/**
+		 * New API endpoint to trigger mailing queue sending from frontend
+		 * Called after successful campaign scheduling
+		 *
+		 * @param array $data Contains mailing_queue_id and mailing_queue_hash
+		 * @return array Response with success status
+		 *
+		 * @since 5.9.17
+		 */
+		public static function trigger_mailing_queue( $data ) {
+			$data = ES_Common::decode_args( $data );
+
+			$response = array(
+				'success' => false,
+				'message' => __( 'Invalid parameters', 'email-subscribers' )
+			);
+
+			$mailing_queue_id   = ! empty( $data['mailing_queue_id'] ) ? absint( $data['mailing_queue_id'] ) : 0;
+			$mailing_queue_hash = ! empty( $data['mailing_queue_hash'] ) ? sanitize_text_field( $data['mailing_queue_hash'] ) : '';
+
+			if ( ! empty( $mailing_queue_id ) && ! empty( $mailing_queue_hash ) ) {
+				// Trigger the mailing queue sending
+				self::maybe_send_mailing_queue( $mailing_queue_id, $mailing_queue_hash );
+
+				$response['success'] = true;
+				$response['message'] = __( 'Campaign sending triggered successfully', 'email-subscribers' );
+			}
+
+			return $response;
+		}
 		public static function is_using_new_category_format( $campaign_id ) {
 			$new_flow_campaign_ids     = get_option( 'ig_es_new_category_format_campaign_ids', array() );
 			$using_new_category_format = false;

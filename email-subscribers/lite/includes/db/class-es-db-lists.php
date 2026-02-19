@@ -92,8 +92,32 @@ class ES_DB_Lists extends ES_DB {
 	 *
 	 * @since 4.0.0
 	 */
-	public function get_lists() {
-		return $this->get_all();
+	public function get_lists( $args = array() ) {
+		if ( empty( $args ) ) {
+			return $this->get_all();
+		}
+		
+		$allowed_columns = array( 'id', 'name', 'created_at', 'updated_at', 'slug', 'status' );
+		$order_by = ! empty( $args['order_by'] ) ? esc_sql( $args['order_by'] ) : 'id';
+		
+		if ( ! in_array( $order_by, $allowed_columns, true ) ) {
+			$order_by = 'id';
+		}
+		
+		$order = ! empty( $args['order'] ) ? esc_sql( strtoupper( $args['order'] ) ) : 'ASC';
+		
+		if ( ! in_array( $order, array( 'ASC', 'DESC' ), true ) ) {
+			$order = 'ASC';
+		}
+		
+		global $wpdb;
+		$query = "SELECT * FROM {$this->table_name} ORDER BY {$order_by} {$order}";
+		
+		if ( ! empty( $args['limit'] ) ) {
+			$query .= $wpdb->prepare( ' LIMIT %d', intval( $args['limit'] ) );
+		}
+		
+		return $wpdb->get_results( $query, ARRAY_A );
 	}
 
 	/**

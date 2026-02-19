@@ -117,6 +117,11 @@ class ES_DB_Workflows extends ES_DB {
 	 *
 	 * @since 4.4.1
 	 */
+	public function get_workflows_count() {
+		global $wpdb;
+		return (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}ig_workflows" );
+	}
+
 	public function get_workflows( $query_args = array(), $output = ARRAY_A, $do_count_only = false ) {
 
 		global $wpdb, $wpbd;
@@ -365,6 +370,13 @@ class ES_DB_Workflows extends ES_DB {
 			return $updated;
 		}
 
+		if ( is_array( $workflow_ids ) ) {
+			$workflow_ids = array_map( 'absint', $workflow_ids );
+			$workflow_ids = array_filter( $workflow_ids );
+
+		} else {
+			$workflow_ids = absint( $workflow_ids );
+		}
 		$workflow_ids = esc_sql( $workflow_ids );
 
 		// Variable to hold workflow ids seperated by commas.

@@ -56,15 +56,19 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 			$days = 7;
 		} else {
 			$days = intval( $days );
+			if ( $days < 1 || $days > 365 ) {
+				$days = 7;
+			}
 		} 
-
-		if ( ! empty( $list_id ) && $list_id !== 'all' && ! is_numeric( $list_id ) ) {
-			$list_id = 0;
-		}
 
 		if ( $list_id === 'all' ) {
 			$list_id = 0;
+		} elseif ( ! empty( $list_id ) && ! is_numeric( $list_id ) ) {
+			$list_id = '';
+		} elseif ( ! empty( $list_id ) ) {
+			$list_id = intval( $list_id );
 		}
+		// If $list_id is empty, leave it as empty string (default behavior)
  
 		$reports_args = array(
 			'list_id' => $list_id,
@@ -103,40 +107,52 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 			);
 			$forms = ES()->forms_db->get_forms( $forms_args );
 
-			if ( ! empty( $forms ) ) {
-				foreach ( $forms as &$form ) {
-				$form_id = ! empty( $form['id'] ) ? intval( $form['id'] ) : 0;
-
-				$form['subscriber_count'] = ES()->contacts_db->get_total_contacts_by_form_id( $form_id, 0 );
-
-				$settings = ! empty( $form['settings'] ) ? ig_es_maybe_unserialize( $form['settings'] ) : [];
-
-				$list_ids = [];
+		if ( ! empty( $forms ) && is_array( $forms ) ) {
+			$form_ids = array_column( $forms, 'id' );
+			$form_ids = array_filter( $form_ids, 'is_numeric' );
+			
+			if ( ! empty( $form_ids ) ) {
+				$all_list_ids = array();
+				
+				foreach ( $forms as $form ) {
+					$settings = ! empty( $form['settings'] ) ? ig_es_maybe_unserialize( $form['settings'] ) : array();
 					if ( ! empty( $settings['lists'] ) ) {
-						$list_ids = is_array( $settings['lists'] ) ? $settings['lists'] : [ intval( $settings['lists'] ) ];
+						$list_ids = is_array( $settings['lists'] ) ? $settings['lists'] : array( intval( $settings['lists'] ) );
+						$all_list_ids = array_merge( $all_list_ids, $list_ids );
 					}
-
-				$list_names = [];
-					if ( ! empty( $list_ids ) ) {
-						foreach ( $list_ids as $list_id ) {
-							$list_names[] = ES()->lists_db->get_list_name_by_id( $list_id );
+				}
+				$all_list_ids = array_unique( $all_list_ids );
+				
+				$subscriber_counts = ES()->contacts_db->get_subscriber_counts_by_form_ids( $form_ids );
+				$list_names_map = ! empty( $all_list_ids ) ? ES()->lists_db->get_list_name_by_ids( $all_list_ids ) : array();
+				
+				foreach ( $forms as &$form ) {
+					$form_id = intval( $form['id'] );
+					$form['subscriber_count'] = isset( $subscriber_counts[ $form_id ] ) ? $subscriber_counts[ $form_id ] : 0;
+					
+					$settings = ! empty( $form['settings'] ) ? ig_es_maybe_unserialize( $form['settings'] ) : array();
+					$list_ids = ! empty( $settings['lists'] ) ? ( is_array( $settings['lists'] ) ? $settings['lists'] : array( intval( $settings['lists'] ) ) ) : array();
+					
+					$list_names = array();
+					foreach ( $list_ids as $list_id ) {
+						if ( isset( $list_names_map[ $list_id ] ) ) {
+							$list_names[] = $list_names_map[ $list_id ];
 						}
 					}
-
-				$form['list_names'] = ! empty( $list_names ) ? implode( ', ', $list_names ) : '';
+					$form['list_names'] = implode( ', ', $list_names );
 				}
-
 			}
+		}
 
-			$lists = array_slice( array_reverse( ES()->lists_db->get_lists() ), 0, 2 );
-			$workflows = ES()->workflows_db->get_workflows();
+		$lists = ES()->lists_db->get_lists( array( 'order_by' => 'id', 'order' => 'DESC', 'limit' => 2 ) );
+			$workflows_count = ES()->workflows_db->get_workflows_count();
 
 			
 			$onboarding_tasks_status = array(
 				'sendFirstCampaign' => ! empty( $campaigns ) ? 'yes' : 'no',
 				'importContacts' => ! empty( $dashboard_kpi['total_subscribers'] ) && $dashboard_kpi['total_subscribers'] > 0 ? 'yes' : 'no',
 				'createSubscriptionFormDone' => ! empty( $forms ) ? 'yes' : 'no',
-				'createWorkflowDone' => ! empty( $workflows ) ? 'yes' : 'no'
+				'createWorkflowDone' => $workflows_count > 0 ? 'yes' : 'no'
 			);
 			
 			$icegram_plugins = self::get_icegram_plugins_info();
@@ -312,7 +328,13 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 			return $plugins_info;
 		}
 		
-		public static function get_audience_activities() {
+		/**
+	 * Get audience activity feed with recent subscribe/unsubscribe actions
+	 *
+	 * @return array Recent activities with caching
+	 * @since 4.0.0
+	 */
+	public static function get_audience_activities() {
 		$cache_key = 'es_audience_activities';
 		$cached = ES_Cache::get_transient( $cache_key );
 		if ( false !== $cached ) {
@@ -337,7 +359,14 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 			return $recent_activities;
 		}
 
-		public static function prepare_activities_from_actions( $actions ) {
+		/**
+	 * Prepare activity feed from raw action records
+	 *
+	 * @param array $actions Raw action records from database
+	 * @return array Formatted activities for display
+	 * @since 4.0.0
+	 */
+	public static function prepare_activities_from_actions( $actions ) {
 			$activities = array();
 			if ( $actions ) {
 				$contact_ids      = array_column( $actions, 'contact_id' );
@@ -372,14 +401,16 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 						$contact_info_text = $contact_email;
 					}
 					
-					$contact_info_text = '<a href="?page=es_subscribers&action=edit&subscriber=' . $contact_id . '" class="text-indigo-600" target="_blank">' . $contact_info_text . '</a>';
-					$action_verb       = ES()->actions->get_action_verb( $action_type );
-					$action_created_at = $action['created_at'];
-					$activity_time     = human_time_diff( time(), $action_created_at ) . ' ' . __( 'ago', 'email-subscribers' );
-					
-					$list_id         = ! empty( $action['list_id'] ) ? $action['list_id'] : 0;
-					$list_name       = ! empty( $lists_name[ $list_id ] ) ? $lists_name[ $list_id ] : '';
-					$action_obj_name = '<a href="?page=es_lists&action=edit&list=' . $list_id . '" target="_blank">' . $list_name . '</a> ' . __( 'list', 'email-subscribers' );
+				$contact_url = esc_url( admin_url( 'admin.php?page=es_dashboard#/audience' ) );
+				$contact_info_text = '<a href="' . $contact_url . '" class="text-indigo-600" target="_blank">' . esc_html( $contact_info_text ) . '</a>';
+				$action_verb       = ES()->actions->get_action_verb( $action_type );
+				$action_created_at = $action['created_at'];
+				$activity_time     = human_time_diff( $action_created_at, time() ) . ' ' . __( 'ago', 'email-subscribers' );
+				
+				$list_id         = ! empty( $action['list_id'] ) ? $action['list_id'] : 0;
+				$list_name       = ! empty( $lists_name[ $list_id ] ) ? $lists_name[ $list_id ] : '';
+				$list_url = esc_url( add_query_arg( array( 'page' => 'es_lists', 'action' => 'edit', 'list' => $list_id ), admin_url( 'admin.php' ) ) );
+				$action_obj_name = '<a href="' . $list_url . '" target="_blank">' . esc_html( $list_name ) . '</a> ' . esc_html__( 'list', 'email-subscribers' );
 					$activity_text = $contact_info_text . ' ' . $action_verb . ' ' . $action_obj_name;
 					$activities[]  = array(
 						'time' => $activity_time,
@@ -391,7 +422,14 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 			return $activities;
 		}
 
-		public static function get_recent_campaigns_kpis( $campaign_id ) {
+		/**
+	 * Get campaign performance KPIs (open rate, click rate, sent count)
+	 *
+	 * @param int $campaign_id Campaign ID
+	 * @return array Campaign statistics
+	 * @since 4.0.0
+	 */
+	public static function get_recent_campaigns_kpis( $campaign_id ) {
 			$args = array(
 				'campaign_id' => $campaign_id,
 				'types' => array(
@@ -401,25 +439,28 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 				)
 			);
 			$actions_count       = ES()->actions_db->get_actions_count( $args );
-			$total_email_sent    = $actions_count['sent'];
-			$total_email_opened  = $actions_count['opened'];
-			$total_email_clicked = $actions_count['clicked'];
-			$open_rate  = ! empty( $total_email_sent ) ? number_format_i18n( ( ( $total_email_opened * 100 ) / $total_email_sent ), 2 ) : 0 ;
-			$click_rate = ! empty( $total_email_sent ) ? number_format_i18n( ( ( $total_email_clicked * 100 ) / $total_email_sent ), 2 ) : 0;
-			$campaign['open_rate']  = $open_rate;
-			$campaign['click_rate'] = $click_rate;
-			$campaign['total_email_sent'] = $total_email_sent;
+		$total_email_sent    = isset( $actions_count['sent'] ) ? intval( $actions_count['sent'] ) : 0;
+		$total_email_opened  = isset( $actions_count['opened'] ) ? intval( $actions_count['opened'] ) : 0;
+		$total_email_clicked = isset( $actions_count['clicked'] ) ? intval( $actions_count['clicked'] ) : 0;
+		$open_rate  = ! empty( $total_email_sent ) ? number_format_i18n( ( ( $total_email_opened * 100 ) / $total_email_sent ), 2 ) : 0 ;
+		$click_rate = ! empty( $total_email_sent ) ? number_format_i18n( ( ( $total_email_clicked * 100 ) / $total_email_sent ), 2 ) : 0;
+		
+		$campaign = array(
+			'open_rate'  => $open_rate,
+			'click_rate' => $click_rate,
+			'total_email_sent' => $total_email_sent
+		);
 
-			return $campaign;
-		}
+		return $campaign;
+	}
 
-		/**
-		 * Save onboarding step to WordPress options
-		 *
-		 * @param array $data
-		 * @return array
-		 */
-		public static function save_onboarding_step( $data = array() ) {
+	/**
+	 * Save onboarding step to WordPress options
+	 *
+	 * @param array $data
+	 * @return array
+	 */
+	public static function save_onboarding_step( $data = array() ) {
 			if ( is_string( $data ) ) {
 				$decoded_data = json_decode( $data, true );
 				if ( $decoded_data ) {
@@ -466,50 +507,48 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 		}
 
 		/**
-		 * Get all onboarding steps from WordPress options
-		 *
-		 * @return array
-		 */
-		public static function get_onboarding_steps() {
-			$steps = array(
-				'sendFirstCampaign' => 'sendFirstCampaign',
-				'importContacts' => 'importContacts',
-				'createWorkflow' => 'createWorkflow',
-				'createSubscriptionForm' => 'createSubscriptionForm'
-			);
-
+	 * Get onboarding steps status - reuses data from dashboard to avoid duplicate queries
+	 *
+	 * @param array|null $campaigns Optional campaigns array from dashboard
+	 * @param array|null $forms Optional forms array from dashboard  
+	 * @param int|null $workflows_count Optional workflows count
+	 * @return array Onboarding steps data
+	 */
+	public static function get_onboarding_steps( $campaigns = null, $forms = null, $workflows_count = null ) {
+		if ( is_null( $campaigns ) ) {
 			$campaign_args = array(
 				'status'          => array(
 					IG_ES_CAMPAIGN_STATUS_IN_ACTIVE,
 					IG_ES_CAMPAIGN_STATUS_ACTIVE,
 				),
 				'order_by_column' => 'ID',
-				'limit'           => '5',
+				'limit'           => '1',
 				'order'           => 'DESC',
 			);
 			$campaigns = ES()->campaigns_db->get_campaigns( $campaign_args );
+		}
 
+		if ( is_null( $forms ) ) {
 			$forms_args = array(
 				'order_by_column' => 'ID',
-				'limit'           => '5',
+				'limit'           => '1',
 				'order'           => 'DESC',
 			);
 			$forms = ES()->forms_db->get_forms( $forms_args );
+		}
 
-			$workflows = ES()->workflows_db->get_workflows();
-			$imported_contacts_count = ES()->contacts_db->get_contacts_count_by_source( 'import' );
+		if ( is_null( $workflows_count ) ) {
+			$workflows_count = ES()->workflows_db->get_workflows_count();
+		}
+		
+		$imported_contacts_count = ES()->contacts_db->get_contacts_count_by_source( 'import' );
 
-			$onboarding_data = array(
-				'sendFirstCampaign' => ! empty( $campaigns ),
-				'importContacts' => $imported_contacts_count > 0,
-				'createSubscriptionForm' => ! empty( $forms ),
-				'createWorkflow' => ! empty( $workflows )
-			);
-
-			return array(
-				'success' => true,
-				'data' => $onboarding_data
-			);
+		return array(
+			'sendFirstCampaign' => ! empty( $campaigns ),
+			'importContacts' => $imported_contacts_count > 0,
+			'createSubscriptionForm' => ! empty( $forms ),
+			'createWorkflow' => $workflows_count > 0
+		);
 		}
 
 
@@ -564,99 +603,99 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 		}
 
 		/**
-		 * Get all dashboard data in a single batched request
-		 * Combines: lists, country_stats, audience_growth, audience_health, subscribers_stats
+		 * Get contact/audience dashboard batch data in a single request
+		 * Used by Audience page - combines lists, stats, growth, health, and country data
 		 * 
-		 * @param array $args Arguments containing list_id, days, growth_days
-		 * @return array Combined dashboard data
+		 * @param array $data Request data containing 'days', 'list_id', 'growth_days' parameters
+		 * @return array Batched audience data
 		 * 
 		 * @since 5.9.15
 		 */
-		public static function get_dashboard_batch_data( $args = array() ) {
-			
-			if ( is_string( $args ) ) {
-				$decoded = json_decode( $args, true );
-				if ( $decoded ) {
-					$args = $decoded;
+		public static function get_contact_dashboard_batch_data( $data = array() ) {
+			if ( is_string( $data ) ) {
+				$decoded_data = json_decode( $data, true );
+				if ( $decoded_data ) {
+					$data = $decoded_data;
 				}
 			}
-
-			$list_id = isset( $args['list_id'] ) ? $args['list_id'] : 'all';
-			$days = isset( $args['days'] ) ? intval( $args['days'] ) : 7;
-			$growth_days = isset( $args['growth_days'] ) ? intval( $args['growth_days'] ) : 30;
-			$override_cache = isset( $args['override_cache'] ) ? (bool) $args['override_cache'] : false;
 			
-			// Cache key based on parameters
-			$cache_key = ES_Cache::generate_key( 
-				'dashboard_batch_' . $list_id . '_' . $days . '_' . $growth_days 
+			$days = isset( $data['days'] ) ? intval( $data['days'] ) : 7;
+			$list_id = isset( $data['list_id'] ) ? $data['list_id'] : 'all';
+			$growth_days = isset( $data['growth_days'] ) ? intval( $data['growth_days'] ) : 30;
+			
+			if ( $days < 1 || $days > 365 ) {
+				$days = 7;
+			}
+			
+			// 1. Get subscriber stats (audience insights)
+			$subscribers_stats = self::get_subscribers_stats( array(
+				'list_id' => $list_id,
+				'days'    => $days,
+			) );
+			
+			// 2. Get all active lists with contact counts
+			$lists = ES_Lists_Controller::get_lists( array(
+				'per_page' => -1,
+			) );
+			
+			// 3. Get country stats
+			$country_stats = ES_Lists_Controller::get_country_stats( array(
+				'list_id' => $list_id,
+				'days'    => $days,
+			) );
+			
+			// 4. Get audience growth stats
+			$audience_growth = self::get_audience_growth_stats( array(
+				'days' => $growth_days,
+			) );
+			
+			// 5. Get audience health stats
+			$audience_health = ES_Contacts_Controller::get_audience_health_stats();
+			
+			return array(
+				'lists'             => ! empty( $lists ) ? $lists : array(),
+				'country_stats'     => ! empty( $country_stats ) ? $country_stats : array(),
+				'audience_growth'   => $audience_growth,
+				'audience_health'   => $audience_health,
+				'subscribers_stats' => $subscribers_stats,
+			);
+		}
+		
+		/**
+		 * Get main dashboard batch data (campaigns, forms, onboarding)
+		 * Used by Main Dashboard page
+		 * 
+		 * @param array $data Request data containing 'days' parameter
+		 * @return array Combined dashboard and onboarding data
+		 * 
+		 * @since 5.9.15
+		 */
+		public static function get_main_dashboard_batch_data( $data = array() ) {
+			if ( is_string( $data ) ) {
+				$decoded_data = json_decode( $data, true );
+				if ( $decoded_data ) {
+					$data = $decoded_data;
+				}
+			}
+			
+			$days = isset( $data['days'] ) ? intval( $data['days'] ) : 7;
+			
+			if ( $days < 1 || $days > 365 ) {
+				$days = 7;
+			}
+			
+			$dashboard_data = self::get_dashboard_data( array( 'days' => $days ) );
+			
+			$onboarding_steps = self::get_onboarding_steps(
+				! empty( $dashboard_data['campaigns'] ) && is_array( $dashboard_data['campaigns'] ) ? $dashboard_data['campaigns'] : null,
+				! empty( $dashboard_data['forms'] ) && is_array( $dashboard_data['forms'] ) ? $dashboard_data['forms'] : null,
+				null
 			);
 			
-			if ( ! $override_cache ) {
-				$cached_data = ES_Cache::get_transient( $cache_key );
-				if ( false !== $cached_data && ! empty( $cached_data ) ) {
-					return $cached_data;
-				}
-			} else {
-				ES_Cache::delete_transient( $cache_key );
-			}
-
-			$response = array();
-
-			try {
-				// 1. Get lists data (already optimized with batch counts)
-				$lists_args = array(
-					'order_by' => 'created_at',
-					'order' => 'DESC',
-					'per_page' => 20,
-					'page_number' => 1,
-				);
-				$lists_data = ES_Lists_Controller::get_lists( $lists_args );
-
-				// 2. Get country stats (with caching)
-				$country_args = array(
-					'list_id' => $list_id,
-					'days' => $days
-				);
-				$country_stats = ES_Lists_Controller::get_country_stats( $country_args );
-
-				// 3. Get audience growth stats
-				$growth_args = array(
-					'days' => $growth_days
-				);
-				$audience_growth = self::get_audience_growth_stats( $growth_args );
-
-				// 4. Get audience health stats
-				$audience_health = ES_Contacts_Controller::get_audience_health_stats( array() );
-
-				// 5. Get subscribers stats
-				$subscribers_args = array(
-					'list_id' => $list_id,
-					'days' => $days
-				);
-				$subscribers_stats = self::get_subscribers_stats( $subscribers_args );
-
-				// Combine all data
-				$response = array(
-					'lists' => $lists_data,
-					'country_stats' => $country_stats,
-					'audience_growth' => $audience_growth,
-					'audience_health' => $audience_health,
-					'subscribers_stats' => $subscribers_stats,
-				);
-
-				// Cache the result for 5 minutes (only if not overriding cache)
-				if ( ! $override_cache ) {
-					ES_Cache::set_transient( $cache_key, $response, 5 / 60 );
-				}
-
-			} catch ( Exception $e ) {
-				return array(
-					'success' => false,
-					'message' => 'Failed to fetch dashboard data: ' . $e->getMessage()
-				);
-			}
-
-			return $response;
+			return array(
+				'dashboard'   => $dashboard_data,
+				'onboarding'  => $onboarding_steps
+			);
 		}
 	}
 

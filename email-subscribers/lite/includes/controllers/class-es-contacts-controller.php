@@ -95,7 +95,7 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 					// Convert frontend filters to ES advanced filter format
 					$condition = self::build_es_filter_condition( $field, $operator, $value );
 					if ( $condition ) {
-						$advanced_filter_conditions[] = $condition; 
+						$advanced_filter_conditions[] = $condition;
 					}
 				}
 				 
@@ -174,46 +174,38 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 
 
 				// Handle List filtering (from advanced_filter and filter_by_list_id)
-				$all_list_ids = array();
-				
-				// Add List filters from advanced_filter
 				if ( ! empty( $list_filters ) ) {
+					// Process list filters with operator support
 					foreach ( $list_filters as $list_filter ) {
+						$list_values = array();
 						if ( is_array( $list_filter['value'] ) ) {
-							$all_list_ids = array_merge( $all_list_ids, $list_filter['value'] );
+							$list_values = $list_filter['value'];
 						} else {
-							$all_list_ids[] = $list_filter['value'];
+							$list_values[] = $list_filter['value'];
+						}
+						
+						$list_operator = isset( $list_filter['operator'] ) ? $list_filter['operator'] : 'is equal to';
+						
+						if ( ! empty( $list_values ) ) {
+							// Get contact IDs from lists_contacts table with operator support
+							$list_filtered_contact_ids = $lists_contacts_db->get_contact_ids_by_list_operator( $list_values, $list_operator );
+							
+							if ( ! empty( $filtered_contact_ids ) ) {
+								// Intersect with existing contact IDs from other advanced filters
+								$filtered_contact_ids = array_intersect( $filtered_contact_ids, $list_filtered_contact_ids );
+							} else {
+								// Only list filtering
+								$filtered_contact_ids = $list_filtered_contact_ids;
+							}
+							
+							if ( empty( $filtered_contact_ids ) ) {
+								return $do_count_only ? 0 : array();
+							}
 						}
 					}
-				}
-				
-				// Add filter_by_list_id if present
-				if ( ! empty( $filter_by_list_id ) && $filter_by_list_id !== 'all' ) {
-					$all_list_ids[] = intval( $filter_by_list_id );
-				}
-
-				// Apply list filtering
-				if ( ! empty( $all_list_ids ) ) {
-					$list_ids = array_unique( array_map( 'intval', $all_list_ids ) );
-					// Pass list_ids to DB query to leverage join for performance
-					$query_args['list_ids'] = $list_ids;
-
-					// Get contact IDs from lists_contacts table via DB class (supports multiple list IDs)
-					$list_filtered_contact_ids = $lists_contacts_db->get_contact_ids_by_criteria( $list_ids );
-
-					if ( ! empty( $filtered_contact_ids ) ) {
-						// Intersect with existing contact IDs from advanced filters
-						$before_count = count( $filtered_contact_ids );
-						$filtered_contact_ids = array_intersect( $filtered_contact_ids, $list_filtered_contact_ids );
-						$after_count = count( $filtered_contact_ids );
-					} else {
-						// Only list filtering
-						$filtered_contact_ids = $list_filtered_contact_ids;
-					}
-					
-					if ( empty( $filtered_contact_ids ) ) {
-						return $do_count_only ? 0 : array();
-					}
+				} else if ( ! empty( $filter_by_list_id ) && $filter_by_list_id !== 'all' ) {
+					// Handle simple list filter (dropdown without advanced filters)
+					$query_args['list_ids'] = array( intval( $filter_by_list_id ) );
 				}
 
 				// Add filtered contact IDs to query args
@@ -691,7 +683,6 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 				'Email' => 'subscribers.email',
 				'Country' => 'subscribers.country_code',
 				'Bounce Status' => 'subscribers.bounce_status',
-				'Subscribed' => 'subscribers.created_at',
 				'Engagement Score' => 'subscribers.engagement_score',
 				'Status' => 'subscribers.status', 
 			);
@@ -751,12 +742,6 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 					} else {
 						return intval($value); // Convert to integer
 					}
-					
-				case 'Subscribed':
-					if (is_string($value) && strtotime($value)) {
-						return date('Y-m-d', strtotime($value));
-					}
-					return $value;
 					
 				case 'has received':
 					if (is_array($value) && isset($value['id'])) {

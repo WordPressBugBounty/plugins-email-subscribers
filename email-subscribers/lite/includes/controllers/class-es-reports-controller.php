@@ -364,6 +364,71 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 			'per_page' => $notifications_args['per_page'],
 		);
 	}
+
+	public static function get_report_filter_options( $args = array() ) {
+		global $wpdb;
+		
+		// Get all campaign types that have notifications sent
+		$types_query = "
+			SELECT DISTINCT c.type 
+			FROM {$wpdb->prefix}ig_campaigns c
+			INNER JOIN {$wpdb->prefix}ig_mailing_queue mq ON c.id = mq.campaign_id
+			WHERE c.type IS NOT NULL AND c.type != ''
+			ORDER BY c.type
+		";
+		
+		$types = $wpdb->get_col( $types_query );
+		
+		$formatted_types = array();
+		if ( ! empty( $types ) ) {
+			foreach ( $types as $type ) {
+				if ( 'newsletter' === $type ) {
+					$formatted_types[] = __( 'Broadcast', 'email-subscribers' );
+				} elseif ( 'post_notification' === $type ) {
+					$formatted_types[] = __( 'Post Notification', 'email-subscribers' );
+				} elseif ( 'post_digest' === $type ) {
+					$formatted_types[] = __( 'Post Digest', 'email-subscribers' );
+				}
+			}
+		}
+		
+		$dates_query = "
+			SELECT DISTINCT 
+				YEAR(start_at) as year,
+				MONTH(start_at) as month
+			FROM {$wpdb->prefix}ig_mailing_queue
+			WHERE start_at IS NOT NULL AND start_at != '0000-00-00 00:00:00'
+			ORDER BY year DESC, month DESC
+			LIMIT 24
+		";
+		
+		$dates_raw = $wpdb->get_results( $dates_query, ARRAY_A );
+		
+		$dates = array();
+		$month_names = array(
+			'January', 'February', 'March', 'April', 'May', 'June',
+			'July', 'August', 'September', 'October', 'November', 'December'
+		);
+		
+		if ( ! empty( $dates_raw ) ) {
+			foreach ( $dates_raw as $date ) {
+				$year = $date['year'];
+				$month = (int) $date['month'];
+				$key = $year . str_pad( $month, 2, '0', STR_PAD_LEFT );
+				$label = $month_names[ $month - 1 ] . ' ' . $year;
+				
+				$dates[] = array(
+					'value' => $key,
+					'label' => $label,
+				);
+			}
+		}
+		
+		return array(
+			'types' => $formatted_types,
+			'dates' => $dates,
+		);
+	}
 		public static function get_notifications( $args = array() ) {
 			global $wpdb, $wpbd;
 			
@@ -434,20 +499,15 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 			}
 	
 		if ( ! empty( $filter_reports_by_campaign_type ) ) {
-			// Filter by campaign type - need to join with campaigns table
-			// Convert display name back to database type for filtering
 			$type_map = array(
 				'Broadcast' => 'newsletter',
 				'Post Notification' => 'post_notification',
-				'Post Digest' => 'post_digest',
-				'Sequence' => 'sequence',
-				'Sequence Message' => 'sequence_message',
-				'Workflow' => 'workflow',
-				'Workflow Email' => 'workflow_email'
+				'Post Digest' => 'post_digest'
 			);
 			
 			$campaign_type = isset( $type_map[ $filter_reports_by_campaign_type ] ) ? $type_map[ $filter_reports_by_campaign_type ] : strtolower( str_replace( ' ', '_', $filter_reports_by_campaign_type ) );
 			
+			// All campaign types use the same filter logic - subquery to campaigns table
 			if ( ! $add_where_clause ) {
 				$sql .= $wpdb->prepare( ' AND campaign_id IN (SELECT id FROM ' . IG_CAMPAIGNS_TABLE . ' WHERE type = %s)', $campaign_type );
 			} else {
@@ -464,7 +524,7 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 				}
 			}
 	
-			if ( ! $do_count_only ) {
+if ( ! $do_count_only ) {
 	
 				// Prepare Order by clause
 				$order = ! empty( $order ) ? strtolower( $order ) : 'desc';
@@ -490,13 +550,22 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 			$sql   .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
 			$result = $wpbd->get_results( $sql, 'ARRAY_A' );
 			
-			// Add campaign type and calculate open/click rates for each notification
 			if ( ! empty( $result ) && is_array( $result ) ) {
+				$campaign_ids = array_column( $result, 'campaign_id' );
+				$campaign_ids = array_filter( array_unique( $campaign_ids ) );
+				
+				$all_stats = array();
+				if ( ! empty( $campaign_ids ) ) {
+					$all_stats = ES()->actions_db->get_bulk_campaign_stats(
+						$campaign_ids,
+						array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK, IG_CONTACT_UNSUBSCRIBE )
+					);
+				}
+				
 				foreach ( $result as $key => $notification ) {
 					$notification_id = $notification['id'];
 					$campaign_id = isset( $notification['campaign_id'] ) ? $notification['campaign_id'] : 0;
 					
-					// Add campaign type
 					if ( ! empty( $campaign_id ) ) {
 						$notification_type = ES()->campaigns_db->get_campaign_type_by_id( $campaign_id );
 						if ( ! empty( $notification_type ) ) {
@@ -507,27 +576,20 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 							$result[ $key ]['type'] = '';
 						}
 					} else {
-						// No campaign_id means it's a Post Notification
 						$result[ $key ]['type'] = __( 'Post Notification', 'email-subscribers' );
 					}
 					
-					// Calculate open/click rates from actions table
-					$actions_args = array(
-						'campaign_id' => $campaign_id,
-						'message_id' => $notification_id,
-						'types' => array(
-							IG_MESSAGE_SENT,
-							IG_MESSAGE_OPEN,
-							IG_LINK_CLICK,
-							IG_CONTACT_UNSUBSCRIBE
-						)
+					$stats = isset( $all_stats[ $campaign_id ] ) ? $all_stats[ $campaign_id ] : array(
+						'sent'         => 0,
+						'opened'       => 0,
+						'clicked'      => 0,
+						'unsubscribed' => 0,
 					);
 					
-					$actions_count = ES()->actions_db->get_actions_count( $actions_args );
-					$total_sent = isset( $actions_count['sent'] ) ? $actions_count['sent'] : 0;
-					$total_opened = isset( $actions_count['opened'] ) ? $actions_count['opened'] : 0;
-					$total_clicked = isset( $actions_count['clicked'] ) ? $actions_count['clicked'] : 0;
-					$total_unsubscribed = isset( $actions_count['unsubscribed'] ) ? $actions_count['unsubscribed'] : 0;
+					$total_sent = $stats['sent'];
+					$total_opened = $stats['opened'];
+					$total_clicked = $stats['clicked'];
+					$total_unsubscribed = $stats['unsubscribed'];
 					
 					$open_rate = ! empty( $total_sent ) ? number_format_i18n( ( ( $total_opened * 100 ) / $total_sent ), 2 ) : 0;
 					$click_rate = ! empty( $total_sent ) ? number_format_i18n( ( ( $total_clicked * 100 ) / $total_sent ), 2 ) : 0;

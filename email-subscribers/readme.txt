@@ -6,7 +6,7 @@ Tags: email marketing, newsletter, email subscribers, email automation, post not
 Requires at least: 3.9
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 5.9.16
+Stable tag: 5.9.17
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,20 +361,36 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.16 =
+= 5.9.17 =
 
-* Improvement: Improved performance of the Campaign Templates for faster loading.
-* Improvement: Improved performance of the Audience page for faster loading.
-* Improvement: Improved performance of the Campaign page for faster loading.
-* Fix: Advanced filter issues.
-* Fix: Default sample template loading issue in the campaign editor.
-* Fix: Failed reports incorrectly showing an In Queue status.
-* Fix: Pagination issues in campaigns.
-* Fix: Contact import issues.
+* Improvement: Improved dashboard page performance.
+* Improvement: Enhanced contact list management.
+* Improvement: Advanced filtering improvements.
+* Improvement: Implemented list search in the Forms settings panel.
+* Fix: Campaign list loading issue.
+* Fix: Icegram logo branding issue.
+* Fix: Post image size issue.
+* Fix: Audience welcome email sending issue.
+* Fix: Post notification emails were not sent after user onboarding.
+* Fix: Security vulnerability fix.
 
 == Changelog ==
 
+**5.9.17 (18.02.2026)**
+
+* Improvement: Improved dashboard page performance.
+* Improvement: Enhanced contact list management.
+* Improvement: Advanced filtering improvements.
+* Improvement: Implemented list search in the Forms settings panel.
+* Fix: Campaign list loading issue.
+* Fix: Icegram logo branding issue.
+* Fix: Post image size issue.
+* Fix: Audience welcome email sending issue.
+* Fix: Post notification emails were not sent after user onboarding.
+* Fix: Security vulnerability fix.
+
 **5.9.16 (09.02.2026)**
+
 * Improvement: Improved performance of the Campaign Templates for faster loading.
 * Improvement: Improved performance of the Audience page for faster loading.
 * Improvement: Improved performance of the Campaign page for faster loading.

@@ -84,31 +84,33 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 		
 			// Validate list selection.
 			$lists = is_array( $contact_data['lists'] ) ? $contact_data['lists'] : array();
-			if ( empty( $lists ) ) {
-				$errors[] = esc_html__( 'Please select a list', 'email-subscribers' );
-			}
-		
-			// Check for duplicate contact.
-			if ( ! empty( $email ) ) {
-				$existing_contact_id = ES()->contacts_db->get_contact_id_by_email( $email );
-				if ( $existing_contact_id && ( (int) $existing_contact_id !== (int) $contact_data['id'] ) ) {
-					$errors[] = esc_html__( 'Contact already exists.', 'email-subscribers' );
-				}
-			}
-		
-			// Return result.
-			return array(
-				'errors'  => $errors,
-				'email'   => $email,
-				'lists'   => $lists,
-				'contact' => array(
-					'first_name' => sanitize_text_field( $contact_data['first_name'] ),
-					'last_name'  => sanitize_text_field( $contact_data['last_name'] ),
-					'email'      => $email,
-					'status'     => 'verified',
-				),
-			);
+		// Only require list selection when creating a new contact
+		$is_new_contact = empty( $contact_data['id'] );
+		if ( empty( $lists ) && $is_new_contact ) {
+			$errors[] = esc_html__( 'Please select a list', 'email-subscribers' );
 		}
+	
+		// Check for duplicate contact.
+		if ( ! empty( $email ) ) {
+			$existing_contact_id = ES()->contacts_db->get_contact_id_by_email( $email );
+			if ( $existing_contact_id && ( (int) $existing_contact_id !== (int) $contact_data['id'] ) ) {
+				$errors[] = esc_html__( 'Contact already exists.', 'email-subscribers' );
+			}
+		}
+	
+		// Return result.
+		return array(
+			'errors'  => $errors,
+			'email'   => $email,
+			'lists'   => $lists,
+			'contact' => array(
+				'first_name' => sanitize_text_field( $contact_data['first_name'] ),
+				'last_name'  => sanitize_text_field( $contact_data['last_name'] ),
+				'email'      => $email,
+				'status'     => 'verified',
+			),
+		);
+	}
 		
 
 		public static function maybe_send_welcome_email( $contact_data, $contact, $list_ids ) {

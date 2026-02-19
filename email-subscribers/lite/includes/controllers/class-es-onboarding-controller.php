@@ -649,6 +649,7 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 			$notification_id = ES()->campaigns_db->insert( $notification_data );
 
 			if ( $notification_id ) {
+				ES_Campaign_Controller::add_to_new_category_format_campaign_ids($notification_id);
 				return array(
 					'status' => 'success',
 					'data' => array( 'notification_id' => $notification_id ),

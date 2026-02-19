@@ -324,53 +324,109 @@ class ES_DB_Lists_Contacts extends ES_DB {
 	 */
 	public function update_contact_lists( $contact_id = 0, $lists = array() ) {
 
-		if ( empty( $contact_id ) || empty( $lists ) ) {
+		if ( empty( $contact_id ) ) {
 			return false;
 		}
 
-		$contact_id = esc_sql( $contact_id );
-		$lists      = esc_sql( $lists );
+		$contact_id = absint( $contact_id );
 
-		if ( ! empty( $lists ) ) {
-
-			$optin_type_option = get_option( 'ig_es_optin_type', true );
-
-			$optin_type = 1;
-			if ( in_array( $optin_type_option, array( 'double_opt_in', 'double_optin' ) ) ) {
-				$optin_type = 2;
-			}
-
-			// Remove from all lists
-			$this->remove_contacts_from_lists( $contact_id );
-
-			$data = array();
-			$key  = 0;
-			$list_ids_to_clear = array();
-			foreach ( $lists as $list_id => $status ) {
-				if ( ! empty( $status ) ) {
-					$data[ $key ]['list_id']       = $list_id;
-					$data[ $key ]['contact_id']    = $contact_id;
-					$data[ $key ]['status']        = $status;
-					$data[ $key ]['optin_type']    = $optin_type;
-					$data[ $key ]['subscribed_at'] = ig_get_current_date_time();
-
-					$list_ids_to_clear[] = $list_id;
-					$key ++;
-				}
-			}
-
-			$result = ES()->lists_contacts_db->bulk_insert( $data );
-
-			if ( ! empty( $list_ids_to_clear ) ) {
-				$this->clear_list_counts_cache( $list_ids_to_clear );
-			}
-			
-			ES()->contacts_db->invalidate_query_cache();
-
-			return $result;
+		$existing_lists = $this->get_list_statuses_by_contact_id( $contact_id );
+		$existing_map = array();
+		foreach ( $existing_lists as $existing ) {
+			$existing_map[ intval( $existing['list_id'] ) ] = $existing;
 		}
 
-		return false;
+		// If lists is empty, contact is removed from all lists
+		if ( empty( $lists ) ) {
+			$this->remove_contacts_from_lists( $contact_id );
+			ES()->contacts_db->invalidate_query_cache();
+			return true;
+		}
+		
+		// Sanitize and validate lists input
+		$sanitized_lists = array();
+		foreach ( $lists as $list_id => $status ) {
+			$list_id = absint( $list_id );
+			$status = sanitize_text_field( $status );
+			if ( $list_id > 0 && ! empty( $status ) ) {
+				$sanitized_lists[ $list_id ] = $status;
+			}
+		}
+		
+		// Determine which lists to remove
+		$new_list_ids = array_keys( $sanitized_lists );
+		$existing_list_ids = array_keys( $existing_map );
+		$lists_to_remove = array_diff( $existing_list_ids, $new_list_ids );
+		
+		// Remove contact from lists that are no longer assigned
+		if ( ! empty( $lists_to_remove ) ) {
+			$this->remove_contacts_from_lists( $contact_id, $lists_to_remove );
+		}
+
+		$optin_type_option = get_option( 'ig_es_optin_type', true );
+
+		$optin_type = 1;
+		if ( in_array( $optin_type_option, array( 'double_opt_in', 'double_optin' ) ) ) {
+			$optin_type = 2;
+		}
+
+		$data = array();
+		$key  = 0;
+		$list_ids_to_clear = array();
+		
+		foreach ( $sanitized_lists as $list_id => $status ) {
+			// Check if contact already exists in this list
+			if ( isset( $existing_map[ $list_id ] ) ) {
+				// Update existing entry - preserve subscribed_at to prevent sequence resending
+				global $wpdb;
+				$update_data = array(
+					'status' => $status,
+					'optin_type' => $optin_type,
+				);
+				
+				$update_formats = array( '%s', '%d' );
+				
+				// Only update subscribed_at if status is changing TO subscribed from another status
+				if ( 'subscribed' === $status && 'subscribed' !== $existing_map[ $list_id ]['status'] ) {
+					$update_data['subscribed_at'] = ig_get_current_date_time();
+					$update_formats[] = '%s';
+				}
+				
+				$wpdb->update(
+					$this->table_name,
+					$update_data,
+					array(
+						'contact_id' => $contact_id,
+						'list_id' => $list_id,
+					),
+					$update_formats,
+					array( '%d', '%d' )
+				);
+			} else {
+				// New entry - insert with current timestamp
+				$data[ $key ]['list_id']       = $list_id;
+				$data[ $key ]['contact_id']    = $contact_id;
+				$data[ $key ]['status']        = $status;
+				$data[ $key ]['optin_type']    = $optin_type;
+				$data[ $key ]['subscribed_at'] = ig_get_current_date_time();
+				$key ++;
+			}
+
+			$list_ids_to_clear[] = $list_id;
+		}
+
+		$result = true;
+		if ( ! empty( $data ) ) {
+			$result = ES()->lists_contacts_db->bulk_insert( $data );
+		}
+
+		if ( ! empty( $list_ids_to_clear ) ) {
+			$this->clear_list_counts_cache( $list_ids_to_clear );
+		}
+		
+		ES()->contacts_db->invalidate_query_cache();
+
+		return $result;
 
 	}
 
@@ -1087,7 +1143,7 @@ class ES_DB_Lists_Contacts extends ES_DB {
 
 		$contact_id = intval( $contact_id );
 		
-		$sql = "SELECT lc.list_id, l.name as list_name, lc.status 
+		$sql = "SELECT lc.list_id, l.name as list_name, lc.status, lc.subscribed_at, lc.optin_type
 				FROM {$this->table_name} lc
 				LEFT JOIN " . IG_LISTS_TABLE . " l ON lc.list_id = l.id
 				WHERE lc.contact_id = %d";
@@ -1358,6 +1414,66 @@ class ES_DB_Lists_Contacts extends ES_DB {
 		}
 
 		$params = array_merge( array( $sql ), $status_values );
+		$prepared_sql = call_user_func_array( array( $wpdb, 'prepare' ), $params );
+		$ids = $wpdb->get_col( $prepared_sql );
+
+		$result = array_values( array_map( 'intval', array_filter( (array) $ids, 'is_numeric' ) ) );
+		
+		ES_Cache::set( $cache_key, $result, 'query' );
+		
+		return $result;
+	}
+
+	/**
+	 * Get contact IDs by list with operator support
+	 *
+	 * @param array $list_values List IDs to filter by
+	 * @param string $operator Operator to apply ('is equal to', 'is not equal to', etc.)
+	 * @return array Contact IDs
+	 *
+	 * @since 5.9.15
+	 */
+	public function get_contact_ids_by_list_operator( $list_values = array(), $operator = 'is equal to' ) {
+		global $wpdb;
+
+		if ( empty( $list_values ) ) {
+			return array();
+		}
+
+		$cache_key = ES_Cache::generate_key( 'contact_ids_by_list_op_' . md5( serialize( array( $list_values, $operator ) ) ) );
+		
+		if ( ES_Cache::is_exists( $cache_key, 'query' ) ) {
+			return ES_Cache::get( $cache_key, 'query' );
+		}
+
+		$list_values = array_map( 'intval', $list_values );
+		$list_count = count( $list_values );
+
+		$sql = "SELECT DISTINCT contact_id FROM {$this->table_name} WHERE 1=1";
+
+		switch ( $operator ) {
+			case 'is equal to':
+			case 'contains':
+				// Contact is in any of these lists
+				$placeholders = implode( ', ', array_fill( 0, $list_count, '%d' ) );
+				$sql .= " AND list_id IN ($placeholders)";
+				break;
+
+			case 'is not equal to':
+			case 'does not contain':
+				// Contact is NOT in any of these lists
+				$placeholders = implode( ', ', array_fill( 0, $list_count, '%d' ) );
+				$sql .= " AND list_id NOT IN ($placeholders)";
+				break;
+
+			default:
+				// Default to 'is equal to'
+				$placeholders = implode( ', ', array_fill( 0, $list_count, '%d' ) );
+				$sql .= " AND list_id IN ($placeholders)";
+				break;
+		}
+
+		$params = array_merge( array( $sql ), $list_values );
 		$prepared_sql = call_user_func_array( array( $wpdb, 'prepare' ), $params );
 		$ids = $wpdb->get_col( $prepared_sql );
 

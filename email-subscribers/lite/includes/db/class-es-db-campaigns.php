@@ -898,21 +898,33 @@ class ES_DB_Campaigns extends ES_DB {
 			return $updated;
 		}
 
-		$id_str       = '';
-		$campaign_ids = esc_sql( $campaign_ids );
-		if ( is_array( $campaign_ids ) && count( $campaign_ids ) > 0 ) {
-			$id_str = implode( ',', $campaign_ids );
-		} elseif ( is_numeric( $campaign_ids ) ) {
-			$id_str = $campaign_ids;
+		$id_str       = ''; 
+
+		$campaign_ids = array_map( 'absint', (array) $campaign_ids );
+		$campaign_ids = array_filter( $campaign_ids );
+
+		if ( empty( $campaign_ids ) ) {
+		    return $updated;
 		}
+
+		$id_str = implode( ',', array_fill( 0, count( $campaign_ids ), '%d' ) );
 
 		if ( ! empty( $id_str ) ) {
 
-			$query = $wpbd->prepare( "UPDATE {$wpbd->prefix}ig_campaigns SET status = %d WHERE id IN({$id_str})", $status );
-			$updated = $wpbd->query( $wpbd->prepare( "UPDATE {$wpbd->prefix}ig_campaigns SET status = %d WHERE id IN({$id_str})", $status ) );
+			$updated = $wpbd->query(
+				$wpbd->prepare(
+					"UPDATE {$wpbd->prefix}ig_campaigns SET status = %d WHERE id IN({$id_str})",
+					array_merge( array( $status ), $campaign_ids )
+				)
+			);
 
 			// Changing status of child campaigns along with its parent campaign id
-			$wpbd->query( $wpbd->prepare( "UPDATE {$wpbd->prefix}ig_campaigns SET status = %d WHERE parent_id IN({$id_str})", $status ) );
+			$wpbd->query(
+				$wpbd->prepare(
+					"UPDATE {$wpbd->prefix}ig_campaigns SET status = %d WHERE parent_id IN({$id_str})",
+					array_merge( array( $status ), $campaign_ids )
+				)
+			); 
 		}
 
 		if ( $updated ) {
