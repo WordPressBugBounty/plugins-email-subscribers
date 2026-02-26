@@ -406,8 +406,8 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 		public static function get_kpis( $args ) {
 			$args = ES_Common::decode_args( $args );
 
-			$page           = 'es_campaigns';
-			$override_cache = true;
+			$page           = 'campaigns';
+			$override_cache = false;
 			$reports_data   = ES_Reports_Data::get_dashboard_reports_data( $page, $override_cache, $args );
 			return $reports_data;
 		}

@@ -350,7 +350,14 @@ if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 		
 	$campaign_data['subject']          = ! empty( $campaign_data['subject'] ) ? wp_strip_all_tags( $campaign_data['subject'] ) : '';
 	$campaign_data['base_template_id'] = $template_id;
-	$campaign_data['list_ids']         = $list_id;
+		
+		if ( '' !== $list_id ) {
+			$campaign_data['list_ids'] = $list_id;
+		} else {
+			// Remove the key entirely so save_campaign can preserve existing value
+			unset( $campaign_data['list_ids'] );
+		}
+		
 	$meta['scheduling_option']         = ! empty( $campaign_data['scheduling_option'] ) ? $campaign_data['scheduling_option'] : 'schedule_now';			$meta['es_schedule_date']          = ! empty( $campaign_data['es_schedule_date'] ) ? $campaign_data['es_schedule_date'] : '';
 		$meta['es_schedule_time']          = ! empty( $campaign_data['es_schedule_time'] ) ? $campaign_data['es_schedule_time'] : '';
 

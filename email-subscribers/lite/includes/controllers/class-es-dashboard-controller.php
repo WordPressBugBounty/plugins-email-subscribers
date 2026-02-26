@@ -46,7 +46,7 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 		$override_cache = false; 
 		
 		if ( isset( $data['page'] ) || isset( $data['days'] ) || isset( $data['list_id'] ) ) {
-			$page           = isset( $data['page'] ) ? $data['page'] : 'es_dashboard';
+			$page           = isset( $data['page'] ) ? $data['page'] : 'dashboard';
 			$days           = isset( $data['days'] ) ? $data['days'] : '';
 			$list_id        = isset( $data['list_id'] ) ? $data['list_id'] : '';
 			$override_cache = isset( $data['override_cache'] ) ? $data['override_cache'] : false; 
@@ -78,6 +78,11 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 		// Get enhanced audience insights data
 		$enhanced_data = ES_Reports_Data::get_audience_insights_data( $reports_args );
 		
+		// Default to 'dashboard' page if not set
+		if ( empty( $page ) ) {
+			$page = 'dashboard';
+		}
+		
 		// Get basic dashboard reports data and merge with enhanced data
 		$reports_data = ES_Reports_Data::get_dashboard_reports_data( $page, $override_cache, $reports_args );
 		
@@ -85,7 +90,7 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 	}		
 	
 	public static function get_dashboard_data( $args ) {
-			$dashboard_kpi = ES_Reports_Data::get_dashboard_reports_data( 'es_dashboard', true, $args );
+			$dashboard_kpi = ES_Reports_Data::get_dashboard_reports_data( 'dashboard', false, $args );
 			
 			$campaign_args = array(
 				'status'          => array(

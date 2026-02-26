@@ -346,6 +346,10 @@ if ( ! class_exists( 'ES_Install' ) ) {
 				'ig_es_migrate_ess_data_to_mailer_settings',
 				'ig_es_update_5739_db_version',
 			),
+			'5.9.18' => array(
+				'ig_es_add_index_to_actions_updated_at',
+				'ig_es_update_5918_db_version',
+			),
 		);
 
 		/**
@@ -1342,7 +1346,8 @@ if ( ! class_exists( 'ES_Install' ) ) {
               KEY `contact_id` (`contact_id`),
               KEY `message_id` (`message_id`),
               KEY `campaign_id` (`campaign_id`),
-              KEY `type` (`type`)
+              KEY `type` (`type`),
+              KEY `idx_updated_type_contact` (`updated_at`, `type`, `contact_id`)
 			) $collate;
 		";
 

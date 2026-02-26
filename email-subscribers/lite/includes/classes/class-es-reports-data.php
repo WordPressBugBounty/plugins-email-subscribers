@@ -301,8 +301,12 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 		 */
 		$args['days'] = ! empty( $args['days'] ) ? $args['days'] : 7;
 		
-		// Include days in cache key to differentiate between different time periods
-		$cache_key = 'dashboard_reports_data_' . $args['days'];
+		// Used page parameter to control which stats to fetch
+		// 'campaigns' - Campaigns page: Basic KPIs only
+		// 'reports' - Reports page: KPIs + analytics (device/country/top_links)
+		// 'dashboard' - Dashboard page: KPIs + campaigns list
+		
+		$cache_key = 'dashboard_reports_data_' . $args['days'] . '_' . $page;
 		
 		if ( ! $override_cache ) {
 
@@ -344,8 +348,12 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			/**
 		 * Get recent campaigns with statistics
 		 */
-		$data = array();
-		if ( 'es_dashboard' === $page || 'wp_dashboard' === $page ) {
+		$data = array(
+			'campaigns' => array(),
+		);
+		
+		// Fetch campaigns list for Dashboard and Reports pages
+		if ( 'dashboard' === $page || 'reports' === $page ) {
 			$data = self::get_campaign_stats( $campaign_count );
 			
 			$pending_campaign_args = array(
@@ -436,14 +444,13 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			// Get device and country tracking data
 			$device_opens = array();
 			$country_opens = array();
+			$days = ! empty( $args['days'] ) ? (int) $args['days'] : 7;
 			
-			if ( ES()->is_pro() ) {
-			$days = ! empty( $args['days'] ) ? (int) $args['days'] : 0;
-			
-			// Use database methods for efficient SQL aggregation
-			$device_opens = ES()->actions_db->get_device_open_counts( $days );
-			$country_opens = ES()->actions_db->get_country_open_counts( $days, 10 );
-		}
+			// Only fetch device/country data for Reports page
+			if ( ES()->is_pro() && 'reports' === $page ) {
+				$device_opens = ES()->actions_db->get_device_open_counts( $days );
+				$country_opens = ES()->actions_db->get_country_open_counts( $days, 10 );
+			}
 		
 		// Ensure device_opens is always an object, not an array
 		if ( empty( $device_opens ) ) {
@@ -454,9 +461,10 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 		if ( empty( $country_opens ) ) {
 			$country_opens = (object) array();
 		}
-		// Get top clicked links for the dashboard
+		// Get top clicked links
 		$top_links = array();
-		if ( 'es_dashboard' === $page ) {
+		// Only fetch top links for Reports page
+		if ( 'reports' === $page ) {
 			$links_where = '';
 			
 			if ( ! empty( $args['days'] ) ) {
@@ -554,7 +562,8 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			);
 			
 
-			$include_average_campaigns_stats = 'es_dashboard' === $page || 'es_campaigns' === $page || 'es_subscribers' === $page;
+			// Include percentage growth stats for all pages
+			$include_average_campaigns_stats = in_array( $page, array( 'campaigns', 'reports', 'dashboard' ), true );
 			if ( $include_average_campaigns_stats ) {
 				$comp_args         = $args;
 				$comp_args['days'] = $args['days'] * 2;

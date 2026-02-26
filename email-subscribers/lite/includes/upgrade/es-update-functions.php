@@ -2462,3 +2462,38 @@ function ig_es_update_5739_db_version() {
 // phpcs:enable
 /* --------------------- ES 5.7.38(End)--------------------------- */
 
+/* --------------------- ES 5.9.18(Start)--------------------------- */
+
+/**
+ * Add composite index to actions table for optimized performance
+ *
+ * Adds index on (updated_at, type, contact_id) to improve performance of:
+ * - Inactive contacts queries
+ * - Engagement metrics queries
+ * - Dashboard audience insights
+ * @since 5.9.18
+ */
+function ig_es_add_index_to_actions_updated_at() {
+	global $wpdb;
+
+	$index_exists = $wpdb->get_row( "SHOW INDEX FROM {$wpdb->prefix}ig_actions WHERE key_name = 'idx_updated_type_contact'" );
+
+	if ( is_null( $index_exists ) ) {
+		$wpdb->query(
+			"ALTER TABLE {$wpdb->prefix}ig_actions 
+			ADD INDEX idx_updated_type_contact(updated_at, type, contact_id);"
+		);
+	}
+}
+
+/**
+ * Update DB version
+ *
+ * @since 5.9.18
+ */
+function ig_es_update_5918_db_version() {
+	ES_Install::update_db_version( '5.9.18' );
+}
+
+/* --------------------- ES 5.9.18(End)--------------------------- */
+

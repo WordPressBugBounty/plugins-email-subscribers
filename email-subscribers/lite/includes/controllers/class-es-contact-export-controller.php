@@ -162,7 +162,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 			}
 
 			$contact_ids = array_unique( array_column( $results, 'contact_id' ) );
-			$contacts = ES()->import_utils_db->get_contacts_by_ids( $contact_ids, false );
+		$contacts    = ES()->import_utils_db->get_contacts_by_ids( $contact_ids, true );
 
 			if ( empty( $contacts ) ) {
 				return self::get_empty_csv_headers();
@@ -187,7 +187,13 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 				__( 'Opt-In Type', 'email-subscribers' ),
 				__( 'Created On', 'email-subscribers' ),
 			);
-
+		// Add custom field headers
+		$custom_fields = ES()->custom_fields_db->get_custom_fields();
+		if ( ! empty( $custom_fields ) ) {
+			foreach ( $custom_fields as $field ) {
+				$headers[] = $field['label'];
+			}
+		}
 			$lists_id_name_map = ES()->lists_db->get_list_id_name_map();
 			$csv_output = implode( ',', $headers );
 
@@ -204,8 +210,16 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 					$data['status']     = ucfirst( $list_details['status'] );
 					$data['optin_type'] = ( 1 == $list_details['optin_type'] ) ? 'Single Opt-In' : 'Double Opt-In';
 					$data['created_at'] = $contact['created_at'];
-					
-					$csv_output .= "\n";
+				
+				// Add custom field data
+				if ( ! empty( $custom_fields ) ) {
+					foreach ( $custom_fields as $field ) {
+						$column_name = $field['slug'];
+						$data[ $column_name ] = isset( $contact[ $column_name ] ) ? $contact[ $column_name ] : '';
+					}
+				}
+				
+				$csv_output .= "\n";
 					$csv_output .= '"' . implode( '","', $data ) . '"';
 				}
 			}

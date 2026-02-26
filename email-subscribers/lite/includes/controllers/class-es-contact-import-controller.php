@@ -1187,27 +1187,26 @@ if ( ! class_exists( 'ES_Contact_Import_Controller' ) ) {
 				'updated_at' => ig_get_current_date_time(),
 			);
 
-			// Add custom fields to contact data if provided (PRO feature only)
-			if ( ! empty( $custom_fields ) && ES()->is_pro() ) {
-				// Get available custom fields to validate
-				$available_custom_fields = ES()->custom_fields_db->get_custom_fields();
-				$valid_custom_field_slugs = array();
-				
-				foreach ( $available_custom_fields as $custom_field ) {
-					$valid_custom_field_slugs[] = $custom_field['slug'];
-				}
-
-				// Only include custom fields that exist in the system
-				foreach ( $custom_fields as $field_slug => $field_value ) {
-					if ( in_array( $field_slug, $valid_custom_field_slugs ) ) {
-						$contact_data[ $field_slug ] = sanitize_text_field( $field_value );
-					}
-				}
+		if ( ! empty( $custom_fields ) && ES()->is_pro() ) {
+			// Get available custom fields to validate
+			$available_custom_fields = ES()->custom_fields_db->get_custom_fields();
+			$valid_custom_field_slugs = array();
+			
+			foreach ( $available_custom_fields as $custom_field ) {
+				$valid_custom_field_slugs[] = $custom_field['slug'];
 			}
 
-			$contact_id = ES()->contacts_db->insert( $contact_data );
+			foreach ( $custom_fields as $field_slug => $field_value ) {
+				if ( in_array( $field_slug, $valid_custom_field_slugs, true ) ) {
+					// Use sanitize_textarea_field to preserve line breaks for multi-line content
+					$contact_data[ $field_slug ] = sanitize_textarea_field( $field_value );
+				}
+			}
+		}
 
-			if ( $contact_id ) {
+		$contact_id = ES()->contacts_db->insert( $contact_data );
+
+		if ( $contact_id ) {
 			if ( ! empty( $list_ids ) ) {
 				foreach ( $list_ids as $list_id ) {
 					$list_contact_data = array(

@@ -33,45 +33,44 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 		}
 
 		public static function get_existing_contact_data( $id = 0 ) {
-			$contact_db = new ES_DB_Contacts();
-			$contact = $contact_db->get( $id );
+		// Fetch contact with custom fields using import_utils_db
+		$contacts = ES()->import_utils_db->get_contacts_by_ids( array( $id ), true );
+		$contact = ! empty( $contacts ) ? $contacts[0] : array();
 		
-			if ( empty( $contact ) ) {
-				return array();
-			}
-		
-			$first_name       = $contact['first_name'];
-			$last_name        = $contact['last_name'];
-			$email            = sanitize_email( $contact['email'] );
-			$guid             = $contact['hash'];
-			$contact_cf_data  = apply_filters( 'es_prepare_cf_data_for_contact_array', $contact );
-			$list_ids         = ES()->lists_contacts_db->get_list_ids_by_contact( $id );
-		
-			$data = array(
-				'id'               => $id,
-				'first_name'       => $first_name,
-				'last_name'        => $last_name,
-				'email'            => $email,
-				'guid'             => $guid,
-				'list_ids'         => $list_ids,
-			);
-		
-			// Merge custom fields if available
-			if ( isset( $contact_cf_data['custom_fields'] ) ) {
-				$data = array_merge( $data, $contact_cf_data );
-			}
-		
-			return $data;
+		if ( empty( $contact ) ) {
+			return array();
 		}
-
-		public static function validate_and_sanitize_contact_data( $contact_data = array() ) {
-			$defaults = array(
-				'id'         => 0,
-				'email'      => '',
-				'first_name' => '',
-				'last_name'  => '',
-				'lists'      => array(),
-			);
+	
+		$first_name       = $contact['first_name'];
+		$last_name        = $contact['last_name'];
+		$email            = sanitize_email( $contact['email'] );
+		$guid             = $contact['hash'];
+		$contact_cf_data  = apply_filters( 'es_prepare_cf_data_for_contact_array', $contact );
+		$list_ids         = ES()->lists_contacts_db->get_list_ids_by_contact( $id );
+	
+		$data = array(
+			'id'               => $id,
+			'first_name'       => $first_name,
+			'last_name'        => $last_name,
+			'email'            => $email,
+			'guid'             => $guid,
+			'list_ids'         => $list_ids,
+		);
+	
+		// Merge custom fields if available
+		if ( isset( $contact_cf_data['custom_fields'] ) ) {
+			$data = array_merge( $data, $contact_cf_data );
+		}
+		return $data;
+	}
+	public static function validate_and_sanitize_contact_data( $contact_data = array() ) {
+		$defaults = array(
+			'id'         => 0,
+			'email'      => '',
+			'first_name' => '',
+			'last_name'  => '',
+			'lists'      => array(),
+		);
 			$contact_data = wp_parse_args( $contact_data, $defaults );
 		
 			$errors = array();
@@ -161,14 +160,13 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 			//Prepare contact before save
 			$contact = apply_filters( 'es_set_additional_contact_data', $contact, $contact_data );
 			$contact_cf_data = apply_filters( 'es_prepare_cf_data_for_contact_array', $contact_data, true );
-		
-			//Save or update contact
-			if ( $is_new ) {
-				$contact['source']     = 'admin';
+
+		//Save or update contact
+		if ( $is_new ) {				$contact['source']     = 'admin';
 				$contact['status']     = ! empty( $contact['status'] ) ? $contact['status'] : 'verified';
 				$contact['hash']       = ES_Common::generate_guid();
-				$contact['created_at'] = ig_get_current_date_time();
-				$id                    = self::save_contact( $contact );
+			$contact['created_at'] = ig_get_current_date_time();
+			$id                    = self::save_contact( $contact );
 				$contact['id']         = $id;
 
 				// Send welcome email
@@ -176,13 +174,14 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 
 			} else {
 				$contact['id'] = $id;
-				self::update_contact( $contact );
-			} 
+			self::update_contact( $contact );
+		}
 
 			//Update contact list 
 			self::update_contact_lists( $id, $lists, $is_new );		
-		ES_Cache::flush();
-					return array(
+	ES_Cache::flush();
+
+				return array(
 				'id'              => $id,
 				'is_new'          => $is_new,
 				'contact'         => $contact,

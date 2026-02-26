@@ -15,15 +15,8 @@ if ( ! class_exists( 'ES_Dashboard' ) ) {
 	class ES_Dashboard {
 
 		public function show() {
-			$args = array(
-				'days' => 60,
-			);
-			$dashboard_data = ES_Dashboard_Controller::get_dashboard_data( $args );
 
-			ES_Admin::get_view(
-				'dashboard/dashboard',
-				$dashboard_data
-			);
+			ES_Admin::get_view('dashboard/dashboard');
 		}
 
 		public static function get_subscribers_stats() {
