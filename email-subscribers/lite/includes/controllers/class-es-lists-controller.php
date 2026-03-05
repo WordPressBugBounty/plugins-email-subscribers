@@ -77,9 +77,7 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 				$total_count = $lists_db->count();
 			}
 			
-			return array(
-                'total' => $total_count
-            );
+			return $total_count;
             }
 
             $es_args = array(

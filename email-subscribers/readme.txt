@@ -6,7 +6,7 @@ Tags: email marketing, newsletter, email subscribers, email automation, post not
 Requires at least: 3.9
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 5.9.18
+Stable tag: 5.9.19
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,15 +361,23 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.18 =
+= 5.9.19 =
 
-* Fix: Improved campaign page loading speed on sites with large data
-* Fix: Resolved issues with saving, editing, and exporting custom fields
-* Fix: Corrected automatic list selection during contact CSV imports
-* Fix: Fixed Gmail authentication errors
-* Fix: Fixed display issues for email soft bounces and hard bounces
+* Improvement: Campaign post digest settings for better UX
+* Improvement: Added pagination to the audience list
+* Improvement: "Saved Templates" section in the template gallery.
+* Fix: "Subscribe" action missing in "Elementor Pro forms" for adding contacts to the audience
+* Fix: Caching issue for reports to improve the speed of loading
 
 == Changelog ==
+
+**5.9.19 (05.03.2026)**
+
+* Improvement: Campaign post digest settings for better UX
+* Improvement: Added pagination to the audience list
+* Improvement: "Saved Templates" section in the template gallery.
+* Fix: "Subscribe" action missing in "Elementor Pro forms" for adding contacts to the audience
+* Fix: Caching issue for reports to improve the speed of loading
 
 **5.9.18 (26.02.2026)**
 

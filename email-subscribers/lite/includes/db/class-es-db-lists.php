@@ -113,8 +113,20 @@ class ES_DB_Lists extends ES_DB {
 		global $wpdb;
 		$query = "SELECT * FROM {$this->table_name} ORDER BY {$order_by} {$order}";
 		
-		if ( ! empty( $args['limit'] ) ) {
-			$query .= $wpdb->prepare( ' LIMIT %d', intval( $args['limit'] ) );
+		// Support pagination with per_page and page_number
+		if ( ! empty( $args['per_page'] ) && ! empty( $args['page_number'] ) ) {
+			$per_page = intval( $args['per_page'] );
+			$page_number = intval( $args['page_number'] );
+			
+			if ( $per_page > 0 ) {
+				$offset = ( $page_number - 1 ) * $per_page;
+				$query .= $wpdb->prepare( ' LIMIT %d OFFSET %d', $per_page, $offset );
+			}
+		} elseif ( ! empty( $args['limit'] ) ) {
+			$limit = intval( $args['limit'] );
+			if ( $limit > 0 ) {
+				$query .= $wpdb->prepare( ' LIMIT %d', $limit );
+			}
 		}
 		
 		return $wpdb->get_results( $query, ARRAY_A );

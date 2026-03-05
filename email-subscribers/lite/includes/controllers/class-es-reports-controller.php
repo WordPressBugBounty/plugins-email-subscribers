@@ -33,6 +33,7 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 	}
 
 	public static function get_dashboard_reports_data( $args = array() ) {
+		$page = isset( $args['page'] ) ? $args['page'] : 'reports';
 		$override_cache = isset( $args['override_cache'] ) ? $args['override_cache'] : false;
 		$days = isset( $args['days'] ) ? intval( $args['days'] ) : 7;
 		$list_id = isset( $args['list_id'] ) ? $args['list_id'] : '';
@@ -43,7 +44,7 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 			$filter_args['list_id'] = $list_id;
 		}
 		
-		return ES_Reports_Data::get_dashboard_reports_data( 'reports', $override_cache, $filter_args, $campaign_count );
+		return ES_Reports_Data::get_dashboard_reports_data( $page, $override_cache, $filter_args, $campaign_count );
 	}
 
 	public static function get_campaign_report( $args = array() ) {

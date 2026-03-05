@@ -206,10 +206,10 @@ if ( ! class_exists( 'ES_Queue' ) ) {
 
 								$data = array(
 									'utc_start'   => $start_time,
-									'interval'    => $rules['interval'],
+									'interval'    => ! empty( $rules['interval'] ) ? $rules['interval'] : 1,
 									'time_frame'  => $time_frame,
-									'time_of_day' => $rules['time_of_day'],
-									'weekdays'    => $rules['weekdays'],
+									'time_of_day' => ! empty( $rules['time_of_day'] ) ? $rules['time_of_day'] : 0,
+									'weekdays'    => ! empty( $rules['weekdays'] ) ? $rules['weekdays'] : array(),
 									'force'       => true,
 								);
 

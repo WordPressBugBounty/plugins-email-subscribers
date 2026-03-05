@@ -652,7 +652,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			$data = array_merge( $data, $reports_data );
 
 			if ( ! $override_cache ) {
-				ES_Cache::set_transient( $cache_key, $data, 1 * HOUR_IN_SECONDS );
+				ES_Cache::set_transient( $cache_key, $data, 5 * MINUTE_IN_SECONDS );
 			}
 
 			return $data;

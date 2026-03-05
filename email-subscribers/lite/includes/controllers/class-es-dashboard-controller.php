@@ -638,10 +638,6 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 				'days'    => $days,
 			) );
 			
-			// 2. Get all active lists with contact counts
-			$lists = ES_Lists_Controller::get_lists( array(
-				'per_page' => -1,
-			) );
 			
 			// 3. Get country stats
 			$country_stats = ES_Lists_Controller::get_country_stats( array(
@@ -658,7 +654,6 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 			$audience_health = ES_Contacts_Controller::get_audience_health_stats();
 			
 			return array(
-				'lists'             => ! empty( $lists ) ? $lists : array(),
 				'country_stats'     => ! empty( $country_stats ) ? $country_stats : array(),
 				'audience_growth'   => $audience_growth,
 				'audience_health'   => $audience_health,

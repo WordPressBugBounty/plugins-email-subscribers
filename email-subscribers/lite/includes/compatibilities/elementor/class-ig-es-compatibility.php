@@ -15,6 +15,7 @@ final class ES_Compatibility_Elementor {
 	public function __construct() {
 		// Initialize the custom block feature.
 		add_action( 'elementor_pro/forms/register_action', array( $this, 'register_for_action' ) );
+		add_action( 'elementor_pro/forms/actions/register', array( $this, 'register_for_action' ) );
 	}
 
 	/**
@@ -26,6 +27,9 @@ final class ES_Compatibility_Elementor {
 		if (method_exists($forms_module, 'add_form_action')) {
 			require_once 'actions/class-es-ig-form-action.php';
 			$forms_module->add_form_action( 'email_subscribers', new Es_Form_Action() );
+		} elseif ( method_exists( $forms_module, 'register' ) ) {
+			require_once 'actions/class-es-ig-form-action.php';
+			$forms_module->register( new Es_Form_Action() );
 		}
 	}
 

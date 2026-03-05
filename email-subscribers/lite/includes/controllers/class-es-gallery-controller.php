@@ -33,13 +33,12 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 			$campaign_type = ! empty( $data['campaign_type'] ) ? sanitize_text_field( $data['campaign_type'] ) : '';
 			$include_remote = isset( $data['include_remote'] ) ? filter_var( $data['include_remote'], FILTER_VALIDATE_BOOLEAN ) : true;
 
-			$campaign_templates = ES_Common::get_templates( $campaign_type, '', $limit );
-			
-			if ( !empty( $campaign_templates ) ) {
-				foreach ( $campaign_templates as $campaign_template) {
-					$template_slug = $campaign_template->post_name;
-					$editor_type = get_post_meta( $campaign_template->ID, 'es_editor_type', true );
-					$categories = array();
+		// Step 1: Fetch local templates with the requested limit
+		$campaign_templates = ES_Common::get_templates( $campaign_type, '', $limit );		
+		if ( !empty( $campaign_templates ) ) {
+			foreach ( $campaign_templates as $campaign_template) {
+				$template_slug = $campaign_template->post_name;
+				$editor_type = get_post_meta( $campaign_template->ID, 'es_editor_type', true );					$categories = array();
 					$gallery_item['ID'] = $campaign_template->ID;
 					$gallery_item['title'] = html_entity_decode( $campaign_template->post_title, ENT_QUOTES, $blog_charset );
 					$gallery_item['type'] = get_post_meta( $campaign_template->ID, 'es_template_type', true );
@@ -63,10 +62,17 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 				}
 			}
 
-			// Only fetch remote items if requested and limit is -1 (all items)
-			$remote_gallery_items = ( $include_remote && $limit === -1 ) ? self::get_remote_gallery_items() : array();
-			if ( ! empty( $remote_gallery_items ) ) {
-				foreach ( $remote_gallery_items as $item ) {
+	// Step 2: If we need more templates to reach the limit, fetch remote templates
+	$local_count = count( $gallery_items );
+	$need_remote = $include_remote && ( $limit === -1 || ( $limit > 0 && $local_count < $limit ) );
+	
+	$remote_gallery_items = array();
+	if ( $need_remote ) {
+		$remote_gallery_items = self::get_remote_gallery_items();
+	}
+	
+	if ( ! empty( $remote_gallery_items ) ) {
+			foreach ( $remote_gallery_items as $item ) {
 					$template_version = $item->template_version;
 					if ( in_array( $template_version, array('1.0.0', '1.0.1') ) ) {
 						$template_slug = $item->slug;
@@ -79,14 +85,20 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 						$item_title    = html_entity_decode( $item_title, ENT_QUOTES, $blog_charset );
 						$thumbnail_url = ! empty( $item->thumbnail->guid ) ? $item->thumbnail->guid : '';
 						$editor_type   = ! empty( $item->es_editor_type ) ? $item->es_editor_type : IG_ES_CLASSIC_EDITOR;
-						$campaign_type = ! empty( $item->es_template_type ) ? $item->es_template_type : IG_CAMPAIGN_TYPE_NEWSLETTER;
+						$item_campaign_type = ! empty( $item->es_template_type ) ? $item->es_template_type : IG_CAMPAIGN_TYPE_NEWSLETTER;
+						
+						// Skip remote template if campaign type doesn't match the requested type.
+						if ( ! empty( $campaign_type ) && $item_campaign_type !== $campaign_type ) {
+							continue;
+						}
+						
 						$es_plan       = ! empty( $item->es_plan ) ? $item->es_plan : 'lite';
 						$gallery_type  = 'remote';
 						$template_version = ! empty( $item->template_version ) ? $item->template_version : '1.0.0';
 						$category_ids  = ! empty( $item->es_gallery_cat ) ? $item->es_gallery_cat : array();
 						
 						$categories = array(
-							$campaign_type,
+							$item_campaign_type,
 							$editor_type
 						);
 
@@ -99,7 +111,7 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 						'title'        		=> $item_title,
 						'thumbnail'    		=> $thumbnail_url,
 						'categories'   		=> $categories,
-						'type'		   		=> $campaign_type,
+						'type'		   		=> $item_campaign_type,
 						'editor_type'  		=> $editor_type,
 						'gallery_type' 		=> 'remote',
 						'es_plan'      		=> $es_plan,
@@ -107,17 +119,20 @@ if ( ! class_exists( 'ES_Gallery_Controller' ) ) {
 						'slug'				=> $template_slug,
 						'category_ids'		=> $category_ids,
 						'post_type'			=> 'es_gallery_item',
-					);
-				}
+					);				
+				// Stop adding remote templates if we've reached the limit
+				if ( $limit > 0 && count( $gallery_items ) >= $limit ) {
+					break;
+				}				}
 			}
 		}		
 		
-		$response['items'] = array_values( $gallery_items );
+	$response['items'] = array_values( $gallery_items );
 
-			wp_send_json_success( $response );
-		}
+	wp_send_json_success( $response );
+}
 
-		public static function get_gallery_categories() {
+	public static function get_gallery_categories() {
 			$remote_gallery_categories_updated = get_transient( 'ig_es_remote_gallery_categories_updated' );
 			if ( ! $remote_gallery_categories_updated ) {
 				$remote_gallery_categories_url = 'https://www.icegram.com/gallery/wp-json/wp/v2/es_gallery_cat?filter[posts_per_page]=200';
