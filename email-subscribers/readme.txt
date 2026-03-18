@@ -6,7 +6,7 @@ Tags: email marketing, newsletter, email subscribers, email automation, post not
 Requires at least: 3.9
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 5.9.19
+Stable tag: 5.9.20
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,15 +361,21 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.19 =
+= 5.9.20 =
 
-* Improvement: Campaign post digest settings for better UX
-* Improvement: Added pagination to the audience list
-* Improvement: "Saved Templates" section in the template gallery.
-* Fix: "Subscribe" action missing in "Elementor Pro forms" for adding contacts to the audience
-* Fix: Caching issue for reports to improve the speed of loading
+* Improvement: Improved the "Saved Templates" section in the template gallery.
+* Fix: Issues with the Total Contacts and Total Sent in reports for Post Notifications.
+* Fix: Issue where all lists were not shown in the campaign recipients rule.
+* Fix: Status update issue in the alerts section of the Reports.
 
 == Changelog ==
+
+**5.9.20 (18.03.2026)**
+
+* Improvement: Improved the "Saved Templates" section in the template gallery.
+* Fix: Issues with the Total Contacts and Total Sent in reports for Post Notifications.
+* Fix: Issue where all lists were not shown in the campaign recipients rule.
+* Fix: Status update issue in the alerts section of the Reports.
 
 **5.9.19 (05.03.2026)**
 

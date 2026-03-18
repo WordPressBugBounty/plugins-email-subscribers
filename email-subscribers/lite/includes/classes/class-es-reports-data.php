@@ -360,7 +360,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 				'order_by_column' => 'ID',
 				'limit'           => '5',
 				'order'           => 'DESC',
-				'status'          => array( 2, 3 ),
+				'status'          => array( IG_ES_CAMPAIGN_STATUS_SCHEDULED, IG_ES_CAMPAIGN_STATUS_QUEUED ),
 				'include_types'   => array(
 					IG_CAMPAIGN_TYPE_POST_NOTIFICATION,
 					IG_CAMPAIGN_TYPE_POST_DIGEST,
@@ -373,14 +373,30 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 				$seen_campaign_ids      = array();
 				if ( ! empty( $pending_campaigns ) ) {
 					foreach ( $pending_campaigns as $campaign ) {
-						// Fetch latest mailing queue hash for this campaign (not stored in campaigns table)
+						$campaign_id = (int) $campaign['id'];
+						
+						// For queued campaigns (status 3), check if mailing queue is actually pending
+						if ( IG_ES_CAMPAIGN_STATUS_QUEUED === (int) $campaign['status'] ) {
+							$mq_status = $wpdb->get_var(
+								$wpdb->prepare(
+									"SELECT status FROM {$wpdb->prefix}ig_mailing_queue WHERE campaign_id = %d ORDER BY id DESC LIMIT 1",
+									$campaign_id
+								)
+							);
+							// Skip if already sent
+							if ( 'Sent' === $mq_status ) {
+								continue;
+							}
+						}
+						
+						// Fetch latest mailing queue hash for this campaign
 						$cron_url = '';
 						$hash     = '';
 						// phpcs:disable
 						$mq_hash = $wpdb->get_var(
 							$wpdb->prepare(
 								"SELECT hash FROM {$wpdb->prefix}ig_mailing_queue WHERE campaign_id = %d AND hash IS NOT NULL ORDER BY id DESC LIMIT 1",
-								(int) $campaign['id']
+								$campaign_id
 							)
 						);
 						// phpcs:enable
@@ -389,14 +405,14 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 							$cron_url = ES()->cron->url( true, false, $hash );
 						}
 						$pending_campaigns_data[] = array(
-							'id'       => $campaign['id'],
+							'id'       => $campaign_id,
 							'title'    => $campaign['subject'],
 							'status'   => $campaign['status'],
 							'type'     => $campaign['type'],
 							'hash'     => $hash,
 							'cron_url' => $cron_url,
 						);
-						$seen_campaign_ids[] = (int) $campaign['id'];
+						$seen_campaign_ids[] = $campaign_id;
 					}
 				}
 

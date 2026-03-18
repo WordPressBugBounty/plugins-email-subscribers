@@ -519,41 +519,52 @@ $subscribed = 0;
 		return $results;
 	}
 
-	public function get_bulk_campaign_stats( $campaign_ids, $types = array() ) {
+
+	/**
+	 * Get stats for multiple notifications (message_ids) in bulk
+	 * 
+	 * @param array $message_ids Array of notification/message IDs
+	 * @param array $types Array of action types to count
+	 * 
+	 * @return array Stats grouped by message_id
+	 * 
+	 * @since 5.7.25
+	 */
+	public function get_bulk_notification_stats( $message_ids, $types = array() ) {
 		global $wpdb;
 		
-		if ( empty( $campaign_ids ) ) {
+		if ( empty( $message_ids ) ) {
 			return array();
 		}
 		
-		$campaign_ids = array_map( 'absint', $campaign_ids );
-		$campaign_ids = array_filter( $campaign_ids );
+		$message_ids = array_map( 'absint', $message_ids );
+		$message_ids = array_filter( $message_ids );
 		
-		if ( empty( $campaign_ids ) ) {
+		if ( empty( $message_ids ) ) {
 			return array();
 		}
 		
-		$placeholders = implode( ',', array_fill( 0, count( $campaign_ids ), '%d' ) );
+		$placeholders = implode( ',', array_fill( 0, count( $message_ids ), '%d' ) );
 		
-		$query = "SELECT campaign_id, type, COUNT(DISTINCT contact_id) as total 
+		$query = "SELECT message_id, type, COUNT(DISTINCT contact_id) as total 
 			FROM {$wpdb->prefix}ig_actions 
-			WHERE campaign_id IN ($placeholders)";
+			WHERE message_id IN ($placeholders)";
 		
 		if ( ! empty( $types ) ) {
 			$type_placeholders = implode( ',', array_fill( 0, count( $types ), '%d' ) );
 			$query .= " AND type IN ($type_placeholders)";
-			$query_params = array_merge( $campaign_ids, $types );
+			$query_params = array_merge( $message_ids, $types );
 		} else {
-			$query_params = $campaign_ids;
+			$query_params = $message_ids;
 		}
 		
-		$query .= " GROUP BY campaign_id, type";
+		$query .= " GROUP BY message_id, type";
 		
 		$results = $wpdb->get_results( $wpdb->prepare( $query, $query_params ), ARRAY_A );
 		
 		$stats = array();
-		foreach ( $campaign_ids as $cid ) {
-			$stats[ $cid ] = array(
+		foreach ( $message_ids as $mid ) {
+			$stats[ $mid ] = array(
 				'sent'         => 0,
 				'opened'       => 0,
 				'clicked'      => 0,
@@ -563,26 +574,26 @@ $subscribed = 0;
 		
 		if ( ! empty( $results ) ) {
 			foreach ( $results as $row ) {
-				$campaign_id = (int) $row['campaign_id'];
+				$message_id = (int) $row['message_id'];
 				$type = (int) $row['type'];
 				$count = (int) $row['total'];
 				
-				if ( ! isset( $stats[ $campaign_id ] ) ) {
+				if ( ! isset( $stats[ $message_id ] ) ) {
 					continue;
 				}
 				
 				switch ( $type ) {
 					case IG_MESSAGE_SENT:
-						$stats[ $campaign_id ]['sent'] = $count;
+						$stats[ $message_id ]['sent'] = $count;
 						break;
 					case IG_MESSAGE_OPEN:
-						$stats[ $campaign_id ]['opened'] = $count;
+						$stats[ $message_id ]['opened'] = $count;
 						break;
 					case IG_LINK_CLICK:
-						$stats[ $campaign_id ]['clicked'] = $count;
+						$stats[ $message_id ]['clicked'] = $count;
 						break;
 					case IG_CONTACT_UNSUBSCRIBE:
-						$stats[ $campaign_id ]['unsubscribed'] = $count;
+						$stats[ $message_id ]['unsubscribed'] = $count;
 						break;
 				}
 			}

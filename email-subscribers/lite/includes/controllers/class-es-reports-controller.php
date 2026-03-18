@@ -551,13 +551,13 @@ if ( ! $do_count_only ) {
 			$result = $wpbd->get_results( $sql, 'ARRAY_A' );
 			
 			if ( ! empty( $result ) && is_array( $result ) ) {
-				$campaign_ids = array_column( $result, 'campaign_id' );
-				$campaign_ids = array_filter( array_unique( $campaign_ids ) );
+				$notification_ids = array_column( $result, 'id' );
+				$notification_ids = array_filter( array_unique( $notification_ids ) );
 				
 				$all_stats = array();
-				if ( ! empty( $campaign_ids ) ) {
-					$all_stats = ES()->actions_db->get_bulk_campaign_stats(
-						$campaign_ids,
+				if ( ! empty( $notification_ids ) ) {
+					$all_stats = ES()->actions_db->get_bulk_notification_stats(
+						$notification_ids,
 						array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK, IG_CONTACT_UNSUBSCRIBE )
 					);
 				}
@@ -579,7 +579,7 @@ if ( ! $do_count_only ) {
 						$result[ $key ]['type'] = __( 'Post Notification', 'email-subscribers' );
 					}
 					
-					$stats = isset( $all_stats[ $campaign_id ] ) ? $all_stats[ $campaign_id ] : array(
+					$stats = isset( $all_stats[ $notification_id ] ) ? $all_stats[ $notification_id ] : array(
 						'sent'         => 0,
 						'opened'       => 0,
 						'clicked'      => 0,
