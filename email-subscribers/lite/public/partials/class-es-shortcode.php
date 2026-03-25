@@ -240,7 +240,7 @@ class ES_Shortcode {
 				}
 			}
 		}
-
+        $list_html = apply_filters( 'ig_es_list_field_html', $list_html, $show_list, $list_label, $list_ids, $list, $selected_list_ids );
 		return $list_html;
 	}
 
@@ -1157,7 +1157,11 @@ class ES_Shortcode {
 				
 				// Use the existing prepare_lists_checkboxes function with proper list data
 				$selected_lists = ! empty( $field['value'] ) && is_array( $field['value'] ) ? $field['value'] : array();
-				$html = self::prepare_lists_checkboxes( $lists_array, array_keys($lists_array), 1, $selected_lists, $field_label, 0, 'esfpx_lists[]', $lists_id_hash_map );
+				$list_html = self::prepare_lists_checkboxes( $lists_array, array_keys($lists_array), 1, $selected_lists, $field_label, 0, 'esfpx_lists[]', $lists_id_hash_map );
+				
+				// Apply filter to allow customization
+				$list_ids = array_keys($lists_array);
+				$html = apply_filters( 'ig_es_list_field_html', $list_html, true, $field_label, $list_ids, '', $selected_lists );
 			} else {
 				$html = '<div class="es-field-wrap"><p style="color: #888; font-style: italic;">' . __( 'No lists configured for this field.', 'email-subscribers' ) . '</p></div>';
 			}
@@ -1591,7 +1595,7 @@ class ES_Shortcode {
 		if ( is_array( $args['options'] ) ) {
 			foreach ( $args['options'] as $option ) {
 				if ( is_array( $option ) && isset( $option['text'] ) ) {
-					$option_value = isset( $option['id'] ) ? $option['id'] : $option['text'];
+					$option_value = $option['text'];
 					$option_text = $option['text'];
 					$selected = ( $args['value'] == $option_value || $args['value'] == $option_text ) ? 'selected="selected"' : '';
 					$html .= '<option value="' . esc_attr( $option_value ) . '" ' . $selected . '>' . esc_html( $option_text ) . '</option>';
@@ -1719,7 +1723,7 @@ class ES_Shortcode {
 		if ( is_array( $args['options'] ) ) {
 			foreach ( $args['options'] as $option ) {
 				if ( is_array( $option ) && isset( $option['text'] ) ) {
-					$option_value = isset( $option['id'] ) ? $option['id'] : $option['text'];
+					$option_value = $option['text'];
 					$option_text = $option['text'];
 					$checked = in_array( $option_value, $selected_values ) || in_array( $option_text, $selected_values ) ? 'checked' : '';
 					$unique_id = 'checkbox_' . $args['field_id'] . '_' . sanitize_title( $option_value ) . '_' . uniqid();
@@ -1816,7 +1820,7 @@ class ES_Shortcode {
 		if ( is_array( $args['options'] ) ) {
 			foreach ( $args['options'] as $option ) {
 				if ( is_array( $option ) && isset( $option['text'] ) ) {
-					$option_value = isset( $option['id'] ) ? $option['id'] : $option['text'];
+					$option_value = $option['text'];
 					$option_text = $option['text'];
 					$checked = ( $args['value'] == $option_value || $args['value'] == $option_text ) ? 'checked="checked"' : '';
 					$html .= '<div style="margin-bottom: 8px;">';

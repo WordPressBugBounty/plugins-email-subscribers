@@ -6,7 +6,7 @@ Tags: email marketing, newsletter, email subscribers, email automation, post not
 Requires at least: 3.9
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 5.9.20
+Stable tag: 5.9.21
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,21 +361,19 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.20 =
+= 5.9.21 =
 
-* Improvement: Improved the "Saved Templates" section in the template gallery.
-* Fix: Issues with the Total Contacts and Total Sent in reports for Post Notifications.
-* Fix: Issue where all lists were not shown in the campaign recipients rule.
-* Fix: Status update issue in the alerts section of the Reports.
+* New: Added attachment support to campaign emails
+* Fix: Custom fields' values were not getting saved when subscribing via the frontend form
+* Fix: Issue with newsletter scheduling options field in campaign
 
 == Changelog ==
 
-**5.9.20 (18.03.2026)**
+**5.9.21 (25.03.2026)**
 
-* Improvement: Improved the "Saved Templates" section in the template gallery.
-* Fix: Issues with the Total Contacts and Total Sent in reports for Post Notifications.
-* Fix: Issue where all lists were not shown in the campaign recipients rule.
-* Fix: Status update issue in the alerts section of the Reports.
+* New: Added attachment support to campaign emails
+* Fix: Custom fields' values were not getting saved when subscribing via the frontend form
+* Fix: Issue with newsletter scheduling options field in campaign
 
 **5.9.19 (05.03.2026)**
 
