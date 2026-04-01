@@ -86,12 +86,13 @@ if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 		
 		$campaign_data     = self::prepare_campaign_data( $campaign_data );
 		$saved_campaign_id = self::save_campaign( $campaign_data );
-		if ( $saved_campaign_id ) {
-			$response['campaign_id'] = $saved_campaign_id;
+			if ( $saved_campaign_id ) {
+				$response['campaign_id'] = $saved_campaign_id;
 			
-			$campaign_type = isset( $campaign_data['type'] ) ? $campaign_data['type'] : '';
-			$campaign_status = isset( $campaign_data['status'] ) ? $campaign_data['status'] : 0;
-			if ( self::is_post_campaign( $campaign_type ) && IG_ES_CAMPAIGN_STATUS_ACTIVE == $campaign_status ) {					$meta = ig_es_maybe_unserialize($campaign_data['meta']);
+				$campaign_type = isset( $campaign_data['type'] ) ? $campaign_data['type'] : '';
+				$campaign_status = isset( $campaign_data['status'] ) ? $campaign_data['status'] : 0;
+				if ( self::is_post_campaign( $campaign_type ) && IG_ES_CAMPAIGN_STATUS_ACTIVE == $campaign_status ) {
+$meta = ig_es_maybe_unserialize($campaign_data['meta']);
 					if ( ! empty( $meta['send_posts_now'] ) && 'yes' === $meta['send_posts_now']) {
 					
 					  $mailing_queue_id = self::generateReport($saved_campaign_id);
@@ -109,14 +110,14 @@ if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 								IG_ES_Background_Process_Helper::send_async_ajax_request( $request_args, true );
 							}
 						}
+					}
 				}
 			}
-		}
 
 		return $response;
-	}
+		}
 
-	public static function generateReport( $campaign_id = 0 ) {
+		public static function generateReport( $campaign_id = 0 ) {
 			$post_ids = array();
 			$meta_data = array();
 			$mailing_queue_id=0;
@@ -334,51 +335,53 @@ if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 			return $response;
 		}
 
-	public static function prepare_campaign_data( $campaign_data ) {
+		public static function prepare_campaign_data( $campaign_data ) {
 		
-		$list_id     = ! empty( $campaign_data['list_ids'] ) ? $campaign_data['list_ids']      : '';
-		$template_id = ! empty( $campaign_data['template_id'] ) ? $campaign_data['template_id']: '';
-		$meta        = ! empty( $campaign_data['meta']    ) ? $campaign_data['meta']           : array();
+			$list_id     = ! empty( $campaign_data['list_ids'] ) ? $campaign_data['list_ids']      : '';
+			$template_id = ! empty( $campaign_data['template_id'] ) ? $campaign_data['template_id']: '';
+			$meta        = ! empty( $campaign_data['meta']    ) ? $campaign_data['meta']           : array();
 		
-		// Ensure meta is an array (unserialize if needed)
-		if ( is_string( $meta ) ) {
-			$meta = ig_es_maybe_unserialize( $meta );
-		}
-		if ( ! is_array( $meta ) ) {
-			$meta = array();
-		}
+			// Ensure meta is an array (unserialize if needed)
+			if ( is_string( $meta ) ) {
+				$meta = ig_es_maybe_unserialize( $meta );
+			}
+			if ( ! is_array( $meta ) ) {
+				$meta = array();
+			}
 		
-	$campaign_data['subject']          = ! empty( $campaign_data['subject'] ) ? wp_strip_all_tags( $campaign_data['subject'] ) : '';
-	$campaign_data['base_template_id'] = $template_id;
+		$campaign_data['subject']          = ! empty( $campaign_data['subject'] ) ? wp_strip_all_tags( $campaign_data['subject'] ) : '';
+		$campaign_data['base_template_id'] = $template_id;
 		
-		if ( '' !== $list_id ) {
-			$campaign_data['list_ids'] = $list_id;
-		} else {
-			// Remove the key entirely so save_campaign can preserve existing value
-			unset( $campaign_data['list_ids'] );
-		}
+			if ( '' !== $list_id ) {
+				$campaign_data['list_ids'] = $list_id;
+			} else {
+				// Remove the key entirely so save_campaign can preserve existing value
+				unset( $campaign_data['list_ids'] );
+			}
 		
-	$meta['scheduling_option']         = ! empty( $campaign_data['scheduling_option'] ) ? $campaign_data['scheduling_option'] : 'schedule_now';			$meta['es_schedule_date']          = ! empty( $campaign_data['es_schedule_date'] ) ? $campaign_data['es_schedule_date'] : '';
-		$meta['es_schedule_time']          = ! empty( $campaign_data['es_schedule_time'] ) ? $campaign_data['es_schedule_time'] : '';
+		$meta['scheduling_option']         = ! empty( $campaign_data['scheduling_option'] ) ? $campaign_data['scheduling_option'] : 'schedule_now';
+$meta['es_schedule_date']          = ! empty( $campaign_data['es_schedule_date'] ) ? $campaign_data['es_schedule_date'] : '';
+			$meta['es_schedule_time']          = ! empty( $campaign_data['es_schedule_time'] ) ? $campaign_data['es_schedule_time'] : '';
 
-	if ( ! empty( $meta['list_conditions'] ) ) {
-		$meta['list_conditions'] = IG_ES_Campaign_Rules::remove_empty_conditions( $meta['list_conditions'] );
-	}
+			if ( ! empty( $meta['list_conditions'] ) ) {
+				$meta['list_conditions'] = IG_ES_Campaign_Rules::remove_empty_conditions( $meta['list_conditions'] );
+			}
 
-	if ( empty( $meta['editor_type'] ) ) {
-		$meta['editor_type'] = IG_ES_CLASSIC_EDITOR;
-	}
+			if ( empty( $meta['editor_type'] ) ) {
+				$meta['editor_type'] = IG_ES_CLASSIC_EDITOR;
+			}
 
-	$campaign_type = isset( $campaign_data['type'] ) ? $campaign_data['type'] : '';
-	if ( self::is_post_campaign( $campaign_type ) ) {
-		$campaign_body = isset( $campaign_data['body'] ) ? $campaign_data['body'] : '';
-		if ( ! ES_Common::contains_posts_block( $campaign_body ) ) {
-			$campaign_body         = ES_Common::wrap_post_keywords_between_campaign_posts_keyword( $campaign_body );
-			$campaign_data['body'] = $campaign_body;
-		}
-	}			$meta = apply_filters( 'ig_es_before_save_campaign_meta', $meta, $campaign_data );
+		$campaign_type = isset( $campaign_data['type'] ) ? $campaign_data['type'] : '';
+			if ( self::is_post_campaign( $campaign_type ) ) {
+				$campaign_body = isset( $campaign_data['body'] ) ? $campaign_data['body'] : '';
+				if ( ! ES_Common::contains_posts_block( $campaign_body ) ) {
+					$campaign_body         = ES_Common::wrap_post_keywords_between_campaign_posts_keyword( $campaign_body );
+					$campaign_data['body'] = $campaign_body;
+				}
+			}			$meta = apply_filters( 'ig_es_before_save_campaign_meta', $meta, $campaign_data );
 
-		$campaign_data['meta'] = maybe_serialize( $meta );			return $campaign_data;
+		$campaign_data['meta'] = maybe_serialize( $meta );
+return $campaign_data;
 		}
 
 		public static function save_campaign( $campaign_data ) {
@@ -670,18 +673,18 @@ if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 	 * @since 4.0.0
 	 * @since 4.3.2 Call ES()->mailer->send_test_email() method to send test email
 	 */
-	public static function send_test_email( $campaign_data) {
-		$campaign_data = ES_Common::decode_args( $campaign_data );
+		public static function send_test_email( $campaign_data) {
+			$campaign_data = ES_Common::decode_args( $campaign_data );
 
-		$response = array();		// Sanitize and validate inputs
-		$email         = isset( $campaign_data['es_test_email'] ) ? sanitize_email( $campaign_data['es_test_email'] ) : '';
-		$campaign_id   = isset( $campaign_data['id'] ) ? absint( $campaign_data['id'] ) : 0;
-		$campaign_type = isset( $campaign_data['type'] ) ? sanitize_text_field( $campaign_data['type'] ) : '';
-		$template_id   = isset( $campaign_data['base_template_id'] ) ? absint( $campaign_data['base_template_id'] ) : 0;
-		$subject       = isset( $campaign_data['subject'] ) ? sanitize_text_field( $campaign_data['subject'] ) : '';
-		$content       = isset( $campaign_data['body'] ) ?$campaign_data['body'] : '';
-		$attachments   = isset( $campaign_data['meta']['attachments'] ) ? $campaign_data['meta']['attachments'] : array();
-		$preheader     = isset( $campaign_data['meta']['pre_header'] ) ? sanitize_text_field( $campaign_data['meta']['pre_header'] ) : '';
+			$response = array();		// Sanitize and validate inputs
+			$email         = isset( $campaign_data['es_test_email'] ) ? sanitize_email( $campaign_data['es_test_email'] ) : '';
+			$campaign_id   = isset( $campaign_data['id'] ) ? absint( $campaign_data['id'] ) : 0;
+			$campaign_type = isset( $campaign_data['type'] ) ? sanitize_text_field( $campaign_data['type'] ) : '';
+			$template_id   = isset( $campaign_data['base_template_id'] ) ? absint( $campaign_data['base_template_id'] ) : 0;
+			$subject       = isset( $campaign_data['subject'] ) ? sanitize_text_field( $campaign_data['subject'] ) : '';
+			$content       = isset( $campaign_data['body'] ) ?$campaign_data['body'] : '';
+			$attachments   = isset( $campaign_data['meta']['attachments'] ) ? $campaign_data['meta']['attachments'] : array();
+			$preheader     = isset( $campaign_data['meta']['pre_header'] ) ? sanitize_text_field( $campaign_data['meta']['pre_header'] ) : '';
 	
 			if ( ! empty( $email ) ) {
 	
@@ -720,7 +723,7 @@ if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 				}
 			}
 	
-		return $response;
+			return $response;
 	
 		}
 	
@@ -741,13 +744,14 @@ if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 	 *
 	 * @since 4.6.1
 	 */
-	public static function get_spam_score( $campaign_data) {
-		$campaign_data = ES_Common::decode_args( $campaign_data );
+		public static function get_spam_score( $campaign_data) {
+			$campaign_data = ES_Common::decode_args( $campaign_data );
 		
-		$response = [
-		'status'        => 'error',
-		'error_message' => __('Something went wrong', 'email-subscribers'),
-		];			$admin_email = ES_Common::get_admin_email();
+			$response = [
+			'status'        => 'error',
+			'error_message' => __('Something went wrong', 'email-subscribers'),
+			];
+$admin_email = ES_Common::get_admin_email();
 	
 			$sender_data = [
 			'from_name'  => $campaign_data['from_name'],
@@ -825,14 +829,14 @@ if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 	 *
 	 * @since 4.4.7
 	 */
-	public static function save_and_preview( $campaign_data ) {
-		$response = array();
+		public static function save_and_preview( $campaign_data ) {
+			$response = array();
 
-		// save() will decode and process, but we need decoded data after save for preview
-		$result = self::save( $campaign_data );
+			// save() will decode and process, but we need decoded data after save for preview
+			$result = self::save( $campaign_data );
 		
-		// NOW decode for use in this function (after save has already decoded it internally)
-		$campaign_data = ES_Common::decode_args( $campaign_data );
+			// NOW decode for use in this function (after save has already decoded it internally)
+			$campaign_data = ES_Common::decode_args( $campaign_data );
 			
 			if ( ! empty( $result['campaign_id'] ) ) {
 				$campaign_data['id'] = $result['campaign_id'];
@@ -847,15 +851,16 @@ if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 		
 		$response['preview_html'] = $campaign_data['body'];
 		$response['id'] = $campaign_data['id'];
-	} else {
-		$response['success'] = false;
-		$response['message'] = 'Failed to save campaign';
-	}
+			} else {
+				$response['success'] = false;
+				$response['message'] = 'Failed to save campaign';
+			}
 
-	return $response;
-}
+		return $response;
+		}
 
-public static function add_campaign_body_data( $campaign_data ) {			$template_id = ! empty( $campaign_data['template_id'] ) ? $campaign_data['template_id'] : 0;
+		public static function add_campaign_body_data( $campaign_data ) {
+			$template_id = ! empty( $campaign_data['template_id'] ) ? $campaign_data['template_id'] : 0;
 			$campaign_id = ! empty( $campaign_data['id'] ) ? $campaign_data['id'] : 0;
 			if ( ! empty( $campaign_data['body'] ) ) {
 				$current_user = wp_get_current_user();
@@ -929,29 +934,29 @@ public static function add_campaign_body_data( $campaign_data ) {			$template_id
 			// If there are blocks in this content, we shouldn't run wpautop() on it.
 			$priority = has_filter( 'the_content', 'wpautop' );
 
-			if ( false !== $priority ) {
-				// Remove wpautop to avoid p tags.
-				remove_filter( 'the_content', 'wpautop', $priority );
-			}
+				if ( false !== $priority ) {
+					// Remove wpautop to avoid p tags.
+					remove_filter( 'the_content', 'wpautop', $priority );
+				}
 
 			$campaign_body = apply_filters( 'the_content', $campaign_body );
 			$campaign_body = ES_Common::es_process_template_body( $campaign_body, $template_id, $campaign_id );
 
 			$campaign_data['body'] = $campaign_body;
 
-		}
+			}
 		
-		return $campaign_data;
+				return $campaign_data;
 		}
 
-	public static function replace_post_notification_merge_tags_with_sample_post( $campaign_data ) {
-		if ( ! empty( $campaign_data['id'] ) ) {
+		public static function replace_post_notification_merge_tags_with_sample_post( $campaign_data ) {
+			if ( ! empty( $campaign_data['id'] ) ) {
 
-			$categories_str  = ! empty( $campaign_data['categories'] ) ? $campaign_data['categories'] : '';
-			$categories      = ES_Common::convert_categories_string_to_array( $categories_str, true );
-			$meta            = ! empty( $campaign_data['meta'] ) ? $campaign_data['meta'] : array();
-			$no_of_posts     = ( ! empty( $meta['rules'] ) && ! empty( $meta['rules']['no_of_posts'] ) ) ? $meta['rules']['no_of_posts'] : array();
-			$categories_data = $categories;				foreach ($categories_data as $index => $category ) {
+				$categories_str  = ! empty( $campaign_data['categories'] ) ? $campaign_data['categories'] : '';
+				$categories      = ES_Common::convert_categories_string_to_array( $categories_str, true );
+				$meta            = ! empty( $campaign_data['meta'] ) ? $campaign_data['meta'] : array();
+				$no_of_posts     = ( ! empty( $meta['rules'] ) && ! empty( $meta['rules']['no_of_posts'] ) ) ? $meta['rules']['no_of_posts'] : array();
+				$categories_data = $categories;				foreach ($categories_data as $index => $category ) {
 					$include_all_post = false;
 					$include_no_post  = false;
 					$cpt_categories = explode( '|', $category );
@@ -1299,62 +1304,62 @@ public static function add_campaign_body_data( $campaign_data ) {			$template_id
 
 
 
-	public static function get_matching_recipients_count ( $recipient_rule) {
-		global $wpdb;
+		public static function get_matching_recipients_count ( $recipient_rule) {
+			global $wpdb;
 
-		// Decode JSON string if needed
-		if ( is_string( $recipient_rule ) && ! empty( $recipient_rule ) ) {
-			$decoded_data = json_decode( $recipient_rule, true );
-			if ( is_array( $decoded_data ) ) {
-				$recipient_rule = $decoded_data;
+			// Decode JSON string if needed
+			if ( is_string( $recipient_rule ) && ! empty( $recipient_rule ) ) {
+				$decoded_data = json_decode( $recipient_rule, true );
+				if ( is_array( $decoded_data ) ) {
+					$recipient_rule = $decoded_data;
+				}
 			}
-		}
 
-		$can_access_audience = ES_Common::ig_es_can_access( 'audience' );
+			$can_access_audience = ES_Common::ig_es_can_access( 'audience' );
 
-		$can_access_campaign = ES_Common::ig_es_can_access( 'campaigns' );
-		if ( ! ( $can_access_audience || $can_access_campaign ) ) {
-			return 0;
-		}
+			$can_access_campaign = ES_Common::ig_es_can_access( 'campaigns' );
+			if ( ! ( $can_access_audience || $can_access_campaign ) ) {
+				return 0;
+			}
 		
-		$status     = isset( $recipient_rule['status'] ) ? $recipient_rule['status'] : 'subscribed';
-		$conditions = isset( $recipient_rule['list_conditions'] ) ? $recipient_rule['list_conditions'] : array();
+			$status     = isset( $recipient_rule['status'] ) ? $recipient_rule['status'] : 'subscribed';
+			$conditions = isset( $recipient_rule['list_conditions'] ) ? $recipient_rule['list_conditions'] : array();
 
-		$expected_statuses = array( 'subscribed', 'unsubscribed', 'unconfirmed', 'confirmed', 'all' );
+			$expected_statuses = array( 'subscribed', 'unsubscribed', 'unconfirmed', 'confirmed', 'all' );
 
-		if ( ! in_array( $status, $expected_statuses, true ) ) {
-			return 0;
-		}		
+			if ( ! in_array( $status, $expected_statuses, true ) ) {
+				return 0;
+			}		
 		
-		$response_data = array();
+			$response_data = array();
 
-		if ( ! empty( $conditions ) ) {
-			$conditions = IG_ES_Campaign_Rules::remove_empty_conditions( $conditions );
-			
 			if ( ! empty( $conditions ) ) {
-				$args                   = array(
+				$conditions = IG_ES_Campaign_Rules::remove_empty_conditions( $conditions );
+			
+				if ( ! empty( $conditions ) ) {
+					$args                   = array(
 					'conditions'        => $conditions,
 					'status'            => $status,
 					'subscriber_status' => array( 'verified' ),
 					'return_count'      => true,
-				);
+					);
 				
-				$query                  = new IG_ES_Subscribers_Query();
-				$response_data['total'] = $query->run( $args );
+					$query                  = new IG_ES_Subscribers_Query();
+					$response_data['total'] = $query->run( $args );
 					
+				} else {
+					$response_data['total'] = 0;
+				}
+		
 			} else {
-				$response_data['total'] = 0;
+				$response_data['total'] = ES()->lists_contacts_db->get_total_count_by_list($status );
+			}
+			if ( ! empty( $response_data['total'] ) ) {
+				$response_data['total'] = number_format_i18n( $response_data['total'] );
 			}
 		
-		} else {
-			$response_data['total'] = ES()->lists_contacts_db->get_total_count_by_list($status );
+			return $response_data;
 		}
-		if ( ! empty( $response_data['total'] ) ) {
-			$response_data['total'] = number_format_i18n( $response_data['total'] );
-		}
-		
-		return $response_data;
-	}
 		
 		public static function get_posts_by_post_type( $post_type) {
 			$posts  = ES()->campaigns_db->get_posts_by_type( $post_type );

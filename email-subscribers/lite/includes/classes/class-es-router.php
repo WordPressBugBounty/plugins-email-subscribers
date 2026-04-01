@@ -52,19 +52,19 @@ if ( ! class_exists( 'ES_Router' ) ) {
 			$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
 			if ( ! ( $can_access_audience || $can_access_campaign || $can_access_forms || $can_access_sequence || $can_access_reports || $can_access_workflows ) ) {
 				return 0;
- 			}
+			}
 		$response = array();
 		$request = $_REQUEST;
 		
 		$handler       = ig_es_get_data( $request, 'handler' );
 		$handler_class = 'ES_' . str_replace( ' ', '_', ucwords( str_replace( '-', ' ', $handler ) ) ) . '_Controller';
 		
-		if ( empty( $handler ) || ! class_exists( $handler_class ) ) {
-			$response = array(
+			if ( empty( $handler ) || ! class_exists( $handler_class ) ) {
+				$response = array(
 				'message' => __( 'No request handler found.', 'email-subscribers' ),
-			);
-			wp_send_json_error( $response );
-		}
+				);
+				wp_send_json_error( $response );
+			}
 
 		$method = ig_es_get_data( $request, 'method' );			if ( ! method_exists( $handler_class, $method ) || ! is_callable( array( $handler_class, $method ) ) ) {
 				$response = array(
@@ -76,18 +76,18 @@ if ( ! class_exists( 'ES_Router' ) ) {
 		$data   = ig_es_get_request_data( 'data', array(), false );
 		
 		// Decode JSON data if it's a string
-		if ( is_string( $data ) && ! empty( $data ) ) {
-			$decoded = json_decode( $data, true );
-			$data = is_array( $decoded ) ? $decoded : array();
-		}
-		
-		if ( isset( $_FILES['async-upload']['tmp_name'] ) ) {
-			// Ensure $data is an array when handling file uploads
-			if ( ! is_array( $data ) ) {
-				$data = array();
+			if ( is_string( $data ) && ! empty( $data ) ) {
+				$decoded = json_decode( $data, true );
+				$data = is_array( $decoded ) ? $decoded : array();
 			}
-			$data['file'] =  sanitize_text_field( $_FILES['async-upload']['tmp_name'] );
-		}			$result = call_user_func( array( $handler_class, $method ), $data );
+		
+			if ( isset( $_FILES['async-upload']['tmp_name'] ) ) {
+				// Ensure $data is an array when handling file uploads
+				if ( ! is_array( $data ) ) {
+					$data = array();
+				}
+				$data['file'] =  sanitize_text_field( $_FILES['async-upload']['tmp_name'] );
+			}			$result = call_user_func( array( $handler_class, $method ), $data );
 
 			if ( is_array( $result ) && isset( $result['error'] ) ) {
 				$response['success'] = false;

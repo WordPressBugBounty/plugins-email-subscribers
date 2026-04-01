@@ -2471,6 +2471,7 @@ function ig_es_update_5739_db_version() {
  * - Inactive contacts queries
  * - Engagement metrics queries
  * - Dashboard audience insights
+ *
  * @since 5.9.18
  */
 function ig_es_add_index_to_actions_updated_at() {

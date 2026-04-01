@@ -37,9 +37,9 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 		$contacts = ES()->import_utils_db->get_contacts_by_ids( array( $id ), true );
 		$contact = ! empty( $contacts ) ? $contacts[0] : array();
 		
-		if ( empty( $contact ) ) {
-			return array();
-		}
+			if ( empty( $contact ) ) {
+				return array();
+			}
 	
 		$first_name       = $contact['first_name'];
 		$last_name        = $contact['last_name'];
@@ -58,19 +58,19 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 		);
 	
 		// Merge custom fields if available
-		if ( isset( $contact_cf_data['custom_fields'] ) ) {
-			$data = array_merge( $data, $contact_cf_data );
-		}
+			if ( isset( $contact_cf_data['custom_fields'] ) ) {
+				$data = array_merge( $data, $contact_cf_data );
+			}
 		return $data;
-	}
-	public static function validate_and_sanitize_contact_data( $contact_data = array() ) {
-		$defaults = array(
+		}
+		public static function validate_and_sanitize_contact_data( $contact_data = array() ) {
+			$defaults = array(
 			'id'         => 0,
 			'email'      => '',
 			'first_name' => '',
 			'last_name'  => '',
 			'lists'      => array(),
-		);
+			);
 			$contact_data = wp_parse_args( $contact_data, $defaults );
 		
 			$errors = array();
@@ -83,22 +83,22 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 		
 			// Validate list selection.
 			$lists = is_array( $contact_data['lists'] ) ? $contact_data['lists'] : array();
-		// Only require list selection when creating a new contact
-		$is_new_contact = empty( $contact_data['id'] );
-		if ( empty( $lists ) && $is_new_contact ) {
-			$errors[] = esc_html__( 'Please select a list', 'email-subscribers' );
-		}
-	
-		// Check for duplicate contact.
-		if ( ! empty( $email ) ) {
-			$existing_contact_id = ES()->contacts_db->get_contact_id_by_email( $email );
-			if ( $existing_contact_id && ( (int) $existing_contact_id !== (int) $contact_data['id'] ) ) {
-				$errors[] = esc_html__( 'Contact already exists.', 'email-subscribers' );
+			// Only require list selection when creating a new contact
+			$is_new_contact = empty( $contact_data['id'] );
+			if ( empty( $lists ) && $is_new_contact ) {
+				$errors[] = esc_html__( 'Please select a list', 'email-subscribers' );
 			}
-		}
 	
-		// Return result.
-		return array(
+			// Check for duplicate contact.
+			if ( ! empty( $email ) ) {
+				$existing_contact_id = ES()->contacts_db->get_contact_id_by_email( $email );
+				if ( $existing_contact_id && ( (int) $existing_contact_id !== (int) $contact_data['id'] ) ) {
+					$errors[] = esc_html__( 'Contact already exists.', 'email-subscribers' );
+				}
+			}
+	
+			// Return result.
+			return array(
 			'errors'  => $errors,
 			'email'   => $email,
 			'lists'   => $lists,
@@ -108,8 +108,8 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 				'email'      => $email,
 				'status'     => 'verified',
 			),
-		);
-	}
+			);
+		}
 		
 
 		public static function maybe_send_welcome_email( $contact_data, $contact, $list_ids ) {
@@ -162,11 +162,12 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 			$contact_cf_data = apply_filters( 'es_prepare_cf_data_for_contact_array', $contact_data, true );
 
 		//Save or update contact
-		if ( $is_new ) {				$contact['source']     = 'admin';
+			if ( $is_new ) {
+$contact['source']     = 'admin';
 				$contact['status']     = ! empty( $contact['status'] ) ? $contact['status'] : 'verified';
 				$contact['hash']       = ES_Common::generate_guid();
-			$contact['created_at'] = ig_get_current_date_time();
-			$id                    = self::save_contact( $contact );
+				$contact['created_at'] = ig_get_current_date_time();
+				$id                    = self::save_contact( $contact );
 				$contact['id']         = $id;
 
 				// Send welcome email
@@ -175,7 +176,7 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 			} else {
 				$contact['id'] = $id;
 			self::update_contact( $contact );
-		}
+			}
 
 			//Update contact list 
 			self::update_contact_lists( $id, $lists, $is_new );		
@@ -208,7 +209,7 @@ if ( ! class_exists( 'ES_Contact_Controller' ) ) {
 				}
 			}  
 
-			if(!empty($args['contact_id']) && $args['contact_id'] == 0){
+			if (!empty($args['contact_id']) && $args['contact_id'] == 0) {
 				return array();
 			} 
 

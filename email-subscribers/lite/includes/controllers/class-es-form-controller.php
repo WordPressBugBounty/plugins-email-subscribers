@@ -357,16 +357,14 @@ return $form_data;
 										$valid_images[] = $image_data; // Keep valid data URL
 									}
 								}
-							}
-							elseif ( filter_var( $image_data, FILTER_VALIDATE_URL ) ) {
+							} elseif ( filter_var( $image_data, FILTER_VALIDATE_URL ) ) {
 								if ( preg_match( '/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i', $image_data ) ) {
 									$valid_images[] = esc_url_raw( $image_data ); // Keep valid URL
 								}
 							}
 						}
 						$form_data['preview_image'] = ! empty( $valid_images ) ? json_encode( $valid_images ) : '';
-					} 
-					elseif ( preg_match( '/^data:image\/(png|jpg|jpeg|gif|webp);base64,/', $data['preview_image'] ) ) {
+					} elseif ( preg_match( '/^data:image\/(png|jpg|jpeg|gif|webp);base64,/', $data['preview_image'] ) ) {
 						$url_parts = explode( ',', $data['preview_image'], 2 );
 						if ( count( $url_parts ) === 2 ) {
 							$header = $url_parts[0];
@@ -380,8 +378,7 @@ return $form_data;
 						} else {
 							$form_data['preview_image'] = ''; // Invalid data URL format
 						}
-					}
-					elseif ( filter_var( $data['preview_image'], FILTER_VALIDATE_URL ) ) {
+					} elseif ( filter_var( $data['preview_image'], FILTER_VALIDATE_URL ) ) {
 						if ( preg_match( '/\.(jpg|jpeg|png|gif|webp)(\?.*)?$/i', $data['preview_image'] ) ) {
 							$form_data['preview_image'] = esc_url_raw( $data['preview_image'] ); // Keep valid URL
 						} else {
@@ -602,64 +599,64 @@ return $form_data;
 				'body'                 => $original_body_data,      // Use original body data before processing
 	);
 	
-	foreach ( $body_data as $d ) {
-		// Skip if $d is not an array or doesn't have an id
-		if ( ! is_array( $d ) || ! isset( $d['id'] ) ) {
-			continue;
-		}
+				foreach ( $body_data as $d ) {
+					// Skip if $d is not an array or doesn't have an id
+					if ( ! is_array( $d ) || ! isset( $d['id'] ) ) {
+						continue;
+					}
 		
-		if ( 'name' === $d['id'] ) {
-			$form_data['name_visible']      = ( true === $d['params']['show'] ) ? 'yes' : '';
-			$form_data['name_required']     = ( true === $d['params']['required'] ) ? 'yes' : '';
-			$form_data['name_label']        = ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
-			$form_data['name_place_holder'] = ! empty( $d['params']['place_holder'] ) ? $d['params']['place_holder'] : '';
-		} elseif ( 'lists' === $d['id'] ) {
-			$form_data['list_label']  	= ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
-			$form_data['list_visible']  = ( true === $d['params']['show'] ) ? 'yes' : '';
-			$form_data['list_required'] = ( true === $d['params']['required'] ) ? 'yes' : '';
-			$form_data['lists']         = ! empty( $d['params']['values'] ) ? $d['params']['values'] : array();
-		} elseif ( 'email' === $d['id'] ) {
-			$form_data['email_label']        = ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
-			$form_data['email_place_holder'] = ! empty( $d['params']['place_holder'] ) ? $d['params']['place_holder'] : '';
-		} elseif ( 'submit' === $d['id'] || 'button' === $d['id'] ) {
-			$form_data['button_label'] = ! empty( $d['params']['label'] ) ? $d['params']['label'] : ( ! empty( $d['label'] ) ? $d['label'] : '' );
-			if ( ! empty( $d['buttonStyles'] ) ) {
-				$form_data['button_styles'] = $d['buttonStyles'];
+					if ( 'name' === $d['id'] ) {
+						$form_data['name_visible']      = ( true === $d['params']['show'] ) ? 'yes' : '';
+						$form_data['name_required']     = ( true === $d['params']['required'] ) ? 'yes' : '';
+						$form_data['name_label']        = ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
+						$form_data['name_place_holder'] = ! empty( $d['params']['place_holder'] ) ? $d['params']['place_holder'] : '';
+					} elseif ( 'lists' === $d['id'] ) {
+						$form_data['list_label']  	= ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
+						$form_data['list_visible']  = ( true === $d['params']['show'] ) ? 'yes' : '';
+						$form_data['list_required'] = ( true === $d['params']['required'] ) ? 'yes' : '';
+						$form_data['lists']         = ! empty( $d['params']['values'] ) ? $d['params']['values'] : array();
+					} elseif ( 'email' === $d['id'] ) {
+						$form_data['email_label']        = ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
+						$form_data['email_place_holder'] = ! empty( $d['params']['place_holder'] ) ? $d['params']['place_holder'] : '';
+					} elseif ( 'submit' === $d['id'] || 'button' === $d['id'] ) {
+						$form_data['button_label'] = ! empty( $d['params']['label'] ) ? $d['params']['label'] : ( ! empty( $d['label'] ) ? $d['label'] : '' );
+						if ( ! empty( $d['buttonStyles'] ) ) {
+							$form_data['button_styles'] = $d['buttonStyles'];
+						}
+					} elseif ( !empty( $d['is_custom_field'] ) || ( !empty( $d['id'] ) && ( strpos( $d['id'], 'es_custom_' ) === 0 || strpos( $d['id'], 'custom_' ) === 0 ) ) ) {
+						// Handle custom fields - either marked with is_custom_field property or with ID starting with 'es_custom_' or 'custom_' (legacy)
+						$form_data['custom_fields'][] = $d;
+					}
+				}
+	
+				if ( ! isset( $form_data['lists'] ) ) {
+					$form_data['lists'] = array();
+		
+					if ( ! empty( $settings_data['lists'] ) ) {
+						$form_data['lists'] = is_array( $settings_data['lists'] ) ? $settings_data['lists'] : array( $settings_data['lists'] );
+					}
+		
+					if ( empty( $form_data['lists'] ) && ! empty( $af_id ) ) {
+						$form_data['lists'] = is_array( $af_id ) ? $af_id : array( $af_id );
+					}
+				}
+	
+	$form_data = apply_filters('ig_es_form_fields_data', $form_data, $settings_data, $body_data);
+	
+			} else {
+				$form_data = array(
+					'form_id'           => $id,
+					'body'				=> $body_data,
+					'name'              => $name,
+					'af_id'             => $af_id,
+					'form_version'      => $form_version,
+					'settings'			=> $settings_data,
+					'lists'             => array(), // Ensure lists field exists for DnD forms too
+				);
+	
+				// Apply filters for DnD and WYSIWYG editors too
+				$form_data = apply_filters('ig_es_form_fields_data', $form_data, $settings_data, $body_data);
 			}
-		} elseif ( !empty( $d['is_custom_field'] ) || ( !empty( $d['id'] ) && ( strpos( $d['id'], 'es_custom_' ) === 0 || strpos( $d['id'], 'custom_' ) === 0 ) ) ) {
-			// Handle custom fields - either marked with is_custom_field property or with ID starting with 'es_custom_' or 'custom_' (legacy)
-			$form_data['custom_fields'][] = $d;
-		}
-	}
-	
-	if ( ! isset( $form_data['lists'] ) ) {
-		$form_data['lists'] = array();
-		
-		if ( ! empty( $settings_data['lists'] ) ) {
-			$form_data['lists'] = is_array( $settings_data['lists'] ) ? $settings_data['lists'] : array( $settings_data['lists'] );
-		}
-		
-		if ( empty( $form_data['lists'] ) && ! empty( $af_id ) ) {
-			$form_data['lists'] = is_array( $af_id ) ? $af_id : array( $af_id );
-		}
-	}
-	
-	$form_data = apply_filters('ig_es_form_fields_data', $form_data, $settings_data, $body_data);
-	
-} else {
-	$form_data = array(
-		'form_id'           => $id,
-		'body'				=> $body_data,
-		'name'              => $name,
-		'af_id'             => $af_id,
-		'form_version'      => $form_version,
-		'settings'			=> $settings_data,
-		'lists'             => array(), // Ensure lists field exists for DnD forms too
-	);
-	
-	// Apply filters for DnD and WYSIWYG editors too
-	$form_data = apply_filters('ig_es_form_fields_data', $form_data, $settings_data, $body_data);
-}
 			if ( ! empty( $form_data['button_styles'] ) && is_array( $body_data ) ) {
 				foreach ( $body_data as &$field ) {
 					if ( isset( $field['id'] ) && ( $field['id'] === 'button' || $field['id'] === 'submit' ) ) {

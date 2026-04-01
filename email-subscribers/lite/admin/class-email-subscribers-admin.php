@@ -401,8 +401,8 @@ class Email_Subscribers_Admin {
 
 			// Determine default route based on current page
 				$default_route = '';
-				if ( 'es_subscribers' === $page ) {
-					$default_route = '/audience';
+			if ( 'es_subscribers' === $page ) {
+				$default_route = '/audience';
 			}
 			
 			// Prepare post categories and custom post types data for campaigns
@@ -449,6 +449,7 @@ class Email_Subscribers_Admin {
 					'ig_es_track_link_clicks' => get_option( 'ig_es_track_link_click', 'no' ),
 					'ig_es_track_utm' => get_option( 'ig_es_track_utm', 'no' ),
 				),
+				'pricingBanner' => Email_Subscribers_Pricing::get_pricing_banner_config(),
 			) );
 			wp_register_style( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/dist/index.css', array(), $this->version );
 			wp_enqueue_script( 'es-shadcn-dashboard' );
@@ -478,7 +479,7 @@ class Email_Subscribers_Admin {
 
 		$accessible_sub_menus = ES_Common::ig_es_get_accessible_sub_menus();
 
-        $main_menu_url = admin_url( '/admin.php?page=es_dashboard' );
+		$main_menu_url = admin_url( '/admin.php?page=es_dashboard' );
 		
 		if ( count( $accessible_sub_menus ) > 0 ) {
 

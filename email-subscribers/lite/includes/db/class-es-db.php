@@ -676,29 +676,29 @@ abstract class ES_DB {
 	$all_fields = array();
 	$normalized_values = array();
 	
-	foreach ( $values as $single_value ) {
-		// Force fields to lower case
-		$single_value = array_change_key_case( $single_value );
-		// White list columns - only keep valid database columns
-		$single_value = array_intersect_key( $single_value, $column_formats );
-		$normalized_values[] = $single_value;
-		$all_fields = array_merge( $all_fields, array_keys( $single_value ) );
-	}
+		foreach ( $values as $single_value ) {
+			// Force fields to lower case
+			$single_value = array_change_key_case( $single_value );
+			// White list columns - only keep valid database columns
+			$single_value = array_intersect_key( $single_value, $column_formats );
+			$normalized_values[] = $single_value;
+			$all_fields = array_merge( $all_fields, array_keys( $single_value ) );
+		}
 	$all_fields = array_unique( $all_fields );
 	
 	// If no fields found, nothing to insert
-	if ( empty( $all_fields ) ) {
-		return false;
-	}
+		if ( empty( $all_fields ) ) {
+			return false;
+		}
 	
 	// Update column_formats to include only the fields present in the data
 	$column_formats = array_intersect_key( $column_formats, array_flip( $all_fields ) );
 	
 	// Create default values for all fields using proper column defaults
 	$default_values = array();
-	foreach ( $all_fields as $field ) {
-		$default_values[ $field ] = isset( $column_defaults[ $field ] ) ? $column_defaults[ $field ] : null;
-	}
+		foreach ( $all_fields as $field ) {
+			$default_values[ $field ] = isset( $column_defaults[ $field ] ) ? $column_defaults[ $field ] : null;
+		}
 
 	// Get field names for SQL query
 	$fields = array_keys( $column_formats );		// Convert Batches into smaller chunk

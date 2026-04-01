@@ -286,29 +286,29 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 		 *
 		 * @since 4.4.0
 		 */
-	public static function get_dashboard_reports_data( $page, $override_cache = false, $args = array(), $campaign_count = 5 ) {
-		global $wpdb;
+		public static function get_dashboard_reports_data( $page, $override_cache = false, $args = array(), $campaign_count = 5 ) {
+			global $wpdb;
 
-		/**
-		 * - Get Total Contacts
-		 * - Get Total Forms
-		 * - Get Total Lists
-		 * - Get Total Campaigns
-		 * - Get Last 3 months contacts data
-		 * - Total Email Opened in last 60 days
-		 * - Total Message Sent in last 60 days
-		 * - Avg. Email Click rate
-		 */
-		$args['days'] = ! empty( $args['days'] ) ? $args['days'] : 7;
+			/**
+			 * - Get Total Contacts
+			 * - Get Total Forms
+			 * - Get Total Lists
+			 * - Get Total Campaigns
+			 * - Get Last 3 months contacts data
+			 * - Total Email Opened in last 60 days
+			 * - Total Message Sent in last 60 days
+			 * - Avg. Email Click rate
+			 */
+			$args['days'] = ! empty( $args['days'] ) ? $args['days'] : 7;
 		
-		// Used page parameter to control which stats to fetch
-		// 'campaigns' - Campaigns page: Basic KPIs only
-		// 'reports' - Reports page: KPIs + analytics (device/country/top_links)
-		// 'dashboard' - Dashboard page: KPIs + campaigns list
+			// Used page parameter to control which stats to fetch
+			// 'campaigns' - Campaigns page: Basic KPIs only
+			// 'reports' - Reports page: KPIs + analytics (device/country/top_links)
+			// 'dashboard' - Dashboard page: KPIs + campaigns list
 		
-		$cache_key = 'dashboard_reports_data_' . $args['days'] . '_' . $page;
+			$cache_key = 'dashboard_reports_data_' . $args['days'] . '_' . $page;
 		
-		if ( ! $override_cache ) {
+			if ( ! $override_cache ) {
 
 				$cached_data = ES_Cache::get_transient( $cache_key );
 
@@ -353,10 +353,10 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 		);
 		
 		// Fetch campaigns list for Dashboard and Reports pages
-		if ( 'dashboard' === $page || 'reports' === $page ) {
-			$data = self::get_campaign_stats( $campaign_count );
+			if ( 'dashboard' === $page || 'reports' === $page ) {
+				$data = self::get_campaign_stats( $campaign_count );
 			
-			$pending_campaign_args = array(
+				$pending_campaign_args = array(
 				'order_by_column' => 'ID',
 				'limit'           => '5',
 				'order'           => 'DESC',
@@ -366,7 +366,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 					IG_CAMPAIGN_TYPE_POST_DIGEST,
 					IG_CAMPAIGN_TYPE_NEWSLETTER
 				),
-			);
+				);
 				$pending_campaigns = ES()->campaigns_db->get_campaigns( $pending_campaign_args );
 
 				$pending_campaigns_data = array();
@@ -378,10 +378,10 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 						// For queued campaigns (status 3), check if mailing queue is actually pending
 						if ( IG_ES_CAMPAIGN_STATUS_QUEUED === (int) $campaign['status'] ) {
 							$mq_status = $wpdb->get_var(
-								$wpdb->prepare(
-									"SELECT status FROM {$wpdb->prefix}ig_mailing_queue WHERE campaign_id = %d ORDER BY id DESC LIMIT 1",
-									$campaign_id
-								)
+							$wpdb->prepare(
+								"SELECT status FROM {$wpdb->prefix}ig_mailing_queue WHERE campaign_id = %d ORDER BY id DESC LIMIT 1",
+								$campaign_id
+							)
 							);
 							// Skip if already sent
 							if ( 'Sent' === $mq_status ) {
@@ -394,10 +394,10 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 						$hash     = '';
 						// phpcs:disable
 						$mq_hash = $wpdb->get_var(
-							$wpdb->prepare(
-								"SELECT hash FROM {$wpdb->prefix}ig_mailing_queue WHERE campaign_id = %d AND hash IS NOT NULL ORDER BY id DESC LIMIT 1",
-								$campaign_id
-							)
+						$wpdb->prepare(
+							"SELECT hash FROM {$wpdb->prefix}ig_mailing_queue WHERE campaign_id = %d AND hash IS NOT NULL ORDER BY id DESC LIMIT 1",
+							$campaign_id
+						)
 						);
 						// phpcs:enable
 						if ( ! empty( $mq_hash ) ) {
@@ -405,12 +405,12 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 							$cron_url = ES()->cron->url( true, false, $hash );
 						}
 						$pending_campaigns_data[] = array(
-							'id'       => $campaign_id,
-							'title'    => $campaign['subject'],
-							'status'   => $campaign['status'],
-							'type'     => $campaign['type'],
-							'hash'     => $hash,
-							'cron_url' => $cron_url,
+						'id'       => $campaign_id,
+						'title'    => $campaign['subject'],
+						'status'   => $campaign['status'],
+						'type'     => $campaign['type'],
+						'hash'     => $hash,
+						'cron_url' => $cron_url,
 						);
 						$seen_campaign_ids[] = $campaign_id;
 					}
@@ -427,8 +427,8 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 						5
 					),
 					ARRAY_A
-				);
-				// phpcs:enable
+					);
+					// phpcs:enable
 				if ( ! empty( $mq_items ) ) {
 					foreach ( $mq_items as $mq ) {
 						$cid = (int) $mq['campaign_id'];
@@ -441,12 +441,12 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 							$cron_url = ES()->cron->url( true, false, $hash );
 						}
 						$pending_campaigns_data[] = array(
-							'id'       => $cid,
-							'title'    => $mq['subject'],
-							'status'   => $mq['status'],
-							'type'     => ES()->campaigns_db->get_column( 'type', $cid ),
-							'hash'     => $hash,
-							'cron_url' => $cron_url,
+						'id'       => $cid,
+						'title'    => $mq['subject'],
+						'status'   => $mq['status'],
+						'type'     => ES()->campaigns_db->get_column( 'type', $cid ),
+						'hash'     => $hash,
+						'cron_url' => $cron_url,
 						);
 						if ( $cid > 0 ) {
 							$seen_campaign_ids[] = $cid;
@@ -469,70 +469,70 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			}
 		
 		// Ensure device_opens is always an object, not an array
-		if ( empty( $device_opens ) ) {
-			$device_opens = (object) array();
-		}
+			if ( empty( $device_opens ) ) {
+				$device_opens = (object) array();
+			}
 		
 		// Ensure country_opens is always an object, not an array
-		if ( empty( $country_opens ) ) {
-			$country_opens = (object) array();
-		}
+			if ( empty( $country_opens ) ) {
+				$country_opens = (object) array();
+			}
 		// Get top clicked links
 		$top_links = array();
 		// Only fetch top links for Reports page
-		if ( 'reports' === $page ) {
-			$links_where = '';
+			if ( 'reports' === $page ) {
+				$links_where = '';
 			
-			if ( ! empty( $args['days'] ) ) {
-				$start_date = time() - ( $args['days'] * DAY_IN_SECONDS );
-				$links_where = $wpdb->prepare( 'created_at >= %d', $start_date );
-			}
+				if ( ! empty( $args['days'] ) ) {
+					$start_date = time() - ( $args['days'] * DAY_IN_SECONDS );
+					$links_where = $wpdb->prepare( 'created_at >= %d', $start_date );
+				}
 			
-			// Get all links in the time period
-			$links = ES()->links_db->get_by_conditions( $links_where );
+				// Get all links in the time period
+				$links = ES()->links_db->get_by_conditions( $links_where );
 			
-			if ( ! empty( $links ) ) {
-				$link_clicks = array();
-				foreach ( $links as $link ) {
-					$link_id = $link['id'];
-					$link_url = $link['link'];
+				if ( ! empty( $links ) ) {
+					$link_clicks = array();
+					foreach ( $links as $link ) {
+						$link_id = $link['id'];
+						$link_url = $link['link'];
 					
-					// Count clicks for this link using direct SQL query
-					$actions_table = $wpdb->prefix . 'ig_actions';
-					$count_query = $wpdb->prepare(
+						// Count clicks for this link using direct SQL query
+						$actions_table = $wpdb->prefix . 'ig_actions';
+						$count_query = $wpdb->prepare(
 						"SELECT COUNT(*) FROM {$actions_table} WHERE link_id = %d AND type = %d",
 						$link_id,
 						IG_LINK_CLICK
-					);
-					
-					if ( ! empty( $args['days'] ) ) {
-						$count_query = $wpdb->prepare(
-							"SELECT COUNT(*) FROM {$actions_table} WHERE link_id = %d AND type = %d AND created_at >= %d",
-							$link_id,
-							IG_LINK_CLICK,
-							$start_date
 						);
-					}
 					
-					$click_count = $wpdb->get_var( $count_query );
+						if ( ! empty( $args['days'] ) ) {
+							$count_query = $wpdb->prepare(
+								"SELECT COUNT(*) FROM {$actions_table} WHERE link_id = %d AND type = %d AND created_at >= %d",
+								$link_id,
+								IG_LINK_CLICK,
+								$start_date
+							);
+						}
 					
-					if ( $click_count > 0 ) {
-						$link_clicks[] = array(
+						$click_count = $wpdb->get_var( $count_query );
+					
+						if ( $click_count > 0 ) {
+							$link_clicks[] = array(
 							'link' => $link_url,
 							'clicks' => (int) $click_count
-						);
+							);
+						}
+					}
+				
+					// Sort by clicks descending and get top 5
+					if ( ! empty( $link_clicks ) ) {
+						usort( $link_clicks, function( $a, $b ) {
+							return $b['clicks'] - $a['clicks'];
+						});
+						$top_links = array_slice( $link_clicks, 0, 5 );
 					}
 				}
-				
-				// Sort by clicks descending and get top 5
-				if ( ! empty( $link_clicks ) ) {
-					usort( $link_clicks, function( $a, $b ) {
-						return $b['clicks'] - $a['clicks'];
-					});
-					$top_links = array_slice( $link_clicks, 0, 5 );
-				}
 			}
-		}
 			
 		// Calculate spam complaint count (currently always 0 in lite version)
 		$spam_complaint_count = 0;
@@ -543,22 +543,22 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 		
 		// Get total campaigns sent in the period using mailing queue
 		$sent_campaigns_count = 0;
-		if ( ! empty( $args['days'] ) ) {
-			$start_date = time() - ( $args['days'] * DAY_IN_SECONDS );
-			$start_date_mysql = gmdate( 'Y-m-d H:i:s', $start_date );
-			$mailing_queue_query = $wpdb->prepare(
+			if ( ! empty( $args['days'] ) ) {
+				$start_date = time() - ( $args['days'] * DAY_IN_SECONDS );
+				$start_date_mysql = gmdate( 'Y-m-d H:i:s', $start_date );
+				$mailing_queue_query = $wpdb->prepare(
 				"SELECT COUNT(DISTINCT campaign_id) FROM {$wpdb->prefix}ig_mailing_queue WHERE start_at >= %s AND status IN ('Sent', 'Sending')",
 				$start_date_mysql
-			);
-			$sent_campaigns_count = (int) $wpdb->get_var( $mailing_queue_query );
-		}
+				);
+				$sent_campaigns_count = (int) $wpdb->get_var( $mailing_queue_query );
+			}
 		$email_frequency_per_week = $sent_campaigns_count > 0 ? number_format_i18n( ( $sent_campaigns_count / $weeks ), 2 ) : 0;
 		
 		// Calculate engagement rate (contacts who opened or clicked / total sent)
 		$total_engaged = $total_email_opens + $total_links_clicks;
-	$engagement_rate = $total_message_sent > 0 ? number_format_i18n( ( ( $total_engaged / $total_message_sent ) * 100 ), 2 ) : 0;
+		$engagement_rate = $total_message_sent > 0 ? number_format_i18n( ( ( $total_engaged / $total_message_sent ) * 100 ), 2 ) : 0;
 	
-	$reports_data = array(
+		$reports_data = array(
 				'total_subscribed'     => number_format_i18n($total_subscribed ?? 0),
 				'total_email_opens'    => number_format_i18n($total_email_opens ?? 0),
 				'total_links_clicks'   => number_format_i18n($total_links_clicks ?? 0),
@@ -703,10 +703,10 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			$campaign_ids = array_filter( $campaign_ids );
 			
 			$all_stats = array();
-			if ( ! empty( $campaign_ids ) ) {
-				$placeholders = implode( ',', array_fill( 0, count( $campaign_ids ), '%d' ) );
-				// phpcs:disable
-				$results = $wpdb->get_results(
+				if ( ! empty( $campaign_ids ) ) {
+					$placeholders = implode( ',', array_fill( 0, count( $campaign_ids ), '%d' ) );
+					// phpcs:disable
+					$results = $wpdb->get_results(
 					$wpdb->prepare( 
 						"SELECT campaign_id, type, COUNT(DISTINCT contact_id) as total 
 						FROM {$wpdb->prefix}ig_actions 
@@ -715,92 +715,92 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 						$campaign_ids
 					), 
 					ARRAY_A 
-				);
-				// phpcs:enable
+					);
+					// phpcs:enable
 				
-				foreach ( $results as $result ) {
-					$campaign_id = $result['campaign_id'];
-					$type = $result['type'];
-					$total = $result['total'];
+					foreach ( $results as $result ) {
+						$campaign_id = $result['campaign_id'];
+						$type = $result['type'];
+						$total = $result['total'];
 					
-					if ( ! isset( $all_stats[ $campaign_id ] ) ) {
-						$all_stats[ $campaign_id ] = array(
-							'total_sent'        => 0,
-							'total_opens'       => 0,
-							'total_clicks'      => 0,
-							'total_unsubscribe' => 0,
-						);
-					}
+						if ( ! isset( $all_stats[ $campaign_id ] ) ) {
+							$all_stats[ $campaign_id ] = array(
+								'total_sent'        => 0,
+								'total_opens'       => 0,
+								'total_clicks'      => 0,
+								'total_unsubscribe' => 0,
+							);
+						}
 					
-					switch ( $type ) {
-						case IG_MESSAGE_SENT:
-							$all_stats[ $campaign_id ]['total_sent'] = $total;
-							break;
-						case IG_MESSAGE_OPEN:
-							$all_stats[ $campaign_id ]['total_opens'] = $total;
-							break;
-						case IG_LINK_CLICK:
-							$all_stats[ $campaign_id ]['total_clicks'] = $total;
-							break;
-						case IG_CONTACT_UNSUBSCRIBE:
-							$all_stats[ $campaign_id ]['total_unsubscribe'] = $total;
-							break;
+						switch ( $type ) {
+							case IG_MESSAGE_SENT:
+								$all_stats[ $campaign_id ]['total_sent'] = $total;
+								break;
+							case IG_MESSAGE_OPEN:
+								$all_stats[ $campaign_id ]['total_opens'] = $total;
+								break;
+							case IG_LINK_CLICK:
+								$all_stats[ $campaign_id ]['total_clicks'] = $total;
+								break;
+							case IG_CONTACT_UNSUBSCRIBE:
+								$all_stats[ $campaign_id ]['total_unsubscribe'] = $total;
+								break;
+						}
 					}
 				}
-			}
 
-			foreach ( $campaigns as $key => $campaign ) {
+				foreach ( $campaigns as $key => $campaign ) {
 
-				$campaign_id = $campaign['id'];
+					$campaign_id = $campaign['id'];
 
-				if ( 0 === $campaign_id ) {
-					continue;
-				}
+					if ( 0 === $campaign_id ) {
+						continue;
+					}
 				
-				$stats = isset( $all_stats[ $campaign_id ] ) ? $all_stats[ $campaign_id ] : array(
+					$stats = isset( $all_stats[ $campaign_id ] ) ? $all_stats[ $campaign_id ] : array(
 					'total_sent'        => 0,
 					'total_opens'       => 0,
 					'total_clicks'      => 0,
 					'total_unsubscribe' => 0,
-				);
+					);
 
-				if ( 0 != $stats['total_sent'] ) {
-					$campaign_opens_rate        = ( $stats['total_opens'] * 100 ) / $stats['total_sent'];
-					$campaign_clicks_rate       = ( $stats['total_clicks'] * 100 ) / $stats['total_sent'];
-					$campaign_unsubscribe_rate  = ( $stats['total_unsubscribe'] * 100 ) / $stats['total_sent'];
-				} else {
-					$campaign_opens_rate        = 0;
-					$campaign_clicks_rate       = 0;
-					$campaign_unsubscribe_rate  = 0;
-				}
+					if ( 0 != $stats['total_sent'] ) {
+						$campaign_opens_rate        = ( $stats['total_opens'] * 100 ) / $stats['total_sent'];
+						$campaign_clicks_rate       = ( $stats['total_clicks'] * 100 ) / $stats['total_sent'];
+						$campaign_unsubscribe_rate  = ( $stats['total_unsubscribe'] * 100 ) / $stats['total_sent'];
+					} else {
+						$campaign_opens_rate        = 0;
+						$campaign_clicks_rate       = 0;
+						$campaign_unsubscribe_rate  = 0;
+					}
 
-				$campaign_type = isset( $campaign['type'] ) ? $campaign['type'] : '';
+					$campaign_type = isset( $campaign['type'] ) ? $campaign['type'] : '';
 				
-				$type = '';
-				if ( 'newsletter' === $campaign_type ) {
-					$type = __( 'Broadcast', 'email-subscribers' );
-				} elseif ( 'post_notification' === $campaign_type ) {
-					$type = __( 'Post Notification', 'email-subscribers' );
-				} elseif ( 'post_digest' === $campaign_type ) {
-					$type = __( 'Post Digest', 'email-subscribers' );
-				}
+					$type = '';
+					if ( 'newsletter' === $campaign_type ) {
+						$type = __( 'Broadcast', 'email-subscribers' );
+					} elseif ( 'post_notification' === $campaign_type ) {
+						$type = __( 'Post Notification', 'email-subscribers' );
+					} elseif ( 'post_digest' === $campaign_type ) {
+						$type = __( 'Post Digest', 'email-subscribers' );
+					}
 
-				$campaigns_data[ $key ]                         = $stats;
-				$campaigns_data[ $key ]['id']                   = $campaign['id'];
-				$campaigns_data[ $key ]['title']                = $campaign['subject'];
-				$campaigns_data[ $key ]['status']               = $campaign['status'];
-				$campaigns_data[ $key ]['campaign_type']        = $campaign_type;
-				$campaigns_data[ $key ]['type']                 = $type;
-				$campaigns_data[ $key ]['total_sent']           = $stats['total_sent'];
-				$campaigns_data[ $key ]['campaign_opens_rate']  = number_format_i18n( $campaign_opens_rate, 2);
-				$campaigns_data[ $key ]['campaign_clicks_rate'] = number_format_i18n( $campaign_clicks_rate, 2);
-				$campaigns_data[ $key ]['campaign_losts_rate']  = number_format_i18n( $campaign_unsubscribe_rate, 2);
+					$campaigns_data[ $key ]                         = $stats;
+					$campaigns_data[ $key ]['id']                   = $campaign['id'];
+					$campaigns_data[ $key ]['title']                = $campaign['subject'];
+					$campaigns_data[ $key ]['status']               = $campaign['status'];
+					$campaigns_data[ $key ]['campaign_type']        = $campaign_type;
+					$campaigns_data[ $key ]['type']                 = $type;
+					$campaigns_data[ $key ]['total_sent']           = $stats['total_sent'];
+					$campaigns_data[ $key ]['campaign_opens_rate']  = number_format_i18n( $campaign_opens_rate, 2);
+					$campaigns_data[ $key ]['campaign_clicks_rate'] = number_format_i18n( $campaign_clicks_rate, 2);
+					$campaigns_data[ $key ]['campaign_losts_rate']  = number_format_i18n( $campaign_unsubscribe_rate, 2);
+				}
 			}
-		}
 		$data['campaigns'] = $campaigns_data;
 
 		return $data;
-	}
+		}
 
 		public static function show_device_opens_stats( $device_opens_data ) {
 			
@@ -1023,7 +1023,8 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 					'previous_period_subscribers' => $previous_period_subscribers
 				);
 			
-			$audience_insights_data = apply_filters( 'ig_es_audience_insights_data', $audience_insights_data, $args );				return $audience_insights_data;
+			$audience_insights_data = apply_filters( 'ig_es_audience_insights_data', $audience_insights_data, $args );
+return $audience_insights_data;
 				
 			} catch ( Exception $e ) {
 				return array(

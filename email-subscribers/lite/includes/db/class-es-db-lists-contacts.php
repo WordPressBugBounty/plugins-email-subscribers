@@ -655,7 +655,7 @@ class ES_DB_Lists_Contacts extends ES_DB {
 		} else {
 			$query = "SELECT COUNT(lc.contact_id) FROM $this->table_name AS lc";
 		}
-		$query .= " WHERE 1 = 1";
+		$query .= ' WHERE 1 = 1';
 
 		if ( ! empty( $where ) ) {
 			$where = str_replace( 'list_id', 'lc.list_id', $where );
@@ -1145,8 +1145,8 @@ class ES_DB_Lists_Contacts extends ES_DB {
 		
 		$sql = "SELECT lc.list_id, l.name as list_name, lc.status, lc.subscribed_at, lc.optin_type
 				FROM {$this->table_name} lc
-				LEFT JOIN " . IG_LISTS_TABLE . " l ON lc.list_id = l.id
-				WHERE lc.contact_id = %d";
+				LEFT JOIN " . IG_LISTS_TABLE . ' l ON lc.list_id = l.id
+				WHERE lc.contact_id = %d';
 		
 		$sql = $wpdb->prepare( $sql, $contact_id );
 		
@@ -1340,7 +1340,7 @@ class ES_DB_Lists_Contacts extends ES_DB {
 		
 		if ( ! empty( $query_params ) ) { 
 			$params = array_merge( array( $sql ), $query_params );
-        	$sql = call_user_func_array( array( $wpdb, 'prepare' ), $params );
+			$sql = call_user_func_array( array( $wpdb, 'prepare' ), $params );
 		}
 
 		$ids = $wpdb->get_col( $sql );
@@ -1383,7 +1383,7 @@ class ES_DB_Lists_Contacts extends ES_DB {
 		$sql = "SELECT DISTINCT contact_id FROM {$this->table_name} WHERE 1=1";
 
 		if ( ! empty( $list_id ) ) {
-			$sql .= $wpdb->prepare( " AND list_id = %d", intval( $list_id ) );
+			$sql .= $wpdb->prepare( ' AND list_id = %d', intval( $list_id ) );
 		}
 
 		switch ( $operator ) {

@@ -904,7 +904,7 @@ class ES_DB_Campaigns extends ES_DB {
 		$campaign_ids = array_filter( $campaign_ids );
 
 		if ( empty( $campaign_ids ) ) {
-		    return $updated;
+			return $updated;
 		}
 
 		$id_str = implode( ',', array_fill( 0, count( $campaign_ids ), '%d' ) );

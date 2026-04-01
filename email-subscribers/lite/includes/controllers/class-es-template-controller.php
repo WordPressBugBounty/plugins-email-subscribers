@@ -48,11 +48,11 @@ if ( ! class_exists( 'ES_Template_Controller' ) ) {
 			return $response;
 		}
 
-	public static function save( $template_data ) {
-		$template_data = ES_Common::decode_args( $template_data );
+		public static function save( $template_data ) {
+			$template_data = ES_Common::decode_args( $template_data );
 		
-		$response = array();
-		$template_id            = ! empty( $template_data['id'] ) ? $template_data['id'] : 0;
+			$response = array();
+			$template_id            = ! empty( $template_data['id'] ) ? $template_data['id'] : 0;
 			$template_type          = ! empty( $template_data['meta']['es_template_type'] ) ? $template_data['meta']['es_template_type'] : IG_CAMPAIGN_TYPE_NEWSLETTER;
 			$template_body          = ! empty( $template_data['body'] ) ? $template_data['body'] : '';
 			$template_subject       = ! empty( $template_data['subject'] ) ? $template_data['subject'] : '';

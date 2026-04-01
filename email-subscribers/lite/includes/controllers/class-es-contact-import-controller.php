@@ -804,40 +804,40 @@ if ( ! class_exists( 'ES_Contact_Import_Controller' ) ) {
 				
 					$existing_contacts_email_id_map = ES()->contacts_db->get_email_id_map( $current_batch_emails );
 
-					if ( $need_to_update_subscribers_data ) {
-						if ( ! empty( $existing_contacts_email_id_map ) ) {
-							$existing_contacts = array_intersect_key( $contacts_data, $existing_contacts_email_id_map );
+						if ( $need_to_update_subscribers_data ) {
+							if ( ! empty( $existing_contacts_email_id_map ) ) {
+								$existing_contacts = array_intersect_key( $contacts_data, $existing_contacts_email_id_map );
 							
-							// Filter out any custom field keys that don't exist as actual database columns
-							// to prevent issues in bulk_update
-							$valid_columns = array_keys( ES()->contacts_db->get_columns() );
-							$filtered_existing_contacts = array();
-							foreach ( $existing_contacts as $email => $contact_fields ) {
-								$filtered_contact = array();
-								foreach ( $contact_fields as $field_key => $field_value ) {
-									if ( in_array( $field_key, $valid_columns, true ) ) {
-										$filtered_contact[$field_key] = $field_value;
+								// Filter out any custom field keys that don't exist as actual database columns
+								// to prevent issues in bulk_update
+								$valid_columns = array_keys( ES()->contacts_db->get_columns() );
+								$filtered_existing_contacts = array();
+								foreach ( $existing_contacts as $email => $contact_fields ) {
+									$filtered_contact = array();
+									foreach ( $contact_fields as $field_key => $field_value ) {
+										if ( in_array( $field_key, $valid_columns, true ) ) {
+											$filtered_contact[$field_key] = $field_value;
+										}
 									}
+									$filtered_existing_contacts[$email] = $filtered_contact;
 								}
-								$filtered_existing_contacts[$email] = $filtered_contact;
-							}
 							
-							$updated_contacts = ES()->contacts_db->bulk_update( $filtered_existing_contacts, 100 );
-							if ( ! empty( $updated_contacts ) ) {
-								$bulkdata['updated_contacts'] += $updated_contacts; 
+								$updated_contacts = ES()->contacts_db->bulk_update( $filtered_existing_contacts, 100 );
+								if ( ! empty( $updated_contacts ) ) {
+									$bulkdata['updated_contacts'] += $updated_contacts; 
+								}
+							}
+						} else {
+							if ( ! empty( $existing_contacts_email_id_map ) ) {
+								$existing_contacts = array_intersect_key( $contacts_data, $existing_contacts_email_id_map );
+								$bulkdata['existing_contacts'] += count( $existing_contacts );
 							}
 						}
-					} else {
-						if ( ! empty( $existing_contacts_email_id_map ) ) {
-							$existing_contacts = array_intersect_key( $contacts_data, $existing_contacts_email_id_map );
-							$bulkdata['existing_contacts'] += count( $existing_contacts );
-						}
-					}
 				
 
-					if ( ! empty( $existing_contacts_email_id_map ) ) {
-						$contacts_data = array_diff_key( $contacts_data, $existing_contacts_email_id_map );
-					}						if ( ! empty( $contacts_data ) ) {
+						if ( ! empty( $existing_contacts_email_id_map ) ) {
+							$contacts_data = array_diff_key( $contacts_data, $existing_contacts_email_id_map );
+						}						if ( ! empty( $contacts_data ) ) {
 							// Filter out any custom field keys that don't exist as actual database columns
 							// to prevent placeholder count mismatch in bulk_insert
 							$valid_columns = array_keys( ES()->contacts_db->get_columns() );
@@ -1076,15 +1076,15 @@ if ( ! class_exists( 'ES_Contact_Import_Controller' ) ) {
 		$sample_rows = array();
 		$phpmailer = ES()->mailer->get_phpmailer();
 
-		for ( $i = 0; $i < min( 3, $contact_count ); $i++ ) {
-			$row_data = str_getcsv( $first[$i], $data['separator'], '"', '\\' );
-			$sample_rows[] = $row_data;
-		}
+			for ( $i = 0; $i < min( 3, $contact_count ); $i++ ) {
+				$row_data = str_getcsv( $first[$i], $data['separator'], '"', '\\' );
+				$sample_rows[] = $row_data;
+			}
 
-		if ( $contact_count > 3 ) {
-			$last_row_data = str_getcsv( array_pop( $last ), $data['separator'], '"', '\\' );
-			$sample_rows[] = $last_row_data;
-		}			$suggested_mappings = array();
+			if ( $contact_count > 3 ) {
+				$last_row_data = str_getcsv( array_pop( $last ), $data['separator'], '"', '\\' );
+				$sample_rows[] = $last_row_data;
+			}			$suggested_mappings = array();
 			for ( $i = 0; $i < $cols_count; $i++ ) {
 				$col_data = trim( $sample_data[$i] );
 				
@@ -1187,81 +1187,81 @@ if ( ! class_exists( 'ES_Contact_Import_Controller' ) ) {
 				'updated_at' => ig_get_current_date_time(),
 			);
 
-		if ( ! empty( $custom_fields ) && ES()->is_pro() ) {
-			// Get available custom fields to validate
-			$available_custom_fields = ES()->custom_fields_db->get_custom_fields();
-			$valid_custom_field_slugs = array();
+			if ( ! empty( $custom_fields ) && ES()->is_pro() ) {
+				// Get available custom fields to validate
+				$available_custom_fields = ES()->custom_fields_db->get_custom_fields();
+				$valid_custom_field_slugs = array();
 			
-			foreach ( $available_custom_fields as $custom_field ) {
-				$valid_custom_field_slugs[] = $custom_field['slug'];
-			}
+				foreach ( $available_custom_fields as $custom_field ) {
+					$valid_custom_field_slugs[] = $custom_field['slug'];
+				}
 
-			foreach ( $custom_fields as $field_slug => $field_value ) {
-				if ( in_array( $field_slug, $valid_custom_field_slugs, true ) ) {
-					// Use sanitize_textarea_field to preserve line breaks for multi-line content
-					$contact_data[ $field_slug ] = sanitize_textarea_field( $field_value );
+				foreach ( $custom_fields as $field_slug => $field_value ) {
+					if ( in_array( $field_slug, $valid_custom_field_slugs, true ) ) {
+						// Use sanitize_textarea_field to preserve line breaks for multi-line content
+						$contact_data[ $field_slug ] = sanitize_textarea_field( $field_value );
+					}
 				}
 			}
-		}
 
 		$contact_id = ES()->contacts_db->insert( $contact_data );
 
-		if ( $contact_id ) {
-			if ( ! empty( $list_ids ) ) {
-				foreach ( $list_ids as $list_id ) {
-					$list_contact_data = array(
+			if ( $contact_id ) {
+				if ( ! empty( $list_ids ) ) {
+					foreach ( $list_ids as $list_id ) {
+						$list_contact_data = array(
 						'list_id'    => $list_id,
 						'contact_id' => $contact_id,
 						'status'     => $status,
 						'subscribed_at' => ig_get_current_date_time(),
 						'optin_type' => 1,
-					);
-					ES()->lists_contacts_db->insert( $list_contact_data );
-				}
+						);
+						ES()->lists_contacts_db->insert( $list_contact_data );
+					}
 				
-				ES()->contacts_db->invalidate_query_cache();
-				ES()->lists_contacts_db->clear_list_counts_cache( $list_ids );
-			ES_Cache::flush();
-			wp_cache_flush();
+					ES()->contacts_db->invalidate_query_cache();
+					ES()->lists_contacts_db->clear_list_counts_cache( $list_ids );
+				ES_Cache::flush();
+				wp_cache_flush();
 			
-			if ( 'yes' === $send_optin_emails ) {
-				try {
-					$subscriber_options = array();
-					$subscriber_options[ $contact_id ]['type'] = 'optin_welcome_email';
+					if ( 'yes' === $send_optin_emails ) {
+						try {
+							$subscriber_options = array();
+							$subscriber_options[ $contact_id ]['type'] = 'optin_welcome_email';
 					
-					$timestamp = time();
-					ES()->queue->bulk_add(
-						0,
-						array( $contact_id ),
-						$timestamp,
-						20,
-						false,
-						1,
-						false,
-						$subscriber_options
-					);
+							$timestamp = time();
+							ES()->queue->bulk_add(
+							0,
+							array( $contact_id ),
+							$timestamp,
+							20,
+							false,
+							1,
+							false,
+							$subscriber_options
+							);
 
-					$request_args = array(
-						'action' => 'ig_es_process_queue',
-					);
-					IG_ES_Background_Process_Helper::send_async_ajax_request( $request_args, true );
-				} catch ( Exception $e ) {
+							$request_args = array(
+								'action' => 'ig_es_process_queue',
+							);
+							IG_ES_Background_Process_Helper::send_async_ajax_request( $request_args, true );
+						} catch ( Exception $e ) {
+						}
+					}
 				}
+
+			return array(
+				'success'    => true,
+				'contact_id' => $contact_id,
+				'message'    => __( 'Contact added successfully.', 'email-subscribers' ),
+			);
+			} else {
+				return array(
+					'success' => false,
+					'message' => __( 'Failed to add contact. Please try again.', 'email-subscribers' )
+				);
 			}
 		}
-
-		return array(
-			'success'    => true,
-			'contact_id' => $contact_id,
-			'message'    => __( 'Contact added successfully.', 'email-subscribers' ),
-		);
-	} else {
-		return array(
-			'success' => false,
-			'message' => __( 'Failed to add contact. Please try again.', 'email-subscribers' )
-		);
-	}
-}
 
 /**
  * Verify Mailchimp API key
@@ -1270,7 +1270,7 @@ if ( ! class_exists( 'ES_Contact_Import_Controller' ) ) {
  * @return array Response array
  * @since 5.0.0
  */
-public static function mailchimp_verify_api_key( $args = array() ) {
+		public static function mailchimp_verify_api_key( $args = array() ) {
 			$args = self::sanitize_args( $args );
 			
 			$api_key = isset( $args['mailchimp_api_key'] ) ? sanitize_text_field( $args['mailchimp_api_key'] ) : '';
@@ -1344,12 +1344,12 @@ public static function mailchimp_verify_api_key( $args = array() ) {
 				}
 
 				return array(
-					'success' => false,
-					'message' => sprintf( 
-						__( 'MailChimp API Error (HTTP %d): %s', 'email-subscribers' ), 
-						$code, 
-						$error_message 
-					)
+			'success' => false,
+			'message' => sprintf( 
+				__( 'MailChimp API Error (HTTP %1$d): %2$s', 'email-subscribers' ), 
+				$code, 
+				$error_message 
+			)
 				);
 			}
 		}

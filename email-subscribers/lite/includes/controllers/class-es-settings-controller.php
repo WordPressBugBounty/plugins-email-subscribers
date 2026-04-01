@@ -333,7 +333,8 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 			$campaign_id = 0;
 		
 			// Process template body
-			$content = ES_Common::es_process_template_body( $content, $template_id, $campaign_id );			$merge_tags = array();
+			$content = ES_Common::es_process_template_body( $content, $template_id, $campaign_id );
+$merge_tags = array();
 			
 			// Send test email using the mailer (same method used by ES_Tools)
 			$response = ES()->mailer->send_test_email( $email, $subject, $content, $merge_tags );
@@ -697,13 +698,13 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 			return $api_keys_data;
 		}
 
-	public static function get_settings( $data = array() ) {
-		$mailer_settings = get_option( 'ig_es_mailer_settings', array() );
-		$ess_email       = ! empty( $mailer_settings['icegram']['email'] ) ? $mailer_settings['icegram']['email'] : ES_Common::get_admin_email();
+		public static function get_settings( $data = array() ) {
+			$mailer_settings = get_option( 'ig_es_mailer_settings', array() );
+			$ess_email       = ! empty( $mailer_settings['icegram']['email'] ) ? $mailer_settings['icegram']['email'] : ES_Common::get_admin_email();
 
-		// Generate webhook URLs
-		$settings_controller = self::get_instance();
-		$webhook_urls = array(
+			// Generate webhook URLs
+			$settings_controller = self::get_instance();
+			$webhook_urls = array(
 			'pepipost' => $settings_controller->get_webhook_url( 'pepipost' ),
 			'mailjet' => $settings_controller->get_webhook_url( 'mailjet' ),
 			'sendinblue' => $settings_controller->get_webhook_url( 'sendinblue' ),
@@ -712,10 +713,10 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 			'sparkpost' => $settings_controller->get_webhook_url( 'sparkpost' ),
 			'mailgun' => $settings_controller->get_webhook_url( 'mailgun' ),
 			'sendgrid' => $settings_controller->get_webhook_url( 'sendgrid' ),
-		);
+			);
 
-		// Get all the settings from WordPress options
-		$settings_data = array(
+			// Get all the settings from WordPress options
+			$settings_data = array(
 			'ig_es_from_name' => get_option( 'ig_es_from_name', '' ),
 			'ig_es_from_email' => get_option( 'ig_es_from_email', '' ),
 			'ig_es_admin_emails' => get_option( 'ig_es_admin_emails', '' ),
@@ -779,7 +780,7 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 			'ig_es_webhook_urls' => $webhook_urls,
 			// Cron info
 			'ig_es_cron_info' => self::get_cron_info(),
-		);			
+			);			
 			// Get pages data as well
 			$pages_result = self::get_pages();
 			$pages_data = $pages_result['success'] ? $pages_result['data'] : array();

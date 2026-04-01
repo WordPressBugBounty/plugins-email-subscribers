@@ -114,8 +114,8 @@ class ES_DB_Import_Utils extends ES_DB {
 			lc.unsubscribed_at, 
 			lc.unsubscribed_ip
 			FROM {$wpdb->prefix}ig_lists_contacts lc 
-			WHERE " . $where_clause . "
-			ORDER BY lc.contact_id ASC";
+			WHERE " . $where_clause . '
+			ORDER BY lc.contact_id ASC';
 
 		if ( ! empty( $params ) ) {
 			$results = $wpdb->get_results( $wpdb->prepare( $query, $params ), ARRAY_A );

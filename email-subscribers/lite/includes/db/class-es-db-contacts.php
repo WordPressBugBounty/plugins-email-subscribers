@@ -1090,7 +1090,7 @@ class ES_DB_Contacts extends ES_DB {
 		// phpcs:enable
 		// If we have subscribers?
 		if ( $total > 0 ) {
-        // phpcs:disable
+		// phpcs:disable
 			$wpdb->query(
 				"UPDATE {$wpdb->prefix}ig_contacts AS contact_data
 				LEFT JOIN {$wpdb->prefix}ig_lists_contacts AS list_data
@@ -1256,12 +1256,12 @@ class ES_DB_Contacts extends ES_DB {
 		$query_params = array();
 
 		if ( $days > 0 ) {
-			$where .= " AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY)";
+			$where .= ' AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY)';
 			$query_params[] = $days;
 		}
 
 		if ( $list_id != 'all' && $list_id > 0 ) {
-			$where .= " AND lc.list_id = %d";
+			$where .= ' AND lc.list_id = %d';
 			$query_params[] = intval( $list_id );
 		}
 
@@ -1316,12 +1316,12 @@ class ES_DB_Contacts extends ES_DB {
 		$query_args = array();
 		
 		if ( $list_id > 0 ) {
-			$query .= " AND lc.list_id = %d";
+			$query .= ' AND lc.list_id = %d';
 			$query_args[] = $list_id;
 		}
 		
 		if ( $days > 0 ) {
-			$query .= " AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY)";
+			$query .= ' AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY)';
 			$query_args[] = $days;
 		}
 		
@@ -1606,12 +1606,12 @@ class ES_DB_Contacts extends ES_DB {
 		$query_args = array();
 		
 		if ( $list_id > 0 ) {
-			$query .= " AND lc.list_id = %d";
+			$query .= ' AND lc.list_id = %d';
 			$query_args[] = $list_id;
 		}
 		
 		if ( $days > 0 ) {
-			$query .= " AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY)";
+			$query .= ' AND lc.subscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY)';
 			$query_args[] = $days;
 		}
 		
@@ -1688,7 +1688,7 @@ class ES_DB_Contacts extends ES_DB {
 		$query_args = array( $days, $double_days, $days, $days, $double_days, $days );
 		
 		if ( $list_id > 0 ) {
-			$query .= " AND list_id = %d";
+			$query .= ' AND list_id = %d';
 			$query_args[] = $list_id;
 		}
 		

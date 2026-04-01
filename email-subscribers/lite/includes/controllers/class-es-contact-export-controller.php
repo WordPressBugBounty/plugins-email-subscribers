@@ -140,15 +140,15 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 
 
 			// Build WHERE clause
-			$where_conditions = array( "lc.list_id = %d" );
+			$where_conditions = array( 'lc.list_id = %d' );
 			$params = array( $list_id );
 
 			if ( $status !== 'all' ) {
 				if ( $status === 'confirmed' ) {
 					$where_conditions[] = "lc.status IN ('subscribed', 'unsubscribed')";
-					$where_conditions[] = "lc.optin_type = 2";
+					$where_conditions[] = 'lc.optin_type = 2';
 				} else {
-					$where_conditions[] = "lc.status = %s";
+					$where_conditions[] = 'lc.status = %s';
 					$params[] = $status;
 				}
 			}
@@ -189,11 +189,11 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 			);
 		// Add custom field headers
 		$custom_fields = ES()->custom_fields_db->get_custom_fields();
-		if ( ! empty( $custom_fields ) ) {
-			foreach ( $custom_fields as $field ) {
-				$headers[] = $field['label'];
+			if ( ! empty( $custom_fields ) ) {
+				foreach ( $custom_fields as $field ) {
+					$headers[] = $field['label'];
+				}
 			}
-		}
 			$lists_id_name_map = ES()->lists_db->get_list_id_name_map();
 			$csv_output = implode( ',', $headers );
 
@@ -212,12 +212,12 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 					$data['created_at'] = $contact['created_at'];
 				
 				// Add custom field data
-				if ( ! empty( $custom_fields ) ) {
-					foreach ( $custom_fields as $field ) {
-						$column_name = $field['slug'];
-						$data[ $column_name ] = isset( $contact[ $column_name ] ) ? $contact[ $column_name ] : '';
+					if ( ! empty( $custom_fields ) ) {
+						foreach ( $custom_fields as $field ) {
+							$column_name = $field['slug'];
+							$data[ $column_name ] = isset( $contact[ $column_name ] ) ? $contact[ $column_name ] : '';
+						}
 					}
-				}
 				
 				$csv_output .= "\n";
 					$csv_output .= '"' . implode( '","', $data ) . '"';

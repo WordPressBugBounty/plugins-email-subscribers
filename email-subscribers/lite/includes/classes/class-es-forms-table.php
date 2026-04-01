@@ -773,15 +773,15 @@ class ES_Forms_Table extends ES_List_Table {
 						$form_data['list_visible']  = ( true === $d['params']['show'] ) ? 'yes' : '';
 					$form_data['list_required'] = ( true === $d['params']['required'] ) ? 'yes' : '';
 					$form_data['lists']         = ! empty( $d['params']['values'] ) ? $d['params']['values'] : array();
-				} elseif ( 'email' === $d['id'] ) {
-					$form_data['email_label']        = ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
-					$form_data['email_place_holder'] = ! empty( $d['params']['place_holder'] ) ? $d['params']['place_holder'] : '';
-				} elseif ( 'submit' === $d['id'] ) {
-					$form_data['button_label'] = ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
-				} elseif ( $d['is_custom_field'] ) {
-					$form_data['custom_fields'][] = $d;
+					} elseif ( 'email' === $d['id'] ) {
+						$form_data['email_label']        = ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
+						$form_data['email_place_holder'] = ! empty( $d['params']['place_holder'] ) ? $d['params']['place_holder'] : '';
+					} elseif ( 'submit' === $d['id'] ) {
+						$form_data['button_label'] = ! empty( $d['params']['label'] ) ? $d['params']['label'] : '';
+					} elseif ( $d['is_custom_field'] ) {
+						$form_data['custom_fields'][] = $d;
+					}
 				}
-			}
 			}
 			$form_data = apply_filters('ig_es_form_fields_data', $form_data, $settings_data, $body_data);
 		} else {

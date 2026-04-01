@@ -500,37 +500,37 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 	 *
 	 * @since 4.6.0
 	 */
-	public function add_default_workflows() {
+		public function add_default_workflows() {
 		
-		if ( ! isset( ES()->workflows_db ) || ! method_exists( ES()->workflows_db, 'insert_workflow' ) ) {
-			return array( 'status' => 'error', 'message' => 'Workflows DB not available' );
-		}
+			if ( ! isset( ES()->workflows_db ) || ! method_exists( ES()->workflows_db, 'insert_workflow' ) ) {
+				return array( 'status' => 'error', 'message' => 'Workflows DB not available' );
+			}
 
-		$response = array(
+			$response = array(
 			'status' => 'error',
-		);
+			);
 
-		$admin_emails = ES()->mailer->get_admin_emails();
-		if ( ! empty( $admin_emails ) ) {
-			$admin_emails = implode( ',', $admin_emails );
-		}
+			$admin_emails = ES()->mailer->get_admin_emails();
+			if ( ! empty( $admin_emails ) ) {
+				$admin_emails = implode( ',', $admin_emails );
+			}
 		
-		$default_workflows = array();
+			$default_workflows = array();
 
-		// Get notification workflows (welcome email, confirmation email, admin notifications)
-		$notification_workflows = ES()->workflows_db->get_notification_workflows();
-		if ( ! empty( $notification_workflows ) ) {
-			$default_workflows = $notification_workflows;
-		}
+			// Get notification workflows (welcome email, confirmation email, admin notifications)
+			$notification_workflows = ES()->workflows_db->get_notification_workflows();
+			if ( ! empty( $notification_workflows ) ) {
+				$default_workflows = $notification_workflows;
+			}
 
-		// Add workflow to add users to main list when they register
-		$tasks_data = get_option( self::$onboarding_tasks_data_option, array() );
-		$main_list_id = isset( $tasks_data['create_default_lists']['main_list_id'] ) ? $tasks_data['create_default_lists']['main_list_id'] : 0;
+			// Add workflow to add users to main list when they register
+			$tasks_data = get_option( self::$onboarding_tasks_data_option, array() );
+			$main_list_id = isset( $tasks_data['create_default_lists']['main_list_id'] ) ? $tasks_data['create_default_lists']['main_list_id'] : 0;
 		
-		if ( $main_list_id > 0 ) {
-			$main_list = ES()->lists_db->get_list_by_name( IG_MAIN_LIST );
-			if ( ! empty( $main_list['id'] ) ) {
-				$default_workflows[] = array(
+			if ( $main_list_id > 0 ) {
+				$main_list = ES()->lists_db->get_list_by_name( IG_MAIN_LIST );
+				if ( ! empty( $main_list['id'] ) ) {
+					$default_workflows[] = array(
 					'trigger_name' => 'ig_es_user_registered',
 					'title' 	   => sprintf( __( 'Add to %s list when someone registers', 'email-subscribers' ), IG_MAIN_LIST ),
 					'actions'	   => array(
@@ -541,24 +541,24 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 					),
 					'status' => 0,
 					'type'   => IG_ES_WORKFLOW_TYPE_USER,
-				);
+					);
+				}
 			}
-		}
 
-		$workflows_created = 0;
-		if ( ! empty( $default_workflows ) ) {
-			foreach ( $default_workflows as $workflow ) {
-				$workflow_title               = $workflow['title'];
-				$workflow_name                = sanitize_title( $workflow_title );
-				$trigger_name                 = $workflow['trigger_name'];
-				$workflow_meta                = array();
-				$workflow_meta['when_to_run'] = 'immediately';
-				$workflow_status              = isset( $workflow['status'] ) ? $workflow['status'] : 0;
-				$workflow_type                = isset( $workflow['type'] ) ? $workflow['type'] : IG_ES_WORKFLOW_TYPE_USER;
+			$workflows_created = 0;
+			if ( ! empty( $default_workflows ) ) {
+				foreach ( $default_workflows as $workflow ) {
+					$workflow_title               = $workflow['title'];
+					$workflow_name                = sanitize_title( $workflow_title );
+					$trigger_name                 = $workflow['trigger_name'];
+					$workflow_meta                = array();
+					$workflow_meta['when_to_run'] = 'immediately';
+					$workflow_status              = isset( $workflow['status'] ) ? $workflow['status'] : 0;
+					$workflow_type                = isset( $workflow['type'] ) ? $workflow['type'] : IG_ES_WORKFLOW_TYPE_USER;
 
-				$workflow_actions = $workflow['actions'];
+					$workflow_actions = $workflow['actions'];
 
-				$workflow_data = array(
+					$workflow_data = array(
 					'name'         => $workflow_name,
 					'title'        => $workflow_title,
 					'trigger_name' => $trigger_name,
@@ -567,22 +567,22 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 					'priority'     => 0,
 					'status'       => $workflow_status,
 					'type'		   => $workflow_type,
-				);
+					);
 
-				$workflow_id = ES()->workflows_db->insert_workflow( $workflow_data );
-				if ( $workflow_id ) {
-					$workflows_created++;
-					$response['status'] = 'success';
+					$workflow_id = ES()->workflows_db->insert_workflow( $workflow_data );
+					if ( $workflow_id ) {
+						$workflows_created++;
+						$response['status'] = 'success';
+					}
 				}
 			}
-		}
 
-		if ( $workflows_created > 0 ) {
-			$response['data'] = array( 'workflows_created' => $workflows_created );
-		}
+			if ( $workflows_created > 0 ) {
+				$response['data'] = array( 'workflows_created' => $workflows_created );
+			}
 
-		return $response;
-	}
+			return $response;
+		}
 
 	/**
 	 * Create and send default broadcast while onboarding
@@ -591,7 +591,7 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 	 *
 	 * @since 4.0.0
 	 */
-	public function create_default_newsletter_broadcast() {
+		public function create_default_newsletter_broadcast() {
 			if ( ! isset( ES()->campaigns_db ) || ! method_exists( ES()->campaigns_db, 'insert' ) ) {
 				return array( 'status' => 'success' );
 			}
@@ -666,18 +666,18 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 		 * 
 		 * @modify 5.5.14
 		 */
-	public function create_default_subscription_form() {
+		public function create_default_subscription_form() {
 		
-		// Get the created list to assign to the form
-		$tasks_data = get_option( self::$onboarding_tasks_data_option, array() );
-		$main_list_id = isset( $tasks_data['create_default_lists']['main_list_id'] ) ? $tasks_data['create_default_lists']['main_list_id'] : 0;
+			// Get the created list to assign to the form
+			$tasks_data = get_option( self::$onboarding_tasks_data_option, array() );
+			$main_list_id = isset( $tasks_data['create_default_lists']['main_list_id'] ) ? $tasks_data['create_default_lists']['main_list_id'] : 0;
 		
-		// Check if GDPR consent was enabled during onboarding
-		$gdpr_form_consent = get_option( 'ig_es_allow_tracking', 'no' );
-		$gdpr_enabled = ( 'yes' === $gdpr_form_consent );
+			// Check if GDPR consent was enabled during onboarding
+			$gdpr_form_consent = get_option( 'ig_es_allow_tracking', 'no' );
+			$gdpr_enabled = ( 'yes' === $gdpr_form_consent );
 		
-		// Use the new wysiwyg editor format like the React form wizard
-		$form_body = array(
+			// Use the new wysiwyg editor format like the React form wizard
+			$form_body = array(
 			array(
 				'id' => 'email',
 				'type' => 'email',
@@ -702,11 +702,11 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 				'options' => array(),
 				'value' => ''
 			)
-		);
+			);
 
-		// Add GDPR consent field if enabled during onboarding
-		if ( $gdpr_enabled ) {
-			$form_body[] = array(
+			// Add GDPR consent field if enabled during onboarding
+			if ( $gdpr_enabled ) {
+				$form_body[] = array(
 				'id' => 'gdpr',
 				'type' => 'checkbox',
 				'name' => 'GDPR Consent',
@@ -718,12 +718,12 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 				'options' => array(),
 				'value' => '',
 				'gdprText' => 'I agree to the <a href="/privacy-policy">terms and conditions</a>'
-			);
-		}
+				);
+			}
 		
-		// Add submit button field - essential for form submission
-		$button_order = $gdpr_enabled ? 4 : 3;
-		$form_body[] = array(
+			// Add submit button field - essential for form submission
+			$button_order = $gdpr_enabled ? 4 : 3;
+			$form_body[] = array(
 			'id' => 'button',
 			'type' => 'submit',
 			'name' => 'Button',
@@ -734,9 +734,9 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 			'order' => $button_order,
 			'options' => array(),
 			'value' => 'Subscribe'
-		);
+			);
 
-		$settings = array(
+			$settings = array(
 			'editor_type' => 'wysiwyg',
 			'form_version' => '1.0',
 			'lists' => $main_list_id ? array( $main_list_id ) : array(),
@@ -757,14 +757,14 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 			'is_embed_form_enabled' => 'no',
 			'embed_form_remote_urls' => array(),
 			'show_logo' => 'yes'
-		);
+			);
 
-		$styles = array(
+			$styles = array(
 			'form_bg_color' => '#ffffff',
 			'form_width' => '600'
-		);
+			);
 
-		$form_data = array(
+			$form_data = array(
 			'name' => __( 'Default Subscription Form', 'email-subscribers' ),
 			'body' => wp_json_encode( $form_body ), // JSON encode the body array
 			'settings' => serialize( $settings ), // PHP serialize the settings array
@@ -772,30 +772,30 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 			'lists' => $main_list_id ? array( $main_list_id ) : array(), // Add lists at top level too
 			'created_at' => ig_get_current_date_time(),
 			'updated_at' => ig_get_current_date_time(),
-		);
+			);
 
 
-		$result = ES_Form_Controller::save( $form_data );
+			$result = ES_Form_Controller::save( $form_data );
 		
 		
-		if ( 'success' === $result['status'] ) {
-			// Get the form ID from the database
-			global $wpdb;
-			$form_id = $wpdb->insert_id;
+			if ( 'success' === $result['status'] ) {
+				// Get the form ID from the database
+				global $wpdb;
+				$form_id = $wpdb->insert_id;
 			
 			
-			if ( $form_id ) {
-				return array(
+				if ( $form_id ) {
+					return array(
 					'status' => 'success',
 					'data' => array( 'form_id' => $form_id ),
-				);
+					);
+				} else {
+				}
 			} else {
 			}
-		} else {
-		}
 
-		return array( 'status' => 'error', 'message' => 'Failed to create form' );
-	}		/**
+			return array( 'status' => 'error', 'message' => 'Failed to create form' );
+		}		/**
 		 * Add ES widget to active sidebar
 		 *
 		 * @since 4.6.0
@@ -861,9 +861,9 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 				'value' => ''
 			)
 		);
-	}
+		}
 
-	private function get_default_newsletter_content() {
+		private function get_default_newsletter_content() {
 			return '<h2>' . __( 'Welcome to our newsletter!', 'email-subscribers' ) . '</h2>' .
 				   '<p>' . __( 'Thank you for subscribing to our newsletter. We will keep you updated with our latest news and offers.', 'email-subscribers' ) . '</p>';
 		}

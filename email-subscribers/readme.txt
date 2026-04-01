@@ -6,7 +6,7 @@ Tags: email marketing, newsletter, email subscribers, email automation, post not
 Requires at least: 3.9
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 5.9.21
+Stable tag: 5.9.22
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,13 +361,19 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.21 =
+= 5.9.22 =
 
-* New: Added attachment support to campaign emails
-* Fix: Custom fields' values were not getting saved when subscribing via the frontend form
-* Fix: Issue with newsletter scheduling options field in campaign
+* Fix: Issue with the unsubscribe message
+* Fix: Issue with campaign stats cache
+* Fix: Addressed PHPCS issues
 
 == Changelog ==
+
+**5.9.22 (01.04.2026)**
+
+* Fix: Issue with the unsubscribe message
+* Fix: Issue with campaign stats cache
+* Fix: Addressed PHPCS issues
 
 **5.9.21 (25.03.2026)**
 

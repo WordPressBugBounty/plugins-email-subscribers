@@ -150,16 +150,16 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 	 *
 	 * @since 4.0.0
 	 */
-	public function __construct( $from_rainmaker = false ) {
-		if ( defined( 'DOING_AJAX' ) && ( true === DOING_AJAX ) ) {
-			add_action( 'wp_ajax_es_add_subscriber', array( $this, 'process_ajax_request' ), 10 );
-			add_action( 'wp_ajax_nopriv_es_add_subscriber', array( $this, 'process_ajax_request' ), 10 );
-		}
+		public function __construct( $from_rainmaker = false ) {
+			if ( defined( 'DOING_AJAX' ) && ( true === DOING_AJAX ) ) {
+				add_action( 'wp_ajax_es_add_subscriber', array( $this, 'process_ajax_request' ), 10 );
+				add_action( 'wp_ajax_nopriv_es_add_subscriber', array( $this, 'process_ajax_request' ), 10 );
+			}
 
-		$this->from_rainmaker = $from_rainmaker;
+			$this->from_rainmaker = $from_rainmaker;
 
-		$this->handle_subscription();
-	}		/**
+			$this->handle_subscription();
+		}		/**
 		 * Process form submission via ajax call
 		 */
 		public function process_ajax_request() {
@@ -781,10 +781,10 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 					
 				// Store the response, so that it can be shown while outputting the subscription form HTML.
 				$response = $this->process_request();
-				if ( ! empty( $response['redirection_url'] ) ) {
-					wp_redirect( $response['redirection_url'] );
-					exit;
-				}					ES_Shortcode::$response = $response;
+					if ( ! empty( $response['redirection_url'] ) ) {
+						wp_redirect( $response['redirection_url'] );
+						exit;
+					}					ES_Shortcode::$response = $response;
 				}
 			}
 		}

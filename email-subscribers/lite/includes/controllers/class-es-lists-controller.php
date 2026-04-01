@@ -41,53 +41,53 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 		 */
 		public static function get_lists( $args = array() ) {
 			if ( is_string( $args ) ) {
-                $decoded = json_decode( $args, true );
-                if ( $decoded ) {
-                    $args = $decoded;
-                }									
-            }
-
-            $order_by     = isset( $args['order_by'] ) ? $args['order_by'] : 'created_at';
-            $order        = isset( $args['order'] ) ? strtoupper( $args['order'] ) : 'DESC';
-            $search       = isset( $args['search'] ) ? $args['search'] : '';
-            $per_page     = isset( $args['per_page'] ) ? (int) $args['per_page'] : 20;
-            $page_number  = isset( $args['page_number'] ) ? (int) $args['page_number'] : 1;
-            $do_count_only = ! empty( $args['do_count_only'] );
-
-            $lists_db = ES()->lists_db;
-            $lists_contacts_db = ES()->lists_contacts_db;
-
-            $order = ! empty( $order ) ? strtolower( $order ) : 'desc';
-            $expected_order_values = array( 'asc', 'desc' );
-            if ( ! in_array( $order, $expected_order_values ) ) {
-                $order = 'desc';
-            }
-
-            $expected_order_by_values = array( 'name', 'created_at', 'updated_at' );
-            if ( ! in_array( $order_by, $expected_order_by_values ) ) {
-                $order_by = 'created_at';
-            }
-
-            if ( $do_count_only ) {
-			
-			if ( ! empty( $search ) && 'none' !== $search ) {
-				$where_condition = "name LIKE '%" . esc_sql( $search ) . "%'";
-				$total_count = $lists_db->count( $where_condition );
-			} else {
-				$total_count = $lists_db->count();
+				$decoded = json_decode( $args, true );
+				if ( $decoded ) {
+					$args = $decoded;
+				}									
 			}
+
+			$order_by     = isset( $args['order_by'] ) ? $args['order_by'] : 'created_at';
+			$order        = isset( $args['order'] ) ? strtoupper( $args['order'] ) : 'DESC';
+			$search       = isset( $args['search'] ) ? $args['search'] : '';
+			$per_page     = isset( $args['per_page'] ) ? (int) $args['per_page'] : 20;
+			$page_number  = isset( $args['page_number'] ) ? (int) $args['page_number'] : 1;
+			$do_count_only = ! empty( $args['do_count_only'] );
+
+			$lists_db = ES()->lists_db;
+			$lists_contacts_db = ES()->lists_contacts_db;
+
+			$order = ! empty( $order ) ? strtolower( $order ) : 'desc';
+			$expected_order_values = array( 'asc', 'desc' );
+			if ( ! in_array( $order, $expected_order_values ) ) {
+				$order = 'desc';
+			}
+
+			$expected_order_by_values = array( 'name', 'created_at', 'updated_at' );
+			if ( ! in_array( $order_by, $expected_order_by_values ) ) {
+				$order_by = 'created_at';
+			}
+
+			if ( $do_count_only ) {
+			
+				if ( ! empty( $search ) && 'none' !== $search ) {
+					$where_condition = "name LIKE '%" . esc_sql( $search ) . "%'";
+					$total_count = $lists_db->count( $where_condition );
+				} else {
+					$total_count = $lists_db->count();
+				}
 			
 			return $total_count;
-            }
+			}
 
-            $es_args = array(
-                'order_by'    => $order_by,
-                'order'       => strtoupper( $order ),
-                'per_page'    => $per_page,
-                'page_number' => $page_number,
-            );
+			$es_args = array(
+				'order_by'    => $order_by,
+				'order'       => strtoupper( $order ),
+				'per_page'    => $per_page,
+				'page_number' => $page_number,
+			);
 
-            if ( ! empty( $search ) && 'none' !== $search ) {
+			if ( ! empty( $search ) && 'none' !== $search ) {
 
 				if ( method_exists( $lists_db, 'get_lists_by_conditions' ) ) {
 					$lists = $lists_db->get_lists_by_conditions( array(
@@ -103,16 +103,14 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 						'per_page'    => $per_page,
 						'page_number' => $page_number,
 					) );
-				}
-				else if ( method_exists( $lists_db, 'get_lists_by_name_like' ) ) {
+				} else if ( method_exists( $lists_db, 'get_lists_by_name_like' ) ) {
 					$lists = $lists_db->get_lists_by_name_like( $search, array(
 						'order_by'    => $order_by,
 						'order'       => strtoupper( $order ),
 						'per_page'    => $per_page,
 						'page_number' => $page_number,
 					) );
-				}
-				else {
+				} else {
 					$all_lists_args = array(
 						'order_by'    => $order_by,
 						'order'       => strtoupper( $order ),
@@ -134,52 +132,52 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 					$lists = array_slice( $filtered_lists, $offset, $per_page );
 				}
 				
-            } else {
+			} else {
 			$lists = $lists_db->get_lists( $es_args );
-		}
-
-		if ( ! empty( $lists ) ) {
-			$formatted_lists = array();
-
-			$list_ids = array_column( $lists, 'id' );
-			
-			$skip_cache = ! empty( $args['_t'] );
-			$all_counts = $lists_contacts_db->get_list_contact_counts_batch( $list_ids, $skip_cache );
-			
-			if ( ! is_array( $all_counts ) ) {
-				$all_counts = array();
 			}
+
+			if ( ! empty( $lists ) ) {
+				$formatted_lists = array();
+
+				$list_ids = array_column( $lists, 'id' );
 			
-                foreach ( $lists as $list ) {
-                    $list_id = (int) $list['id'];
-                    $counts = isset( $all_counts[ $list_id ] ) ? $all_counts[ $list_id ] : array(
-                        'total' => 0,
-                        'subscribed' => 0,
-                        'unsubscribed' => 0,
-                        'unconfirmed' => 0,
-                    );
-
-                    $formatted_lists[] = array(
-                        'id'                 => $list_id,
-                        'name'               => $list['name'],
-                        'description'        => ! empty( $list['desc'] ) ? $list['desc'] : '',
-                        'status'             => 'active',  
-                        'created_at'         => $list['created_at'],
-                        'updated_at'         => $list['updated_at'],
-                        'subscriber_count'   => ! empty( $list['total_contacts'] ) ? (int) $list['total_contacts'] : 0,
-                        'no_of_contacts'     => $counts['total'],
-                        'subscribed_count'   => $counts['subscribed'],
-                        'unsubscribed_count' => $counts['unsubscribed'],
-                        'unconfirmed_count'  => $counts['unconfirmed'],
-                    );
-                }
-
-            return $formatted_lists;
-        }
-
-        return array();
+				$skip_cache = ! empty( $args['_t'] );
+				$all_counts = $lists_contacts_db->get_list_contact_counts_batch( $list_ids, $skip_cache );
 			
-	}
+				if ( ! is_array( $all_counts ) ) {
+					$all_counts = array();
+				}
+			
+				foreach ( $lists as $list ) {
+					$list_id = (int) $list['id'];
+					$counts = isset( $all_counts[ $list_id ] ) ? $all_counts[ $list_id ] : array(
+						'total' => 0,
+						'subscribed' => 0,
+						'unsubscribed' => 0,
+						'unconfirmed' => 0,
+					);
+
+					$formatted_lists[] = array(
+						'id'                 => $list_id,
+						'name'               => $list['name'],
+						'description'        => ! empty( $list['desc'] ) ? $list['desc'] : '',
+						'status'             => 'active',  
+						'created_at'         => $list['created_at'],
+						'updated_at'         => $list['updated_at'],
+						'subscriber_count'   => ! empty( $list['total_contacts'] ) ? (int) $list['total_contacts'] : 0,
+						'no_of_contacts'     => $counts['total'],
+						'subscribed_count'   => $counts['subscribed'],
+						'unsubscribed_count' => $counts['unsubscribed'],
+						'unconfirmed_count'  => $counts['unconfirmed'],
+					);
+				}
+
+				return $formatted_lists;
+			}
+
+		return array();
+			
+		}
 		public static function get_list( $args = array() ) {
 			if ( empty( $args['list_id'] ) ) {
 				return false;
@@ -228,7 +226,7 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 			$name = sanitize_text_field( $args['name'] );
 			$desc = ! empty( $args['description'] ) ? sanitize_text_field( $args['description'] ) : '';
 
- 			if ( ES()->lists_db->is_list_exists( $name ) ) {
+			if ( ES()->lists_db->is_list_exists( $name ) ) {
 				$response['message'] = __( 'List already exists. Please choose a different name.', 'email-subscribers' );
 				return $response;
 			}
@@ -275,7 +273,7 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 			$name = sanitize_text_field( $args['name'] );
 			$desc = ! empty( $args['description'] ) ? sanitize_text_field( $args['description'] ) : '';
 
- 			$existing_list = ES()->lists_db->get_list_by_name( $name );
+			$existing_list = ES()->lists_db->get_list_by_name( $name );
 			if ( $existing_list && $existing_list['id'] != $list_id ) {
 				$response['message'] = __( 'List already exists. Please choose a different name.', 'email-subscribers' );
 				return $response;
@@ -410,12 +408,12 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 		 */
 		public static function get_country_stats( $args = array() ) {
 
-		if ( is_string( $args ) ) {
-			$decoded = json_decode( $args, true );
-			if ( $decoded ) {
-				$args = $decoded;
+			if ( is_string( $args ) ) {
+				$decoded = json_decode( $args, true );
+				if ( $decoded ) {
+					$args = $decoded;
+				}
 			}
-		}
 
 		$list_id = isset( $args['list_id'] ) ? $args['list_id'] : 'all';
 		$days = isset( $args['days'] ) ? intval( $args['days'] ) : 7;
@@ -426,8 +424,8 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 			'countries_count' => 5  
 		);
 		
-		try {
-			$top_countries = ES_DB_Contacts::get_top_countries_by_days_and_list( $db_args );
+			try {
+				$top_countries = ES_DB_Contacts::get_top_countries_by_days_and_list( $db_args );
 				if ( empty( $top_countries ) ) {
 					return array();
 				}
@@ -457,21 +455,21 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 					);
 				}
 				
-		return $countries_data;
+			return $countries_data;
 		
-	} catch ( Exception $e ) {
+			} catch ( Exception $e ) {
 
-		return array();
-	}
-}
+				return array();
+			}
+		}
 
-	public static function verify_emails() {
+		public static function verify_emails() {
 
-		$cleaner = ES_List_Cleanup::get_instance();
-		$plan = ES()->get_plan();
+			$cleaner = ES_List_Cleanup::get_instance();
+			$plan = ES()->get_plan();
 
 			if ( 'pro' === strtolower( $plan ) ) {
- 				
+				
 				$cleaner->clean_emails();
 
 				return array(
@@ -480,7 +478,7 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 				);
 			}
 
-			if( $cleaner->can_do_list_cleanup() ) {
+			if ( $cleaner->can_do_list_cleanup() ) {
 
 				$cleaner->clean_emails();  
 
@@ -505,7 +503,7 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 			}
 
  
-			if( $used ) {
+			if ( $used ) {
 
 				return array( 'status' => 'success', 'has_used' => true, 'message' => __( 'List cleanup already used.', 'email-subscribers' ) );
 			} 

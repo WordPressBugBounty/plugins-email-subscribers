@@ -105,68 +105,68 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 			$total_items = ES_DB_Campaigns::get_lists( 0, 0, true, $filter_args );
 			$campaigns = ES_DB_Campaigns::get_lists( $per_page, $current_page, false, $filter_args );
 		
-		if ( ! empty( $campaigns ) && is_array( $campaigns ) ) {
-			$campaign_ids = array_column( $campaigns, 'id' );
+			if ( ! empty( $campaigns ) && is_array( $campaigns ) ) {
+				$campaign_ids = array_column( $campaigns, 'id' );
 			
-			// Get campaign stats using enhanced get_actions_count
-			$actions_data = ES()->actions_db->get_actions_count( array(
+				// Get campaign stats using enhanced get_actions_count
+				$actions_data = ES()->actions_db->get_actions_count( array(
 				'campaign_ids' => $campaign_ids,
 				'types' => array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK )
-			) );
+				) );
 			
-			// Calculate rates and format stats
-			$campaign_stats = array();
-			foreach ( $campaign_ids as $campaign_id ) {
-				if ( isset( $actions_data[ $campaign_id ] ) ) {
-					$row = $actions_data[ $campaign_id ];
-					$sent = ! empty( $row['sent'] ) ? (int) $row['sent'] : 0;
-					$opened = ! empty( $row['opened'] ) ? (int) $row['opened'] : 0;
-					$clicked = ! empty( $row['clicked'] ) ? (int) $row['clicked'] : 0;
+				// Calculate rates and format stats
+				$campaign_stats = array();
+				foreach ( $campaign_ids as $campaign_id ) {
+					if ( isset( $actions_data[ $campaign_id ] ) ) {
+						$row = $actions_data[ $campaign_id ];
+						$sent = ! empty( $row['sent'] ) ? (int) $row['sent'] : 0;
+						$opened = ! empty( $row['opened'] ) ? (int) $row['opened'] : 0;
+						$clicked = ! empty( $row['clicked'] ) ? (int) $row['clicked'] : 0;
 					
-					$open_rate = ! empty( $sent ) ? number_format_i18n( ( ( $opened * 100 ) / $sent ), 2 ) : 0;
-					$click_rate = ! empty( $sent ) ? number_format_i18n( ( ( $clicked * 100 ) / $sent ), 2 ) : 0;
+						$open_rate = ! empty( $sent ) ? number_format_i18n( ( ( $opened * 100 ) / $sent ), 2 ) : 0;
+						$click_rate = ! empty( $sent ) ? number_format_i18n( ( ( $clicked * 100 ) / $sent ), 2 ) : 0;
 					
-					$campaign_stats[ $campaign_id ] = array(
-						'total_sent' => $sent,
-						'open_rate'  => $open_rate,
-						'click_rate' => $click_rate,
-					);
-				} else {
-					$campaign_stats[ $campaign_id ] = array(
+						$campaign_stats[ $campaign_id ] = array(
+							'total_sent' => $sent,
+							'open_rate'  => $open_rate,
+							'click_rate' => $click_rate,
+						);
+					} else {
+						$campaign_stats[ $campaign_id ] = array(
 						'total_sent' => 0,
 						'open_rate'  => 0,
 						'click_rate' => 0,
-					);
+						);
+					}
 				}
-			}
 			
-			$campaign_list_names = ES()->lists_db->get_list_names_for_campaigns( $campaigns );
-			$campaign_queue_data = ES_DB_Mailing_Queue::get( array(
+				$campaign_list_names = ES()->lists_db->get_list_names_for_campaigns( $campaigns );
+				$campaign_queue_data = ES_DB_Mailing_Queue::get( array(
 				'campaign_ids' => $campaign_ids,
 				'group_by'     => 'campaign_id',
 				'keyed_by'     => 'campaign_id'
-			) );
+				) );
 			
-			foreach ( $campaigns as $index => $campaign ) {
-				$formatted_campaign = self::format_campaign_data(
-					$campaign,
-					$campaign_stats,
-					$campaign_list_names,
-					$campaign_queue_data
-				);
-				$campaigns[ $index ] = $formatted_campaign;
+				foreach ( $campaigns as $index => $campaign ) {
+					$formatted_campaign = self::format_campaign_data(
+						$campaign,
+						$campaign_stats,
+						$campaign_list_names,
+						$campaign_queue_data
+					);
+					$campaigns[ $index ] = $formatted_campaign;
+				}
 			}
-		}
 			
 		$result = array();
 		$result['campaigns'] = $campaigns;
 		$result['current_page'] = $current_page ? $current_page : 1;
 		
 		return $result;
-	}
+		}
 
-	public static function get( $request_data ) {
-		if ( is_string( $request_data ) ) {
+		public static function get( $request_data ) {
+			if ( is_string( $request_data ) ) {
 			}
 			
 			$campaign_id = ! empty( $request_data['id'] ) ? (int) $request_data['id'] : 0;
@@ -178,19 +178,19 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 				);
 			}
 			
-		$campaign = ES()->campaigns_db->get( $campaign_id );
+			$campaign = ES()->campaigns_db->get( $campaign_id );
 		
-		if ( empty( $campaign ) ) {
-			return array(
+			if ( empty( $campaign ) ) {
+				return array(
 				'success' => false,
 				'message' => __( 'Campaign not found', 'email-subscribers' )
-			);
+				);
+			}
+		
+			$campaign = self::format_single_campaign_data( $campaign );
+		
+			return $campaign;
 		}
-		
-		$campaign = self::format_single_campaign_data( $campaign );
-		
-		return $campaign;
-	}
 
 	/**
 	 * Format single campaign data (used for individual campaign retrieval)
@@ -199,7 +199,7 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 	 * @param array $campaign Campaign data
 	 * @return array Formatted campaign data
 	 */
-	private static function format_single_campaign_data( $campaign ) {
+		private static function format_single_campaign_data( $campaign ) {
 			if ( ! empty( $campaign ) ) {
 				$campaign['es_admin_email'] = ES_Common::get_admin_email();
 				$campaign_id = $campaign['id'];
@@ -368,29 +368,29 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 			$report = isset( $campaign_queue_data[ $campaign_id ] ) ? $campaign_queue_data[ $campaign_id ] : array();
 			
 			if ( self::is_post_campaign( $campaign_type ) ) {
-			if ( $report && ! empty( $report['meta'] ) ) {
-				$report_meta = ig_es_maybe_unserialize( $report['meta'] );
-				if ( ! empty( $report_meta['post_id'] ) ) {
-					$post_id = $report_meta['post_id'];
-					$post = get_post( $post_id );
-					if ( $post ) {
-						$campaign['post_title'] = $post->post_title;
-						$campaign['post_date'] = $post->post_date;
+				if ( $report && ! empty( $report['meta'] ) ) {
+					$report_meta = ig_es_maybe_unserialize( $report['meta'] );
+					if ( ! empty( $report_meta['post_id'] ) ) {
+						$post_id = $report_meta['post_id'];
+						$post = get_post( $post_id );
+						if ( $post ) {
+							$campaign['post_title'] = $post->post_title;
+							$campaign['post_date'] = $post->post_date;
+						}
 					}
 				}
+				if ( $report && ! empty( $report['hash'] ) ) {
+					$campaign['report_link'] = admin_url( 'admin.php?page=es_dashboard#/reports/' . $report['hash'] );
+					$campaign['hash'] = $report['hash'];
+				}
+			} elseif ( IG_CAMPAIGN_TYPE_NEWSLETTER === $campaign_type ) {
+				if ( $report && ! empty( $report['hash'] ) ) {
+					$campaign['report_link'] = admin_url( 'admin.php?page=es_dashboard#/reports/' . $report['hash'] );
+					$campaign['hash'] = $report['hash'];
+				}
+			} elseif ( in_array( $campaign_type, array( IG_CAMPAIGN_TYPE_SEQUENCE, IG_CAMPAIGN_TYPE_WORKFLOW ), true ) ) {
+				$campaign['report_link'] = admin_url( 'admin.php?page=es_dashboard#/reports/sequence-messages?campaign_id=' . $campaign_id );
 			}
-			if ( $report && ! empty( $report['hash'] ) ) {
-				$campaign['report_link'] = admin_url( 'admin.php?page=es_dashboard#/reports/' . $report['hash'] );
-				$campaign['hash'] = $report['hash'];
-			}
-		} elseif ( IG_CAMPAIGN_TYPE_NEWSLETTER === $campaign_type ) {
-			if ( $report && ! empty( $report['hash'] ) ) {
-				$campaign['report_link'] = admin_url( 'admin.php?page=es_dashboard#/reports/' . $report['hash'] );
-				$campaign['hash'] = $report['hash'];
-			}
-		} elseif ( in_array( $campaign_type, array( IG_CAMPAIGN_TYPE_SEQUENCE, IG_CAMPAIGN_TYPE_WORKFLOW ), true ) ) {
-			$campaign['report_link'] = admin_url( 'admin.php?page=es_dashboard#/reports/sequence-messages?campaign_id=' . $campaign_id );
-		}
 			
 			if ( IG_CAMPAIGN_TYPE_SEQUENCE === $campaign_type ) {
 				$campaign['edit_link'] = admin_url( 'admin.php?page=es_sequence&action=edit&id=' . $campaign_id );
@@ -406,9 +406,9 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 		public static function get_kpis( $args ) {
 			$args = ES_Common::decode_args( $args );
 
-			$page           = 'campaigns';
-			$override_cache = false;
-			$reports_data   = ES_Reports_Data::get_dashboard_reports_data( $page, $override_cache, $args );
+			$page = 'campaigns';
+			$override_cache = isset($args['override_cache']) ? (bool)$args['override_cache'] : false;
+			$reports_data = ES_Reports_Data::get_dashboard_reports_data( $page, $override_cache, $args );
 			return $reports_data;
 		}
 
