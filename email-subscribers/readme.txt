@@ -2,11 +2,11 @@
 Contributors: icegram, niravmehta, sandhyam, storeapps, Mansi Shah, kishanranawat, shubhanshukandani
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BMFRMVXQ87JWA&source=url
 Author URI: https://www.icegram.com/
-Tags: email marketing, newsletter, email subscribers, email automation, post notifications, WooCommerce emails, lead generation, email sending plugin
+Tags: email subscribers, newsletter, subscription form, email marketing, email automation, post notifications, WooCommerce emails, lead generation, email sending plugin
 Requires at least: 3.9
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 5.9.22
+Stable tag: 5.9.23
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,13 +361,23 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.22 =
+= 5.9.23 =
 
-* Fix: Issue with the unsubscribe message
-* Fix: Issue with campaign stats cache
-* Fix: Addressed PHPCS issues
+* New: Support for selecting message streams in the Postmark mailer settings [PRO]
+* Improvement: Added option to delete saved templates from the Template Gallery
+* Improvement: Added default selections for List and Status filters in Advanced Filters
+* Improvement: Added option to delete Custom Fields from the form edit screen [PRO]
+
 
 == Changelog ==
+
+**5.9.23 (16.04.2026)**
+
+* New: Support for selecting message streams in the Postmark mailer settings [PRO]
+* Improvement: Added option to delete saved templates from the Template Gallery
+* Improvement: Added default selections for List and Status filters in Advanced Filters
+* Improvement: Added option to delete Custom Fields from the form edit screen [PRO]
+
 
 **5.9.22 (01.04.2026)**
 

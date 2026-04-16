@@ -397,6 +397,17 @@ return $campaign_data;
 			if ( ! empty( $campaign_id ) ) {
 				$campaign_saved = ES()->campaigns_db->save_campaign( $campaign_data, $campaign_id );
 				if ( $campaign_saved ) {
+					// Add existing post notification/digest campaigns to new format list when updated with new category format
+					if ( self::is_post_campaign( $campaign_type ) && ! empty( $campaign_data['categories'] ) ) {
+						// Check if categories string uses new format (contains : pattern like ##post:1,2##)
+						if ( preg_match( '/##[^#]+:[^#]+##/', $campaign_data['categories'] ) ) {
+							$new_flow_campaign_ids = get_option( 'ig_es_new_category_format_campaign_ids', array() );
+							if ( ! in_array( (int) $campaign_id, $new_flow_campaign_ids, true ) ) {
+								$new_flow_campaign_ids[] = (int) $campaign_id;
+								update_option( 'ig_es_new_category_format_campaign_ids', $new_flow_campaign_ids, false );
+							}
+						}
+					}
 					return $campaign_id;
 				}
 			} else {

@@ -487,31 +487,166 @@ if ( ! function_exists( 'ig_es_show_feature_survey' ) ) {
 //add_action( 'admin_notices', 'ig_es_show_feature_survey' );
 
 function ig_es_add_deactivation_reasons( $options ) {
-	
-	$new_options = array(
-	   array(
-		   'title'   => esc_html__( 'Emails not sending', 'email-subscribers' ),
-		   'slug'    => 'emails-not-sending',
-	   ),
-	   array(
-		   'title'   => esc_html__( 'Too many spam sign-ups', 'email-subscribers' ),
-		   'slug'    => 'too-many-spam-sign-ups',
-	   )
-	);
 
-	$slug_to_remove = 'i-could-not-get-the-plugin-to-work'; 
-	foreach ( $options as $key => $option ) {
-		if ( isset( $option['slug'] ) && $slug_to_remove === $option['slug'] ) {
-			unset( $options[$key] );
+	$existing_options = array();
+	foreach ( $options as $option ) {
+		if ( isset( $option['slug'] ) ) {
+			$existing_options[ $option['slug'] ] = $option;
 		}
 	}
-	$options = array_values( $options );
-	$options = array_combine( range(1, count( $options ) ), $options );
-	$options = array_merge( $new_options, $options );
 
-	return $options;
+	$new_slugs = array(
+		'emails-not-sending'  => array( 'title' => __( 'Emails aren\'t sending or landing in spam', 'email-subscribers' ) ),
+		'setup-confusing'     => array( 'title' => __( 'Setup or configuration was confusing', 'email-subscribers' ) ),
+		'performance-issues'  => array( 'title' => __( 'The plugin is affecting performance', 'email-subscribers' ) ),
+		'switching-plugin'    => array( 'title' => __( 'I\'m switching to another plugin', 'email-subscribers' ) ),
+		'missing-feature'     => array( 'title' => __( 'It\'s missing features I need', 'email-subscribers' ) ),
+		'other'               => array( 'title' => __( 'Others', 'email-subscribers' ) ),
+	);
+
+	$new_options = array();
+	foreach ( $new_slugs as $slug => $reason ) {
+		if ( isset( $existing_options[ $slug ] ) ) {
+			$option = $existing_options[ $slug ];
+		} else {
+			$option = array( 'slug' => $slug );
+		}
+		$option['title'] = $reason['title'];
+		$new_options[]   = $option;
+	}
+
+	return $new_options;
 }
 add_filter( 'ig_es_deactivation_reasons', 'ig_es_add_deactivation_reasons' );
+
+/**
+ * Headline shown at the top of Screen 1 of the deactivation modal.
+ */
+function ig_es_deactivation_headline( $headline ) {
+	return __( '&#x1F614; Before you go&hellip;', 'email-subscribers' );
+}
+add_filter( 'ig_es_deactivation_headline', 'ig_es_deactivation_headline' );
+
+/**
+ * Main question shown on Screen 1 of the deactivation survey modal.
+ */
+function ig_es_deactivation_question( $question ) {
+	return __( 'What made you deactivate Icegram Express?', 'email-subscribers' );
+}
+add_filter( 'ig_es_deactivation_question', 'ig_es_deactivation_question' );
+
+/**
+ * Thank-you message shown at the bottom of Screen 2.
+ */
+function ig_es_deactivation_thankyou( $text ) {
+	return __( '&#x2764;&#xFE0F; Thanks for trying Icegram Express', 'email-subscribers' );
+}
+add_filter( 'ig_es_deactivation_thankyou', 'ig_es_deactivation_thankyou' );
+
+/**
+ * Per-option follow-up configuration for Screen 2.
+ * Each key maps to a deactivation reason slug and defines:
+ *   heading, body, sub_options, has_textarea, textarea_placeholder, body2, buttons.
+ */
+function ig_es_deactivation_followups( $followups ) {
+	return array(
+
+		// 1. Email not sending / delivery issues
+		'emails-not-sending' => array(
+			'heading'     => __( 'What issue are you facing specifically?', 'email-subscribers' ),
+			'body'        => '',
+			'sub_options' => array(
+				__( 'Emails are not being sent at all', 'email-subscribers' ),
+				__( 'Emails are going to spam', 'email-subscribers' ),
+				__( 'Issue with setting up email service', 'email-subscribers' ),
+				__( 'Others', 'email-subscribers' ),
+			),
+			'has_textarea' => false,
+			'body2'        => '',
+			'buttons'      => array(
+				array( 'label' => __( 'Get Expert Help', 'email-subscribers' ),       'cls' => 'ig-deactivation-btn-primary', 'action' => 'submit', 'skip_deactivation' => true, 'success_message' => __( 'Thank you for reaching out, we are here for you.', 'email-subscribers' ) ),
+				array( 'label' => __( 'Continue Deactivation', 'email-subscribers' ), 'cls' => 'ig-deactivation-btn-ghost',   'action' => 'submit' ),
+			),
+		),
+
+		// 2. Setup or configuration was confusing
+		'setup-confusing' => array(
+			'heading'     => __( 'What felt confusing or difficult?', 'email-subscribers' ),
+			'body'        => '',
+			'sub_options' => array(
+				__( 'Forms creation issues', 'email-subscribers' ),
+				__( 'Campaign creation issues', 'email-subscribers' ),
+				__( 'Email service setup issues', 'email-subscribers' ),
+				__( 'Other issues', 'email-subscribers' ),
+			),
+			'has_textarea' => false,
+			'body2'        => '',
+			'buttons'      => array(
+				array( 'label' => __( 'View Documentation', 'email-subscribers' ),   'cls' => 'ig-deactivation-btn-primary', 'action' => 'url', 'url' => 'https://www.icegram.com/docs/category/icegram-express/?utm_source=in-app&utm_medium=deactivation&utm_campaign=ig-es' ),
+				array( 'label' => __( 'Continue Deactivation', 'email-subscribers' ), 'cls' => 'ig-deactivation-btn-ghost', 'action' => 'submit' ),
+			),
+		),
+
+		// 3. Performance issues
+		'performance-issues' => array(
+			'heading'              => __( 'Tell us more about the issue.', 'email-subscribers' ),
+			'body'                 => '',
+			'sub_options'          => array(),
+			'has_textarea'         => true,
+			'textarea_placeholder' => __( 'Describe the performance issue you\'re facing...', 'email-subscribers' ),
+			'body2'                => '',
+			'buttons'              => array(
+				array( 'label' => __( 'Get Expert Help', 'email-subscribers' ),       'cls' => 'ig-deactivation-btn-primary', 'action' => 'submit', 'skip_deactivation' => true, 'success_message' => __( 'Thank you for reaching out, we are here for you.', 'email-subscribers' ) ),
+				array( 'label' => __( 'Continue Deactivation', 'email-subscribers' ), 'cls' => 'ig-deactivation-btn-ghost',   'action' => 'submit' ),
+			),
+		),
+
+		// 4. Switching to another plugin
+		'switching-plugin' => array(
+			'heading'              => __( 'Which plugin are you switching to?', 'email-subscribers' ),
+			'body'                 => '',
+			'sub_options'          => array(),
+			'has_textarea'         => true,
+			'textarea_placeholder' => __( 'Plugin name (optional)...', 'email-subscribers' ),
+			'body2'                => '',
+			'buttons'              => array(
+				array( 'label' => __( 'Submit and Deactivate', 'email-subscribers' ), 'cls' => 'ig-deactivation-btn-primary', 'action' => 'submit' ),
+				array( 'label' => __( 'Skip and Deactivate', 'email-subscribers' ),  'cls' => 'ig-deactivation-btn-ghost',   'action' => 'deactivate' ),
+			),
+		),
+
+		// 5. Missing a feature / Doesn't meet my needs
+		'missing-feature' => array(
+			'heading'              => __( 'What are you looking for?', 'email-subscribers' ),
+			'body'                 => '',
+			'sub_options'          => array(),
+			'has_textarea'         => true,
+			'textarea_placeholder' => __( 'Describe the feature or capability you were looking for...', 'email-subscribers' ),
+			'body2'                => "",
+			'buttons'              => array(
+				array( 'label' => __( 'View Documentation', 'email-subscribers' ),   'cls' => 'ig-deactivation-btn-primary', 'action' => 'url', 'url' => 'https://www.icegram.com/docs/category/icegram-express/?utm_source=in-app&utm_medium=deactivation&utm_campaign=ig-es' ),
+				array( 'label' => __( 'Continue Deactivation', 'email-subscribers' ), 'cls' => 'ig-deactivation-btn-ghost', 'action' => 'submit' ),
+			),
+		),
+
+		// 6. Others
+		'other' => array(
+			'heading'              => __( 'Any details you share will help us improve.', 'email-subscribers' ),
+			'body'                 => '',
+			'sub_options'          => array(),
+			'has_textarea'         => true,
+			'textarea_placeholder' => __( 'Tell us what went wrong or what we could do better...', 'email-subscribers' ),
+			'body2'                => '',
+			'buttons'              => array(
+				array( 'label' => __( 'Submit and Deactivate', 'email-subscribers' ), 'cls' => 'ig-deactivation-btn-primary', 'action' => 'submit' ),
+				array( 'label' => __( 'Skip and Deactivate', 'email-subscribers' ),  'cls' => 'ig-deactivation-btn-ghost',   'action' => 'deactivate' ),
+			),
+		),
+
+	);
+}
+add_filter( 'ig_es_deactivation_followups', 'ig_es_deactivation_followups' );
+
 
 
 /**
@@ -726,7 +861,12 @@ add_action('admin_notices', 'ig_es_survey_before_plugin_upgrade');
 
 if ( ! function_exists( 'ig_es_subscribe_to_plugin_deactivation_list' ) ) {
 	function ig_es_subscribe_to_plugin_deactivation_list( $data ) {
-		
+
+		// "Get Expert Help" sets skip_deactivation=1 — it's not a real deactivation, don't subscribe.
+		if ( ! empty( $data['meta']['skip_deactivation'] ) ) {
+			return;
+		}
+
 		$admin_email = ES_Common::get_admin_email();
 		$user        = get_user_by( 'email', $admin_email );
 		$admin_name  = '';
@@ -738,16 +878,12 @@ if ( ! function_exists( 'ig_es_subscribe_to_plugin_deactivation_list' ) ) {
 		$name  = $admin_name;
 
 		switch ( $data['feedback']['value'] ) {
-			case 'i-am-switching-to-a-different-plugin':
+			case 'switching-plugin':
 				$list = '46e63a445c57';
 				break;
-			
-			case 'i-could-not-get-the-plugin-to-work':
+
+			case 'emails-not-sending':
 				$list = '8e63321da577';
-				break;
-			
-			case 'it-is-a-temporary-deactivation':
-				$list = 'b3d2c4e62f8e';
 				break;
 
 			default:
@@ -773,8 +909,8 @@ if ( ! function_exists( 'ig_es_subscribe_to_plugin_deactivation_list' ) ) {
 			$ig_url = add_query_arg( $url_params, $ig_url );
 
 			$args = array(
-			'timeout' => 15,
-			'blocking'  => false,
+			'timeout'  => 15,
+			'blocking' => false,
 			);
 
 			// Make a get request.
@@ -783,3 +919,4 @@ if ( ! function_exists( 'ig_es_subscribe_to_plugin_deactivation_list' ) ) {
 	}
 }
 add_action( 'ig_es_deactivation_feedback_submitted', 'ig_es_subscribe_to_plugin_deactivation_list' );
+

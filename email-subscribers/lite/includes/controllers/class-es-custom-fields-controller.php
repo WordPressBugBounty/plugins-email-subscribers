@@ -167,9 +167,10 @@ class ES_Custom_Fields_Controller {
 		}
 
 		$field_id = absint( $data['id'] );
-		$result   = ES()->custom_fields_db->delete( $field_id );
+		$col_deleted = ES()->contacts_db->delete_col_by_custom_field_id( array( $field_id ) );
+		$field_deleted = ES()->custom_fields_db->delete_custom_fields( array( $field_id ) );
 
-		if ( $result ) {
+		if ( $col_deleted && $field_deleted ) {
 			return array(
 				'success' => true,
 				'message' => __( 'Custom field deleted successfully.', 'email-subscribers' ),

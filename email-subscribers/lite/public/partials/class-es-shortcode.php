@@ -1214,6 +1214,7 @@ $field_required = false;
 					$field_args = array(
 						'field_id' => $field_id,
 						'label' => $field_label,
+						'placeholder' => $field_placeholder,
 						'options' => $options,
 						'required' => $field_required,
 						'value' => $submitted_value,
@@ -1569,6 +1570,7 @@ $field_required = false;
 		$defaults = array(
 			'field_id' => '',
 			'label' => '',
+			'placeholder' => '',
 			'options' => array(),
 			'required' => false,
 			'value' => '',
@@ -1587,11 +1589,13 @@ $field_required = false;
 			$field_name = 'esfpx_' . $args['field_id'];
 		}
 		
+		$placeholder_text = ! empty( $args['placeholder'] ) ? $args['placeholder'] : __( 'Select an option', 'email-subscribers' );
+		
 		$html = '<div class="es-field-wrap ig-es-form-field">';
 		$html .= '<label class="es-field-label">' . esc_html( $args['label'] ) . $required_mark . '<br/>';
 		$html .= '<div class="es-select-wrapper" style="position: relative;">';
 		$html .= '<select name="' . esc_attr( $field_name ) . '" class="ig_es_form_field_select ig-es-form-input" ' . $required_attr . '>';
-		$html .= '<option value="">Select an option</option>';
+		$html .= '<option value="">' . esc_html( $placeholder_text ) . '</option>';
 		
 		if ( is_array( $args['options'] ) ) {
 			foreach ( $args['options'] as $option ) {

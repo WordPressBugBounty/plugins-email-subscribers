@@ -252,6 +252,7 @@ class ES_DB_Custom_Fields extends ES_DB {
 			return array();
 		}
 
+		$ids = array_map( 'absint', $ids );
 		$ids_str = implode( ',', $ids );
 		$result = $wpbd->get_col( "SELECT slug FROM {$wpbd->prefix}ig_custom_fields WHERE id IN ({$ids_str})" );
 		return $result;

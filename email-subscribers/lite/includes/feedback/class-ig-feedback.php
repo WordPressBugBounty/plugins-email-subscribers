@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
+if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 	/**
 	 * IG Feedback
 	 *
@@ -17,7 +17,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 	 * @license     https://opensource.org/licenses/gpl-license GNU Public License
 	 * @package     feedback
 	 */
-	class IG_Feedback_V_1_2_11 {
+	class IG_Feedback_V_1_2_12 {
 
 		/**
 		 * Version of Feedback Library
@@ -25,7 +25,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 		 * @since 1.0.13
 		 * @var string
 		 */
-		public $version = '1.2.11';
+		public $version = '1.2.12';
 		/**
 		 * The API URL where we will send feedback data.
 		 *
@@ -1377,7 +1377,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 		public function get_api_url( $is_dev_mode ) {
 
 			if ( $is_dev_mode ) {
-				$this->api_url = 'http://192.168.0.130:9094/store/feedback/';
+				$this->api_url = 'http://localhost:9094/store/feedback/';
 			}
 
 			return $this->api_url;
@@ -1397,153 +1397,196 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 			$title = 'Why are you deactivating ' . $this->name . '?';
 			$slug  = sanitize_title( $title );
 			$event = $this->event_prefix . 'plugin.deactivation';
+			$plugin_js = esc_js( $this->plugin );
 
 			?>
 			<script type="text/javascript">
-				jQuery(function ($) {
-					var $deactivateLink = $('#the-list').find('[data-slug="<?php echo esc_js( $this->plugin ); ?>"] span.deactivate a'),
-						$overlay = $('#ig-deactivate-survey-<?php echo esc_js( $this->plugin ); ?>'),
-						$form = $overlay.find('form'),
-						formOpen = false,
-						consent = $('#ig-deactivate-survey-help-consent-<?php echo esc_js( $this->plugin ); ?>');
+			jQuery(function($){
+				var pluginSlug  = '<?php echo $plugin_js; ?>';
+				var $deactivateLink = $('#the-list').find('[data-slug="' + pluginSlug + '"] span.deactivate a');
+				var $modal      = $('#ig-deactivation-modal-' + pluginSlug);
+				var $screen1    = $modal.find('.ig-deactivation-screen1');
+				var $screen2    = $modal.find('.ig-deactivation-screen2');
+				var $s2Label    = $('#ig-deactivation-s2-label-' + pluginSlug);
+				var $s2Content  = $('#ig-deactivation-s2-content-' + pluginSlug);
+				var $s2Footer   = $('#ig-deactivation-s2-footer-' + pluginSlug);
+				var selectedSlug = '';
+				var selectedTitle = '';
 
-					function togglePersonalInfoFields(show) {
+				// Follow-up config provided by the plugin via filter.
+				var followups = <?php echo wp_json_encode( apply_filters( $this->plugin_abbr . '_deactivation_followups', array() ) ); ?>;
 
-						if (show) {
-							$form.find('#ig-deactivate-survey-info-name').show();
-							$form.find('#ig-deactivate-survey-info-email-address').show();
-							$form.find('#ig-deactivate-survey-consent-additional-data').show();
-						} else {
-							$form.find('#ig-deactivate-survey-info-name').hide();
-							$form.find('#ig-deactivate-survey-info-email-address').hide();
-							$form.find('#ig-deactivate-survey-consent-additional-data').hide();
-						}
+				function resetModal() {
+					$screen2.hide();
+					$screen1.show();
+					$s2Content.empty();
+					$s2Footer.empty();
+					$s2Label.text('');
+					selectedSlug  = '';
+					selectedTitle = '';
+					$modal.find('.ig-deactivation-option').removeClass('selected');
+					$modal.find('input[type=radio]').prop('checked', false);
+				}
 
+				function deactivate() {
+					var href = $deactivateLink.attr('href');
+					location.href = href + '&survey_status=skipped';
+				}
+
+				function submitAndDeactivate( extraMeta, skipRedirect = false ) {
+					var detail = $s2Content.find('.ig-deactivation-textarea').val() || '';
+					var subVal = $s2Content.find('input[type=radio]:checked').val() || '';
+					var details = subVal ? subVal + (detail ? ': ' + detail : '') : detail;
+
+					var metaInfo = $.extend({}, extraMeta || {});
+
+					var data = {
+						action: '<?php echo esc_js( $this->ajax_action ); ?>',
+						feedback: {
+							type: 'radio',
+							title: '<?php echo esc_js( $title ); ?>',
+							slug: '<?php echo esc_js( $slug ); ?>',
+							value: selectedSlug,
+							details: details,
+							sub_option: subVal,        // key stays snake_case: PHP reads this
+							reason_title: selectedTitle // key stays snake_case: PHP reads this
+						},
+						event: '<?php echo esc_js( $event ); ?>',
+						misc: {
+							plugin: '<?php echo esc_js( $this->plugin ); ?>',
+							plugin_abbr: '<?php echo esc_js( $this->plugin_abbr ); ?>',
+							is_dev_mode: '<?php echo esc_js( $this->is_dev_mode ); ?>',
+							set_cookie: '',
+							meta_info: metaInfo,        // key stays snake_case: PHP reads this
+							system_info: false
+						},
+						security: '<?php echo esc_js( wp_create_nonce( $this->plugin_abbr . '-admin-ajax-nonce' ) ); ?>'
 					};
-
-					function loader($show) {
-
-						if ($show) {
-							$form.find('#ig-deactivate-survey-loader').show();
-						} else {
-							$form.find('#ig-deactivate-survey-loader').hide();
-						}
-
-					}
-
-					function validateEmail(email) {
-						var emailReg = /^([\w-\.]+@([\w-]+\.)+[\w-]{2,4})?$/;
-						if (!emailReg.test(email)) {
-							return false;
-						} else {
-							return true;
-						}
-					};
-
-					// Plugin listing table deactivate link.
-					$deactivateLink.on('click', function (event) {
-						event.preventDefault();
-						$overlay.css('display', 'table');
-						formOpen = true;
-						$form.find('.ig-deactivate-survey-option:first-of-type input[type=radio]').focus();
-					});
-					// Survey radio option selected.
-					$form.on('change', 'input[type=radio]', function (event) {
-						event.preventDefault();
-						$form.find('input[type=text], .error').hide();
-
-						$form.find('.ig-deactivate-survey-option').removeClass('selected');
-						$(this).closest('.ig-deactivate-survey-option').addClass('selected').find('input[type=text]').show();
-
-						if (consent.attr('checked') === 'checked') {
-							togglePersonalInfoFields(true);
-						}
-					});
-					// Survey Skip & Deactivate.
-					$form.on('click', '.ig-deactivate-survey-deactivate', function (event) {
-						event.preventDefault();
-						let deactivationURL = $deactivateLink.attr('href');
-						let skipSurveyURL = deactivationURL + '&survey_status=skipped';
-						location.href = skipSurveyURL;
-					});
-
-					// Help Consent
-					togglePersonalInfoFields(false);
-					loader(false);
-					consent.on('click', function () {
-						if (consent.attr('checked') === 'checked') {
-							togglePersonalInfoFields(true);
-						} else {
-							togglePersonalInfoFields(false);
-						}
-					});
-
-					// Survey submit.
-					$form.submit(function (event) {
-						event.preventDefault();
-						loader(true);
-						if (!$form.find('input[type=radio]:checked').val()) {
-							$form.find('.ig-deactivate-survey-footer').prepend('<span class="error"><?php echo esc_js( __( 'Please select an option', $this->plugin ) ); ?></span>');
-							return;
-						}
-
-						var system_info = false;
-						var name = '';
-						var email = '';
-
-						if (consent.attr('checked') === 'checked') {
-							name = $form.find('#ig-deactivate-survey-info-name').val();
-							email = $form.find('#ig-deactivate-survey-info-email-address').val();
-							if (email === '' || !validateEmail(email)) {
-								alert('Please enter valid email');
-								return;
-							}
-							system_info = true;
-						}
-
-						var meta = {
-							name: name,
-							email: email
-						};
-
-						var data = {
-							action: '<?php echo esc_js( $this->ajax_action ); ?>',
-							feedback: {
-								type: 'radio',
-								title: '<?php echo esc_js( $title ); ?>',
-								slug: '<?php echo esc_js( $slug ); ?>',
-								value: $form.find('.selected input[type=radio]').attr('data-option-slug'),
-								details: $form.find('.selected input[type=text]').val()
-							},
-
-							event: '<?php echo esc_js( $event ); ?>',
-
-							// Add additional information
-							misc: {
-								plugin: '<?php echo esc_js( $this->plugin ); ?>',
-								plugin_abbr: '<?php echo esc_js( $this->plugin_abbr ); ?>',
-								is_dev_mode: '<?php echo esc_js( $this->is_dev_mode ); ?>',
-								set_cookie: '',
-								meta_info: meta,
-								system_info: system_info
-							},
-							security: '<?php echo esc_js( wp_create_nonce( $this->plugin_abbr . '-admin-ajax-nonce' ) ); ?>'
-						};
-
-						var submitSurvey = $.post(ajaxurl, data);
-						submitSurvey.always(function () {
+					$.post(ajaxurl, data).always(function(){
+						if ( ! skipRedirect ) {
 							location.href = $deactivateLink.attr('href');
-						});
-					});
-					// Exit key closes survey when open.
-					$(document).keyup(function (event) {
-						if (27 === event.keyCode && formOpen) {
-							$overlay.hide();
-							formOpen = false;
-							$deactivateLink.focus();
 						}
 					});
+				}
+
+				function buildScreen2(slug) {
+					var cfg = followups[slug];
+					if (!cfg) { deactivate(); return; }
+					var html = '';
+
+					if (cfg.heading) {
+						html += '<h3 class="ig-deactivation-s2-heading">' + cfg.heading + '</h3>';
+					}
+					if (cfg.body) {
+						html += '<p class="ig-deactivation-s2-body">' + cfg.body.replace(/\n/g,'<br>') + '</p>';
+					}
+					if (cfg.sub_options && cfg.sub_options.length) {
+						html += '<ul class="ig-deactivation-sub-options">';
+						$.each(cfg.sub_options, function(i, opt){
+							html += '<li class="ig-deactivation-sub-option"><input type="radio" name="ig_deactivation_sub" value="' + opt + '" id="ig-deactivation-sub-' + i + '"><label for="ig-deactivation-sub-' + i + '">' + opt + '</label></li>';
+						});
+						html += '</ul>';
+					}
+					if (cfg.has_textarea) {
+						html += '<textarea class="ig-deactivation-textarea" placeholder="' + (cfg.textarea_placeholder || '') + '"></textarea>';
+					}
+					if (cfg.body2) {
+						html += '<p class="ig-deactivation-s2-body">' + cfg.body2 + '</p>';
+					}
+					$s2Content.html(html);
+
+					// Sub-option click handler
+					$s2Content.find('.ig-deactivation-sub-option').on('click', function(){
+						$(this).find('input[type=radio]').prop('checked', true);
+					});
+
+					// Build footer buttons
+					var footerHtml = '';
+					$.each(cfg.buttons, function(i, btn){
+						var extraData = '';
+						if ( btn.skip_deactivation ) {  // reading PHP config key — stays snake_case
+							extraData += ' data-skip-deactivation="1"';
+						}
+						if ( btn.success_message ) {    // reading PHP config key — stays snake_case
+							extraData += ' data-success-message="' + btn.success_message + '"';
+						}
+						
+						if (btn.action === 'url') {
+							footerHtml += '<a href="' + btn.url + '" target="_blank" class="' + btn.cls + ' ig-deactivation-url-redirect">' + btn.label + '</a>';
+						} else if (btn.action === 'submit') {
+							footerHtml += '<button type="button" class="' + btn.cls + ' ig-deactivation-submit-deactivate"' + extraData + '>' + btn.label + '</button>';
+						} else {
+							footerHtml += '<button type="button" class="' + btn.cls + ' ig-deactivation-deactivate-only">' + btn.label + '</button>';
+						}
+					});
+					$s2Footer.html(footerHtml);
+
+					$s2Footer.find('.ig-deactivation-url-redirect').on('click', function(){
+						resetModal();
+						$modal.removeClass('is-open');
+					});
+
+					$s2Footer.find('.ig-deactivation-submit-deactivate').on('click', function(){
+						var $btn = $(this);
+						var extraMeta = {};
+						var skipDeactivation = $btn.data('skip-deactivation');
+						if ( skipDeactivation ) {
+							extraMeta.skip_deactivation  = 1; // property stays snake_case: PHP reads this
+							extraMeta.send_support_email = 1; // property stays snake_case: ETP reads this
+							var successMsg = $btn.data('success-message') || 'Success!';
+							$s2Content.html('<div class="ig-deactivation-success-msg">' + successMsg + '</div>');
+							$s2Footer.empty();
+							setTimeout( function() {
+								resetModal();
+								$modal.removeClass('is-open');
+							}, 5000 );
+						}
+
+						submitAndDeactivate( extraMeta, skipDeactivation );
+					});
+					$s2Footer.find('.ig-deactivation-deactivate-only').on('click', deactivate);
+				}
+
+				// Open modal on deactivate link click — always reset to Screen 1 first
+				$deactivateLink.on('click', function(e){
+					e.preventDefault();
+					resetModal();
+					$modal.addClass('is-open');
 				});
+
+				// Option row click → go to screen 2
+				$modal.on('click', '.ig-deactivation-option', function(){
+					var $row = $(this);
+					$row.find('input[type=radio]').prop('checked', true);
+					$modal.find('.ig-deactivation-option').removeClass('selected');
+					$row.addClass('selected');
+					selectedSlug  = $row.data('slug');
+					selectedTitle = $row.data('title');
+
+					$s2Label.text(selectedTitle);
+					buildScreen2(selectedSlug);
+
+					$screen1.hide();
+					$screen2.show();
+				});
+
+				// Back button
+				$modal.on('click', '.ig-deactivation-back', function(){
+					$screen2.hide();
+					$screen1.show();
+				});
+
+				// Screen 1 skip / deactivate
+				$modal.on('click', '.ig-deactivation-skip-deactivate', deactivate);
+
+				// Esc key closes
+				$(document).on('keyup', function(e){
+					if (e.keyCode === 27 && $modal.hasClass('is-open')) {
+						resetModal();
+						$modal.removeClass('is-open');
+					}
+				});
+			});
 			</script>
 			<?php
 		}
@@ -1560,106 +1603,107 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 			}
 			?>
 			<style type="text/css">
-				.ig-deactivate-survey-modal {
+				.ig-deactivation-modal {
 					display: none;
-					table-layout: fixed;
 					position: fixed;
-					z-index: 9999;
-					width: 100%;
-					height: 100%;
-					text-align: center;
-					font-size: 14px;
-					top: 0;
-					left: 0;
-					background: rgba(0, 0, 0, 0.8);
+					z-index: 999999;
+					top: 0; left: 0;
+					width: 100%; height: 100%;
+					background: rgba(0,0,0,0.75);
+					align-items: center;
+					justify-content: center;
+					font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 				}
-
-				.ig-deactivate-survey-wrap {
-					display: table-cell;
-					vertical-align: middle;
+				.ig-deactivation-modal.is-open { display: flex; }
+				.ig-deactivation-card {
+					background: #fff;
+					border-radius: 12px;
+					width: 540px;
+					max-width: 96vw;
+					max-height: 92vh;
+					overflow-y: auto;
+					box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+					padding: 32px 36px 24px;
+					box-sizing: border-box;
 				}
-
-				.ig-deactivate-survey {
-					background-color: #fff;
-					max-width: 550px;
-					margin: 0 auto;
-					padding: 30px;
-					text-align: left;
+				.ig-deactivation-headline { font-size: 22px; font-weight: 700; color: #1d2327; margin: 0 0 6px 0; }
+				.ig-deactivation-question { font-size: 14px; color: #50575e; margin: 0 0 20px 0; }
+				.ig-deactivation-options { list-style: none; margin: 0; padding: 0; }
+				.ig-deactivation-option {
+					display: flex; align-items: center; gap: 12px;
+					padding: 11px 14px; border: 1px solid #dde0e4; border-radius: 8px;
+					margin-bottom: 8px; cursor: pointer;
+					transition: border-color .15s, background .15s;
+					font-size: 14px; color: #1d2327;
 				}
-
-				.ig-deactivate-survey .error {
-					display: block;
-					color: red;
-					margin: 0 0 10px 0;
+				.ig-deactivation-option:hover, .ig-deactivation-option.selected { border-color: #2271b1; background: #f0f6fc; }
+				.ig-deactivation-option input[type=radio] { accent-color: #2271b1; flex-shrink: 0; }
+				.ig-deactivation-screen1-footer {
+					display: flex; justify-content: flex-end; align-items: center;
+					margin-top: 16px; padding-top: 12px; border-top: 1px solid #f0f0f1;
 				}
-
-				.ig-deactivate-survey-title {
-					display: block;
-					font-size: 18px;
-					font-weight: 700;
-					text-transform: uppercase;
-					border-bottom: 1px solid #ddd;
-					padding: 0 0 18px 0;
-					margin: 0 0 18px 0;
+				.ig-deactivation-btn-deactivate-plain {
+					background: none; border: none; font-size: 13px; color: #a0a5aa;
+					cursor: pointer; padding: 4px 8px; width: auto; display: inline-block;
 				}
-
-				.ig-deactivate-survey-options {
-					border-bottom: 1px solid #ddd;
-					padding: 0 0 18px 0;
-					margin: 0 0 18px 0;
+				.ig-deactivation-btn-deactivate-plain:hover { color: #646970; text-decoration: underline; }
+				.ig-deactivation-screen2 { display: none; }
+				.ig-deactivation-back {
+					display: inline-flex; align-items: center; gap: 6px;
+					font-size: 13px; color: #2271b1; cursor: pointer;
+					border: none; background: none; padding: 0; margin-bottom: 18px;
 				}
-
-				.ig-deactivate-survey-info-data {
-					padding: 0 0 18px 0;
-					margin: 10px 10px 10px 30px;
+				.ig-deactivation-back:hover { text-decoration: underline; }
+				.ig-deactivation-s2-selected-label {
+					font-size: 12px; font-weight: 600; text-transform: uppercase;
+					letter-spacing: .5px; color: #8c8f94; margin-bottom: 4px;
 				}
-
-				.ig-deactivate-survey-info-name, .ig-deactivate-survey-info-email-address {
-					width: 230px;
-					margin: 10px;
+				.ig-deactivation-s2-heading { font-size: 17px; font-weight: 700; color: #1d2327; margin: 0 0 8px 0; }
+				.ig-deactivation-s2-body { font-size: 13px; color: #50575e; margin: 0 0 14px 0; line-height: 1.6; }
+				.ig-deactivation-sub-options { list-style: none; margin: 0 0 14px; padding: 0; }
+				.ig-deactivation-sub-option {
+					display: flex; align-items: center; gap: 10px;
+					padding: 9px 12px; border: 1px solid #dde0e4; border-radius: 6px;
+					margin-bottom: 6px; cursor: pointer; font-size: 13px; color: #1d2327;
+					transition: border-color .15s, background .15s;
 				}
-
-				.ig-deactivate-survey-title span {
-					color: #999;
-					margin-right: 10px;
+				.ig-deactivation-sub-option:hover { border-color: #2271b1; background: #f0f6fc; }
+				.ig-deactivation-sub-option input[type=radio] { accent-color: #2271b1; flex-shrink: 0; }
+				.ig-deactivation-textarea {
+					width: 100%; min-height: 72px; resize: vertical;
+					padding: 8px 10px; border: 1px solid #c3c4c7; border-radius: 6px;
+					font-size: 13px; font-family: inherit; color: #1d2327;
+					box-sizing: border-box; margin-bottom: 14px; display: block;
 				}
-
-				.ig-deactivate-survey-desc {
-					display: block;
-					font-weight: 600;
-					margin: 0 0 18px 0;
+				.ig-deactivation-textarea:focus { border-color: #2271b1; outline: none; }
+				.ig-deactivation-success-msg {
+					background: #f0f6fc; border-left: 4px solid #2271b1;
+					padding: 12px 16px; font-size: 14px; color: #1d2327;
+					margin-bottom: 20px; border-radius: 4px; line-height: 1.5;
 				}
-
-				.ig-deactivate-survey-option {
-					margin: 0 0 10px 0;
+				.ig-deactivation-s2-footer {
+					display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+					padding-top: 16px; border-top: 1px solid #eee; margin-top: 4px;
 				}
-
-				.ig-deactivate-survey-option-input {
-					margin-right: 10px !important;
+				.ig-deactivation-btn-primary {
+					background: #2271b1; color: #fff; border: none; border-radius: 6px;
+					padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
+					text-decoration: none; display: inline-block;
 				}
-
-				.ig-deactivate-survey-option-details {
-					display: none;
-					width: 90%;
-					margin: 10px 0 0 30px;
+				.ig-deactivation-btn-primary:hover { background: #135e96; color: #fff; }
+				.ig-deactivation-btn-secondary {
+					background: #fff; color: #2271b1; border: 1px solid #2271b1;
+					border-radius: 6px; padding: 8px 16px; font-size: 13px; font-weight: 600;
+					cursor: pointer; text-decoration: none; display: inline-block;
 				}
-
-				.ig-deactivate-survey-footer {
-					margin-top: 18px;
+				.ig-deactivation-btn-secondary:hover { background: #f0f6fc; }
+				.ig-deactivation-btn-ghost {
+					background: none; border: none; font-size: 13px; color: #a0a5aa;
+					cursor: pointer; padding: 0; margin-left: auto; text-decoration: none;
 				}
-
-				.ig-deactivate-survey-deactivate {
-					float: right;
-					font-size: 13px;
-					color: #ccc;
-					text-decoration: none;
-					padding-top: 7px;
-				}
-
-				.ig-deactivate-survey-loader {
-					vertical-align: middle;
-					padding: 10px;
-				}
+				.ig-deactivation-btn-ghost:hover { color: #646970; text-decoration: underline; }
+				.ig-deactivation-thank-you { font-size: 12px; color: #8c8f94; text-align: center; margin-top: 14px; }
+				.ig-deactivation-loader { display: none; vertical-align: middle; width: 20px; height: 20px; }
 			</style>
 			<?php
 		}
@@ -1675,68 +1719,39 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 				return;
 			}
 
-			$email = $this->get_contact_email();
+			$options = apply_filters( $this->plugin_abbr . '_deactivation_reasons', array() );
 
-			$options = array(
-				1 => array(
-					'title' => esc_html__( 'I no longer need the plugin', $this->plugin ),
-					'slug'  => 'i-no-longer-need-the-plugin',
-				),
-				2 => array(
-					'title'   => esc_html__( 'I\'m switching to a different plugin', $this->plugin ),
-					'slug'    => 'i-am-switching-to-a-different-plugin',
-					'details' => esc_html__( 'Please share which plugin', $this->plugin ),
-				),
-				3 => array(
-					'title' => esc_html__( 'I couldn\'t get the plugin to work', $this->plugin ),
-					'slug'  => 'i-could-not-get-the-plugin-to-work',
-				),
-				4 => array(
-					'title' => esc_html__( 'It\'s a temporary deactivation', $this->plugin ),
-					'slug'  => 'it-is-a-temporary-deactivation',
-				),
-				5 => array(
-					'title'   => esc_html__( 'Other', $this->plugin ),
-					'slug'    => 'other',
-					'details' => esc_html__( 'Please share the reason', $this->plugin ),
-				),
-			);
-
-			$options = apply_filters( $this->plugin_abbr . '_deactivation_reasons', $options );
-			
+			$plugin_js = esc_js( $this->plugin );
 			?>
-			<div class="ig-deactivate-survey-modal" id="ig-deactivate-survey-<?php echo esc_js( $this->plugin ); ?>">
-				<div class="ig-deactivate-survey-wrap">
-					<form class="ig-deactivate-survey" method="post">
-						<span class="ig-deactivate-survey-title"><span class="dashicons dashicons-testimonial"></span><?php echo ' ' . esc_html__( 'Quick Feedback', $this->plugin ); ?></span>
-						<span class="ig-deactivate-survey-desc"><?php echo esc_html__( sprintf( 'If you have a moment, please share why you are deactivating %s:', $this->name ), $this->plugin ); ?></span>
-						<div class="ig-deactivate-survey-options">
-							<?php foreach ( $options as $id => $option ) : ?>
-								<div class="ig-deactivate-survey-option">
-									<label for="ig-deactivate-survey-option-<?php echo esc_attr( $this->plugin ); ?>-<?php echo esc_attr( $id ); ?>" class="ig-deactivate-survey-option-label">
-										<input id="ig-deactivate-survey-option-<?php echo esc_attr( $this->plugin ); ?>-<?php echo esc_attr( $id ); ?>" class="ig-deactivate-survey-option-input" type="radio" name="code" value="<?php echo esc_attr( $id ); ?>" data-option-slug="<?php echo esc_attr( $option['slug'] ); ?>"/>
-										<span class="ig-deactivate-survey-option-reason"><?php echo esc_attr( $option['title'] ); ?></span>
-									</label>
-									<?php if ( ! empty( $option['details'] ) ) : ?>
-										<input class="ig-deactivate-survey-option-details" type="text" placeholder="<?php echo esc_attr( $option['details'] ); ?>"/>
-									<?php endif; ?>
-								</div>
-							<?php endforeach; ?>
-						</div>
-						<div class="ig-deactivate-survey-help-consent">
-							<input id="ig-deactivate-survey-help-consent-<?php echo esc_attr( $this->plugin ); ?>" class="ig-deactivate-survey-option-input" type="checkbox" name="code" data-option-slug="<?php echo esc_attr( $option['slug'] ); ?>"/><b><?php echo esc_html__( 'Yes, I give my consent to track plugin usage and contact me back to make this plugin works!', $this->plugin ); ?></b>
-						</div>
-						<div class="ig-deactivate-survey-info-data">
+			<div class="ig-deactivation-modal" id="ig-deactivation-modal-<?php echo $plugin_js; ?>">
+				<div class="ig-deactivation-card">
 
-							<input type="text" class="ig-deactivate-survey-info-name" id="ig-deactivate-survey-info-name" placeholder="Enter Name" name="ig-deactivate-survey-info-name" value=""/>
-							<input type="text" class="ig-deactivate-survey-info-email-address" id="ig-deactivate-survey-info-email-address" name="ig-deactivate-survey-info-email-address" value="<?php echo esc_js( $email ); ?>"/>
+					<!-- Screen 1: Options -->
+					<div class="ig-deactivation-screen1">
+						<h2 class="ig-deactivation-headline"><?php echo wp_kses_post( apply_filters( $this->plugin_abbr . '_deactivation_headline', '' ) ); ?></h2>
+						<p class="ig-deactivation-question"><?php echo wp_kses_post( apply_filters( $this->plugin_abbr . '_deactivation_question', '' ) ); ?></p>
+						<ul class="ig-deactivation-options">
+							<?php foreach ( $options as $idx => $option ) : ?>
+							<li class="ig-deactivation-option" data-slug="<?php echo esc_attr( $option['slug'] ); ?>" data-title="<?php echo esc_attr( $option['title'] ); ?>">
+								<input type="radio" name="ig_deactivation_reason" value="<?php echo esc_attr( $option['slug'] ); ?>" id="ig-deactivation-opt-<?php echo esc_attr( $this->plugin . '-' . $idx ); ?>">
+								<label for="ig-deactivation-opt-<?php echo esc_attr( $this->plugin . '-' . $idx ); ?>"><?php echo esc_html( $option['title'] ); ?></label>
+							</li>
+							<?php endforeach; ?>
+						</ul>
+						<div class="ig-deactivation-screen1-footer">
+							<button type="button" class="ig-deactivation-btn-deactivate-plain ig-deactivation-skip-deactivate"><?php esc_html_e( 'Skip &amp; Deactivate', $this->plugin ); ?></button>
 						</div>
-						<div class="ig-deactivate-survey-footer">
-							<button type="submit" class="ig-deactivate-survey-submit button button-primary button-large"><?php echo sprintf( esc_html__( 'Submit %s Deactivate', $this->plugin ), '&amp;' ); ?></button>
-							<img class="ig-deactivate-survey-loader" id="ig-deactivate-survey-loader" src="<?php echo esc_url( plugin_dir_url( __FILE__ ) ); ?>/assets/images/loading.gif"/>
-							<a href="#" class="ig-deactivate-survey-deactivate"><?php echo sprintf( esc_html__( 'Skip %s Deactivate', $this->plugin ), '&amp;' ); ?></a>
-						</div>
-					</form>
+					</div>
+
+					<!-- Screen 2: Follow-up (populated by JS) -->
+					<div class="ig-deactivation-screen2" id="ig-deactivation-screen2-<?php echo $plugin_js; ?>">
+						<button type="button" class="ig-deactivation-back ig-deactivation-back">&#8592; Back</button>
+						<div class="ig-deactivation-s2-selected-label" id="ig-deactivation-s2-label-<?php echo $plugin_js; ?>"></div>
+						<div id="ig-deactivation-s2-content-<?php echo $plugin_js; ?>"></div>
+						<div class="ig-deactivation-s2-footer" id="ig-deactivation-s2-footer-<?php echo $plugin_js; ?>"></div>
+						<p class="ig-deactivation-thank-you"><?php echo wp_kses_post( apply_filters( $this->plugin_abbr . '_deactivation_thankyou', '' ) ); ?></p>
+					</div>
+
 				</div>
 			</div>
 			<?php
@@ -1852,7 +1867,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 
 			$feedback_option = $plugin_abbr . '_feedback_data';
 
-			$feedback_data = ig_es_maybe_unserialize( get_option( $feedback_option, array() ) );
+			$feedback_data = get_option( $feedback_option, array() );
 
 			$data['created_on'] = gmdate( 'Y-m-d H:i:s' );
 
@@ -2038,7 +2053,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_11' ) ) {
 				$result['message'] = $error_message;
 			}
 
-			do_action( $this->plugin_abbr . '_deactivation_feedback_submitted', $data );
+			do_action( $this->plugin_abbr.'_deactivation_feedback_submitted', $data );
 
 			die( json_encode( $result ) );
 		}

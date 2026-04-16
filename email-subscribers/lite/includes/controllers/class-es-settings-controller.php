@@ -1764,8 +1764,43 @@ $merge_tags = array();
 			return $field_html;
 		}
 
+	/**
+	 * Fetch available message streams from Postmark
+	 *
+	 * @param array $data Request data containing api_token
+	 * 
+	 * @return array Message streams or error
+	 */
+	public static function get_postmark_streams( $data = array() ) {
+		$api_token = ! empty( $data['api_token'] ) ? sanitize_text_field( $data['api_token'] ) : '';
+		
+		if ( empty( $api_token ) ) {
+			return array(
+				'error' => __( 'API token is required.', 'email-subscribers' ),
+			);
+		}
+
+		// Check if the mailer class exists (Pro version)
+		if ( ! class_exists( 'ES_Postmark_Mailer' ) ) {
+			return array(
+				'error' => __( 'Postmark mailer is not available.', 'email-subscribers' ),
+			);
+		}
+
+		$result = ES_Postmark_Mailer::get_message_streams( $api_token );
+
+		if ( is_wp_error( $result ) ) {
+			return array(
+				'error' => $result->get_error_message(),
+			);
+		}
+
+		return array(
+			'streams' => $result,
+		);
 	}
 
+}
 }
 
 ES_Settings_Controller::get_instance();

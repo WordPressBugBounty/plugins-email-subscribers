@@ -259,6 +259,9 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 							$contact['average_opened_at'] = '—';
 						}
 					}
+					
+					// Allow custom fields to be added to contact data for audience activity
+					$result = apply_filters( 'ig_es_add_custom_field_info_into_audience_activity', $result );
 				}
 			}
 

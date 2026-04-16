@@ -1149,7 +1149,7 @@ class ES_DB_Contacts extends ES_DB {
 
 		global $wpbd;
 		if ( ! is_array( $cf_ids ) ) {
-			$ids = array( $cf_ids );
+			$cf_ids = array( $cf_ids );
 		}
 
 		$col_deleted = 0;
