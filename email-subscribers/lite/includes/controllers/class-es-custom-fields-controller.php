@@ -137,6 +137,21 @@ class ES_Custom_Fields_Controller {
 					if ( ! is_array( $field['meta'] ) ) {
 						$field['meta'] = array();
 					}
+					
+					// Convert old 'values' format to new 'options' format for React form builder
+					// Old format: meta['values'] = ['yes', 'no', 'maybe']
+					// New format: meta['options'] = [{id: '1', text: 'yes', enabled: true}, ...]
+					if ( isset( $field['meta']['values'] ) && is_array( $field['meta']['values'] ) && ! isset( $field['meta']['options'] ) ) {
+						$field['meta']['options'] = array();
+						foreach ( $field['meta']['values'] as $index => $value ) {
+							$field['meta']['options'][] = array(
+								'id'      => (string) ( $index + 1 ),
+								'text'    => $value,
+								'enabled' => true,
+							);
+						}
+						// Keep 'values' array intact for backward compatibility
+					}
 				} else {
 					$field['meta'] = array();
 				}

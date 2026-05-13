@@ -1074,6 +1074,20 @@ class ES_DB_Campaigns extends ES_DB {
 				$sql .= $wpdb->prepare(' WHERE type = %s', $args['campaign_type']);
 			}
 		}
+
+		// Handle campaigns_in parameter for fetching specific campaigns by ID
+		if ( ! empty( $args['campaigns_in'] ) && is_array( $args['campaigns_in'] ) ) {
+			$campaigns_in = array_map( 'absint', $args['campaigns_in'] );
+			$placeholders = array_fill( 0, count( $campaigns_in ), '%d' );
+			$placeholders_str = implode( ',', $placeholders );
+			if ( $add_where_clause ) {
+				$sql .= $wpdb->prepare( " AND id IN ($placeholders_str)", $campaigns_in );
+			} else {
+				$sql .= $wpdb->prepare( " WHERE id IN ($placeholders_str)", $campaigns_in );
+			}
+			$add_where_clause = false;
+		}
+
 	
 		if (isset($args['campaign_status']) && ( !empty($args['campaign_status']) || ( '0' === $args['campaign_status'] ) )) {
 			if ($add_where_clause) {

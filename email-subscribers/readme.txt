@@ -6,7 +6,7 @@ Tags: email subscribers, newsletter, subscription form, email marketing, email a
 Requires at least: 3.9
 Tested up to: 6.9
 Requires PHP: 7.0
-Stable tag: 5.9.23
+Stable tag: 5.9.24
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,15 +361,23 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.23 =
+= 5.9.24 =
 
-* New: Support for selecting message streams in the Postmark mailer settings [PRO]
-* Improvement: Added option to delete saved templates from the Template Gallery
-* Improvement: Added default selections for List and Status filters in Advanced Filters
-* Improvement: Added option to delete Custom Fields from the form edit screen [PRO]
-
+* Improvement: Added functionality to rename the List.
+* Improvement: Performance improvements on the Reports page
+* Improvement: Form field UI
+* Fix: Custom field compatibility issues
+* Fix: Pagination issue in the Reports Activity Info table
 
 == Changelog ==
+
+**5.9.24 (13.05.2026)**
+
+* Improvement: Added functionality to rename the List.
+* Improvement: Performance improvements on the Reports page
+* Improvement: Form field UI
+* Fix: Custom field compatibility issues
+* Fix: Pagination issue in the Reports Activity Info table
 
 **5.9.23 (16.04.2026)**
 

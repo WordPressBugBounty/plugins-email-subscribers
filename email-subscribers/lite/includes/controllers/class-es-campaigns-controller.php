@@ -83,6 +83,11 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 			if ( ! empty( $args['search'] ) ) {
 				$filter_args['search_text'] = sanitize_text_field( $args['search'] );
 			}
+
+			// Support campaigns_in parameter for fetching specific campaigns by ID 
+			if ( ! empty( $args['campaigns_in'] ) && is_array( $args['campaigns_in'] ) ) {
+				$filter_args['campaigns_in'] = array_map( 'absint', $args['campaigns_in'] );
+			}
 			
 			// Handle include_types - pass array of campaign types
 			if ( ! empty( $args['include_types'] ) && is_array( $args['include_types'] ) ) {

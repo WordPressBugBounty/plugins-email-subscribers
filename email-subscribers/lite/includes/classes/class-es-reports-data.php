@@ -360,7 +360,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 				'order_by_column' => 'ID',
 				'limit'           => '5',
 				'order'           => 'DESC',
-				'status'          => array( IG_ES_CAMPAIGN_STATUS_SCHEDULED, IG_ES_CAMPAIGN_STATUS_QUEUED ),
+				'status'          => array( IG_ES_CAMPAIGN_STATUS_SCHEDULED, IG_ES_CAMPAIGN_STATUS_QUEUED, IG_ES_CAMPAIGN_STATUS_PAUSED ),
 				'include_types'   => array(
 					IG_CAMPAIGN_TYPE_POST_NOTIFICATION,
 					IG_CAMPAIGN_TYPE_POST_DIGEST,
@@ -375,18 +375,17 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 					foreach ( $pending_campaigns as $campaign ) {
 						$campaign_id = (int) $campaign['id'];
 						
-						// For queued campaigns (status 3), check if mailing queue is actually pending
-						if ( IG_ES_CAMPAIGN_STATUS_QUEUED === (int) $campaign['status'] ) {
-							$mq_status = $wpdb->get_var(
+						// Fetch actual mailing queue status (string) instead of campaign status (integer)
+						$mq_status = $wpdb->get_var(
 							$wpdb->prepare(
 								"SELECT status FROM {$wpdb->prefix}ig_mailing_queue WHERE campaign_id = %d ORDER BY id DESC LIMIT 1",
 								$campaign_id
 							)
-							);
-							// Skip if already sent
-							if ( 'Sent' === $mq_status ) {
-								continue;
-							}
+						);
+						
+						// Skip if no mailing queue entry or if already sent
+						if ( empty( $mq_status ) || 'Sent' === $mq_status ) {
+							continue;
 						}
 						
 						// Fetch latest mailing queue hash for this campaign
@@ -404,10 +403,11 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 							$hash     = $mq_hash;
 							$cron_url = ES()->cron->url( true, false, $hash );
 						}
+						
 						$pending_campaigns_data[] = array(
 						'id'       => $campaign_id,
 						'title'    => $campaign['subject'],
-						'status'   => $campaign['status'],
+						'status'   => $mq_status,
 						'type'     => $campaign['type'],
 						'hash'     => $hash,
 						'cron_url' => $cron_url,
@@ -416,19 +416,21 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 					}
 				}
 
-				// Also include queued/sending items from mailing queue for parity
+				// Also include queued/sending/paused items from mailing queue for parity
 				$mq_table = $wpdb->prefix . 'ig_mailing_queue';
 				// phpcs:disable
 				$mq_items = $wpdb->get_results(
 					$wpdb->prepare(
-						"SELECT id, campaign_id, subject, status, hash FROM {$mq_table} WHERE status IN (%s, %s) ORDER BY id DESC LIMIT %d",
+						"SELECT id, campaign_id, subject, status, hash FROM {$mq_table} WHERE status IN (%s, %s, %s) ORDER BY id DESC LIMIT %d",
 						'In Queue',
 						'Sending',
+						'Paused',
 						5
 					),
 					ARRAY_A
 					);
 					// phpcs:enable
+				
 				if ( ! empty( $mq_items ) ) {
 					foreach ( $mq_items as $mq ) {
 						$cid = (int) $mq['campaign_id'];

@@ -756,12 +756,13 @@ $message_id            = 0;
 				} else {
 					$orderby = "{$orderby} {$order}";
 				}
-			$orderby = sanitize_sql_orderby( $orderby );
+				$orderby = sanitize_sql_orderby( $orderby );
 				if ( $orderby ) {
 					$offset   = $page_number > 1 ? ( $page_number - 1 ) * $per_page : 0;
 
 					$order_by_query = " ORDER BY {$orderby} LIMIT {$offset}, {$per_page}";
-				}			}
+				}			
+			}
 
 			$notification_query .= $search_query . $status_query . $country_query . $order_by_query;
 			if ( $return_count ) {
@@ -775,7 +776,8 @@ $message_id            = 0;
 					$count_query
 					);
 				}
-				return $count;
+				
+				return (int) $count;
 			} else {
 				$results = $wpbd->get_results( $notification_query, ARRAY_A );
 

@@ -293,6 +293,9 @@ return $form_data;
 				// Handle styles
 				$styles = array();
 				if ( ! empty( $data['styles'] ) ) {
+					if ( ! empty( $data['styles']['form_style'] ) ) {
+						$styles['form_style'] = sanitize_text_field( $data['styles']['form_style'] );
+					}
 					if ( ! empty( $data['styles']['custom_css'] ) ) {
 						// Don't strip tags from CSS, just sanitize for storage
 						$styles['custom_css'] = sanitize_textarea_field( $data['styles']['custom_css'] );
@@ -623,8 +626,7 @@ return $form_data;
 						if ( ! empty( $d['buttonStyles'] ) ) {
 							$form_data['button_styles'] = $d['buttonStyles'];
 						}
-					} elseif ( !empty( $d['is_custom_field'] ) || ( !empty( $d['id'] ) && ( strpos( $d['id'], 'es_custom_' ) === 0 || strpos( $d['id'], 'custom_' ) === 0 ) ) ) {
-						// Handle custom fields - either marked with is_custom_field property or with ID starting with 'es_custom_' or 'custom_' (legacy)
+					} elseif ( !empty( $d['is_custom_field'] ) || ( !empty( $d['id'] ) && ( strpos( $d['id'], 'es_custom_' ) === 0 || strpos( $d['id'], 'custom_' ) === 0 || strpos( $d['id'], 'cf_' ) === 0 ) ) ) {
 						$form_data['custom_fields'][] = $d;
 					}
 				}

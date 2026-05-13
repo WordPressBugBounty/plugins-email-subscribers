@@ -183,6 +183,19 @@ class ES_DB_Custom_Fields extends ES_DB {
 		$meta = $this->get_column_by( 'meta', 'slug', $slug );
 		if ( $meta ) {
 			$meta = ig_es_maybe_unserialize( $meta );
+			
+			// Convert old 'values' format to new 'options' format for React form builder
+			if ( is_array( $meta ) && isset( $meta['values'] ) && is_array( $meta['values'] ) && ! isset( $meta['options'] ) ) {
+				$meta['options'] = array();
+				foreach ( $meta['values'] as $index => $value ) {
+					$meta['options'][] = array(
+						'id'      => (string) ( $index + 1 ),
+						'text'    => $value,
+						'enabled' => true,
+					);
+				}
+				// Keep 'values' for backward compatibility
+			}
 		}
 
 		return $meta;

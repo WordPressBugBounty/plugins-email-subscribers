@@ -787,11 +787,19 @@ class ES_Shortcode {
 		$form_class = 'ig_es_subscription_form es_subscription_form es_widget_form wysiwyg-form es_shortcode_form';
 		$form_style = '';
 		
-		if ( ! empty( $settings['form_style'] ) ) {
-			$sanitized_style = sanitize_html_class( str_replace( ' ', '-', strtolower( $settings['form_style'] ) ) );
+		// Check styles['form_style'] first, then fall back to settings['form_style']
+		$current_form_style = '';
+		if ( ! empty( $styles['form_style'] ) ) {
+			$current_form_style = $styles['form_style'];
+		} elseif ( ! empty( $settings['form_style'] ) ) {
+			$current_form_style = $settings['form_style'];
+		}
+		
+		if ( ! empty( $current_form_style ) ) {
+			$sanitized_style = sanitize_html_class( str_replace( ' ', '-', strtolower( $current_form_style ) ) );
 			$form_class .= ' es-form-style-' . $sanitized_style;
 			
-			$original_style = sanitize_html_class( str_replace( ' ', '.', $settings['form_style'] ) );
+			$original_style = sanitize_html_class( str_replace( ' ', '.', $current_form_style ) );
 			if ( $original_style !== $sanitized_style ) {
 				$form_class .= ' es-form-style-' . $original_style;
 			}
@@ -810,7 +818,13 @@ class ES_Shortcode {
 		$wrapper_style = '';
 		$form_style_css = '';
 		if ( ! empty( $styles ) && is_array( $styles ) ) {
-			$selected_form_style = ! empty( $settings['form_style'] ) ? $settings['form_style'] : 'inherit';
+			// Check styles['form_style'] first, then fall back to settings['form_style']
+			$selected_form_style = 'inherit';
+			if ( ! empty( $styles['form_style'] ) ) {
+				$selected_form_style = $styles['form_style'];
+			} elseif ( ! empty( $settings['form_style'] ) ) {
+				$selected_form_style = $settings['form_style'];
+			}
 			$form_selector = 'body form.es_subscription_form.es_subscription_form[data-form-id="' . $form_id . '"].wysiwyg-form';
 			
 			$styles_supporting_custom_bg = array(
@@ -953,48 +967,67 @@ class ES_Shortcode {
 		foreach ( $enabled_fields as $field ) {
 			if ( ! empty( $field['id'] ) && 'button' === $field['id'] ) {
 				$button_styles = ! empty( $field['buttonStyles'] ) ? $field['buttonStyles'] : array();
-				$button_selector = 'form[data-form-id="' . $form_id . '"] .es-subscribe-btn';
+				$form_sel = 'body form.es_subscription_form.es_subscription_form[data-form-id="' . $form_id . '"][data-form-id="' . $form_id . '"].wysiwyg-form';
+				$button_selector = $form_sel . ' input.ig-es-submit-btn, ' . $form_sel . ' input.es-subscribe-btn, ' . $form_sel . ' .ig-es-submit-btn, ' . $form_sel . ' .es-subscribe-btn';
 			
 				$css_rules = array();
 			
 				$default_bg_color = '#007CBA';
 				$default_text_color = '#ffffff';
-				$default_border_color = '#007CBA';
+				$custom_height_set = false;
 			
 				if ( ! empty( $button_styles['width'] ) ) {
-					$css_rules[] = 'width: ' . esc_attr( $button_styles['width'] ) . ' !important;';
+					$css_rules[] = 'width: ' . esc_attr( $button_styles['width'] ) . ';';
 				}
 				if ( ! empty( $button_styles['height'] ) ) {
-					$css_rules[] = 'height: ' . esc_attr( $button_styles['height'] ) . ' !important;';
+					$height_value = esc_attr( $button_styles['height'] );
+					$css_rules[] = 'height: ' . $height_value . ';';
+					// When height is set, use same value for line-height to center text vertically
+					$css_rules[] = 'line-height: ' . $height_value . ';';
+					$custom_height_set = true;
 				}
 			
-				$bg_color = ! empty( $button_styles['backgroundColor'] ) ? $button_styles['backgroundColor'] : $default_bg_color;
-				$css_rules[] = 'background-color: ' . esc_attr( $bg_color ) . ' !important;';
-				$css_rules[] = 'background-image: none !important;';
-				$css_rules[] = 'background: ' . esc_attr( $bg_color ) . ' !important;';
+				if ( ! empty( $button_styles['backgroundColor'] ) ) {
+					$bg_color = $button_styles['backgroundColor'];
+					$css_rules[] = 'background-color: ' . esc_attr( $bg_color ) . ';';
+					$css_rules[] = 'background-image: none;';
+					$css_rules[] = 'background: ' . esc_attr( $bg_color ) . ';';
+				}
 			
-				$text_color = ! empty( $button_styles['textColor'] ) ? $button_styles['textColor'] : $default_text_color;
-				$css_rules[] = 'color: ' . esc_attr( $text_color ) . ' !important;';
+				if ( ! empty( $button_styles['textColor'] ) ) {
+					$text_color = $button_styles['textColor'];
+					$css_rules[] = 'color: ' . esc_attr( $text_color ) . ';';
+				}
 			
-				$border_color = ! empty( $button_styles['borderColor'] ) ? $button_styles['borderColor'] : $default_border_color;
-				$css_rules[] = 'border: 1px solid ' . esc_attr( $border_color ) . ' !important;';
+				// Only add border if explicitly set in button styles
+				if ( ! empty( $button_styles['borderColor'] ) ) {
+					$border_color = $button_styles['borderColor'];
+					$css_rules[] = 'border: 1px solid ' . esc_attr( $border_color ) . ';';
+				}
 			
 				if ( ! empty( $button_styles['borderRadius'] ) ) {
-					$css_rules[] = 'border-radius: ' . esc_attr( $button_styles['borderRadius'] ) . ' !important;';
+					$css_rules[] = 'border-radius: ' . esc_attr( $button_styles['borderRadius'] ) . ';';
 				}
 				if ( ! empty( $button_styles['fontSize'] ) ) {
-					$css_rules[] = 'font-size: ' . esc_attr( $button_styles['fontSize'] ) . ' !important;';
+					$css_rules[] = 'font-size: ' . esc_attr( $button_styles['fontSize'] ) . ';';
 				}
-			
-				$css_rules[] = 'cursor: pointer !important;';
-				$css_rules[] = 'box-sizing: border-box !important;';
-				$css_rules[] = 'padding: 0 2em !important;';
-				$css_rules[] = 'font-weight: bold !important;';
-				$css_rules[] = 'white-space: nowrap !important;';
-				$css_rules[] = 'text-decoration: none !important;';
-				$css_rules[] = 'display: inline-block !important;';
-				$css_rules[] = 'line-height: 1em !important;';
-				$css_rules[] = 'margin-top: 1em !important;';
+				$css_rules[] = 'cursor: pointer;';
+				$css_rules[] = 'box-sizing: border-box;';
+				$css_rules[] = 'text-align: center;';
+				$css_rules[] = 'vertical-align: middle;';
+				
+				if ( $custom_height_set ) {
+					$css_rules[] = 'padding: 0 2em;';
+				} else {
+					$css_rules[] = 'padding: 10px 24px;';
+					$css_rules[] = 'line-height: 1.5;';
+				}
+				
+				$css_rules[] = 'font-weight: bold;';
+				$css_rules[] = 'white-space: nowrap;';
+				$css_rules[] = 'text-decoration: none;';
+				$css_rules[] = 'display: inline-block;';
+				$css_rules[] = 'margin-top: 1em;';
 			
 				$button_css = $button_selector . ' { ' . implode( ' ', $css_rules ) . ' }';
 				break;
@@ -1031,8 +1064,16 @@ class ES_Shortcode {
 			echo wp_kses( $form_style_output, $allowedtags );
 		}
 	
-		if ( ! empty( $settings['form_style'] ) ) {
-			$form_field_style_css = self::get_form_style_css( $settings['form_style'], $form_id );
+		// Check styles['form_style'] first, then fall back to settings['form_style']
+		$form_style_to_use = '';
+		if ( ! empty( $styles['form_style'] ) ) {
+			$form_style_to_use = $styles['form_style'];
+		} elseif ( ! empty( $settings['form_style'] ) ) {
+			$form_style_to_use = $settings['form_style'];
+		}
+		
+		if ( ! empty( $form_style_to_use ) ) {
+			$form_field_style_css = self::get_form_style_css( $form_style_to_use, $form_id );
 			if ( ! empty( $form_field_style_css ) ) {
 				$form_field_style_output = '<style>' . $form_field_style_css . '</style>';
 				echo wp_kses( $form_field_style_output, $allowedtags );
@@ -1106,7 +1147,7 @@ $field_required = false;
 		
 		$field_value = ! empty( $field['value'] ) ? $field['value'] : '';
 		$is_custom_field = ! empty( $field['is_custom_field'] ) || 
-						   ( ! empty( $field_id ) && strpos( $field_id, 'custom_' ) === 0 );
+						   ( ! empty( $field_id ) && ( strpos( $field_id, 'custom_' ) === 0 || strpos( $field_id, 'cf_' ) === 0 ) );
 		
 		$submitted_value = '';
 		if ( 'email' === $field_id ) {
@@ -2370,50 +2411,132 @@ $field_required = false;
 	 * @since 5.8.0
 	 */
 	public static function get_form_style_css( $form_style, $form_id ) {
+		// Base selector with good specificity (specificity: 032)
 		$form_selector = 'body form.es_subscription_form.es_subscription_form[data-form-id="' . $form_id . '"].wysiwyg-form';
 		$button_selector = $form_selector . ' input.ig-es-submit-btn, ' . $form_selector . ' input.es-subscribe-btn, ' . $form_selector . ' .ig-es-submit-btn, ' . $form_selector . ' .es-subscribe-btn';
 		$css = '';
 
+		// Add default field styling for all form styles (base layer - no !important)
+		$css .= $form_selector . ' .ig-es-form-input,';
+		$css .= $form_selector . ' .ig_es_form_field_select,';
+		$css .= $form_selector . ' .ig-es-form-field textarea { ';
+		$css .= 'width: 100%; ';
+		$css .= 'max-width: 100%; ';
+		$css .= 'box-sizing: border-box; ';
+		$css .= 'display: block; ';
+		$css .= 'padding: 10px 12px; ';
+		$css .= 'font-size: 16px; ';
+		$css .= 'line-height: 1.5; ';
+		$css .= 'border: 1px solid #d1d5db; ';
+		$css .= 'border-radius: 4px; ';
+		$css .= 'background-color: white; ';
+		$css .= '} ';
+		
 		// Add dropdown arrow styling for all select fields
 		$css .= $form_selector . ' .ig_es_form_field_select { ';
-		$css .= 'appearance: none !important; ';
-		$css .= '-webkit-appearance: none !important; ';
-		$css .= '-moz-appearance: none !important; ';
-		$css .= 'background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3E%3C/svg%3E") !important; ';
-		$css .= 'background-position: right 0.5rem center !important; ';
-		$css .= 'background-repeat: no-repeat !important; ';
-		$css .= 'background-size: 1.5em 1.5em !important; ';
-		$css .= 'padding-right: 2.5rem !important; ';
+		$css .= 'appearance: none; ';
+		$css .= '-webkit-appearance: none; ';
+		$css .= '-moz-appearance: none; ';
+		$css .= 'background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' fill=\'none\' viewBox=\'0 0 20 20\'%3E%3Cpath stroke=\'%236b7280\' stroke-linecap=\'round\' stroke-linejoin=\'round\' stroke-width=\'1.5\' d=\'m6 8 4 4 4-4\'/%3E%3C/svg%3E"); ';
+		$css .= 'background-position: right 0.5rem center; ';
+		$css .= 'background-repeat: no-repeat; ';
+		$css .= 'background-size: 1.5em 1.5em; ';
+		$css .= 'padding-right: 2.5rem; ';
+		$css .= '} ';
+		
+		// Add field label styling
+		$css .= $form_selector . ' .es-field-label { ';
+		$css .= 'display: block; ';
+		$css .= 'margin-bottom: 6px; ';
+		$css .= 'font-weight: 500; ';
+		$css .= 'color: #374151; ';
+		$css .= '} ';
+		
+		// Add field wrapper spacing
+		$css .= $form_selector . ' .es-field-wrap { ';
+		$css .= 'margin-bottom: 16px; ';
+		$css .= '} ';
+		
+		$css .= $button_selector . ' { ';
+		$css .= 'width: auto; ';
+		$css .= 'min-width: 120px; ';
+		$css .= 'padding: 10px 24px; ';
+		$css .= 'font-size: 16px; ';
+		$css .= 'font-weight: 500; ';
+		$css .= 'line-height: 1.5; ';
+		$css .= 'text-align: center; ';
+		$css .= 'cursor: pointer; ';
+		$css .= 'border: 0; ';
+		$css .= 'border-style: none; ';
+		$css .= 'border-width: 0; ';
+		$css .= 'border-color: transparent; ';
+		$css .= 'border-radius: 4px; ';
+		$css .= 'box-shadow: none; ';
+		$css .= 'outline: none; ';
+		$css .= 'background-color: #007CBA; ';
+		$css .= 'background-image: none; ';
+		$css .= 'background: #007CBA; ';
+		$css .= 'color: #ffffff; ';
+		$css .= 'transition: all 0.2s ease-in-out; ';
+		$css .= 'box-sizing: border-box; ';
+		$css .= 'display: inline-block; ';
+		$css .= 'margin-top: 8px; ';
+		$css .= '-webkit-appearance: none; ';
+		$css .= '-moz-appearance: none; ';
+		$css .= 'appearance: none; ';
+		$css .= '} ';
+		
+		// Button hover state
+		$css .= $button_selector . ':hover { ';
+		$css .= 'background-color: #005a87; ';
+		$css .= 'background: #005a87; ';
+		$css .= 'border: 0; ';
+		$css .= 'box-shadow: none; ';
+		$css .= 'outline: none; ';
+		$css .= 'opacity: 0.9; ';
+		$css .= '} ';
+		
+		// Button focus state
+		$css .= $button_selector . ':focus { ';
+		$css .= 'outline: none; ';
+		$css .= 'border: 0; ';
+		$css .= 'box-shadow: none; ';
+		$css .= '} ';
+		
+		// Button active state
+		$css .= $button_selector . ':active { ';
+		$css .= 'outline: none; ';
+		$css .= 'border: 0; ';
 		$css .= '} ';
 
 		switch ( $form_style ) {
 			case 'dark':
+				// Dark style variations (overrides defaults by cascade order)
 				$css .= $form_selector . ' .ig-es-form-input,';
 				$css .= $form_selector . ' .ig-es-form-field textarea,';
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'background-color: #2d2d2d !important; ';
-				$css .= 'color: white !important; ';
-				$css .= 'border: none !important; ';
-				$css .= 'border-radius: 4px !important; ';
+				$css .= 'background-color: #2d2d2d; ';
+				$css .= 'color: white; ';
+				$css .= 'border: none; ';
+				$css .= 'border-radius: 4px; ';
 				$css .= '} ';
-				// Ensure select fields have proper padding for the dropdown arrow
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'padding-right: 2.5rem !important; ';
+				$css .= 'padding-right: 2.5rem; ';
 				$css .= '} ';
 				$css .= $form_selector . ' .ig-es-form-input::placeholder,';
 				$css .= $form_selector . ' .ig-es-form-field textarea::placeholder { ';
-				$css .= 'color: #9ca3af !important; ';
+				$css .= 'color: #9ca3af; ';
 				$css .= '} ';
 				$css .= $form_selector . ' .es-field-label { ';
-				$css .= 'color: white !important; ';
+				$css .= 'color: white; ';
 				$css .= '} ';
 				$css .= $button_selector . ' { ';
-				$css .= 'background-color: #2d2d2d !important; ';
-				$css .= 'background-image: none !important; ';
-				$css .= 'background: #2d2d2d !important; ';
-				$css .= 'color: white !important; ';
-				$css .= 'border: 1px solid #2d2d2d !important; ';
-				$css .= 'border-radius: 0 !important; ';
+				$css .= 'background-color: #2d2d2d; ';
+				$css .= 'background-image: none; ';
+				$css .= 'background: #2d2d2d; ';
+				$css .= 'color: white; ';
+				$css .= 'border: 1px solid #2d2d2d; ';
+				$css .= 'border-radius: 0; ';
 				$css .= '} ';
 				break;
 
@@ -2421,13 +2544,12 @@ $field_required = false;
 				$css .= $form_selector . ' .ig-es-form-input,';
 				$css .= $form_selector . ' .ig-es-form-field textarea,';
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'background-color: #f9fafb !important; ';
-				$css .= 'border: 1px solid #d1d5db !important; ';
-				$css .= 'border-radius: 4px !important; ';
+				$css .= 'background-color: #f9fafb; ';
+				$css .= 'border: 1px solid #d1d5db; ';
+				$css .= 'border-radius: 4px; ';
 				$css .= '} ';
-				// Ensure select fields have proper padding for the dropdown arrow
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'padding-right: 2.5rem !important; ';
+				$css .= 'padding-right: 2.5rem; ';
 				$css .= '} ';
 				break;
 
@@ -2435,16 +2557,15 @@ $field_required = false;
 				$css .= $form_selector . ' .ig-es-form-input,';
 				$css .= $form_selector . ' .ig-es-form-field textarea,';
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'border: 1px solid #d1d5db !important; ';
-				$css .= 'border-radius: 0 !important; ';
-				$css .= 'background-color: white !important; ';
+				$css .= 'border: 1px solid #d1d5db; ';
+				$css .= 'border-radius: 0; ';
+				$css .= 'background-color: white; ';
 				$css .= '} ';
-				// Ensure select fields have proper padding for the dropdown arrow
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'padding-right: 2.5rem !important; ';
+				$css .= 'padding-right: 2.5rem; ';
 				$css .= '} ';
 				$css .= $button_selector . ' { ';
-				$css .= 'border-radius: 0 !important; ';
+				$css .= 'border-radius: 0; ';
 				$css .= '} ';
 				break;
 
@@ -2452,16 +2573,15 @@ $field_required = false;
 				$css .= $form_selector . ' .ig-es-form-input,';
 				$css .= $form_selector . ' .ig-es-form-field textarea,';
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'border: 1px solid #d1d5db !important; ';
-				$css .= 'border-radius: 8px !important; ';
-				$css .= 'background-color: white !important; ';
+				$css .= 'border: 1px solid #d1d5db; ';
+				$css .= 'border-radius: 8px; ';
+				$css .= 'background-color: white; ';
 				$css .= '} ';
-				// Ensure select fields have proper padding for the dropdown arrow
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'padding-right: 2.5rem !important; ';
+				$css .= 'padding-right: 2.5rem; ';
 				$css .= '} ';
 				$css .= $button_selector . ' { ';
-				$css .= 'border-radius: 8px !important; ';
+				$css .= 'border-radius: 8px; ';
 				$css .= '} ';
 				break;
 
@@ -2469,29 +2589,28 @@ $field_required = false;
 				$css .= $form_selector . ' .ig-es-form-input,';
 				$css .= $form_selector . ' .ig-es-form-field textarea,';
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'border: none !important; ';
-				$css .= 'border-bottom: 1px solid #d1d5db !important; ';
-				$css .= 'border-radius: 0 !important; ';
-				$css .= 'background-color: transparent !important; ';
-				$css .= 'padding-left: 0 !important; ';
-				$css .= 'padding-right: 0 !important; ';
+				$css .= 'border: none; ';
+				$css .= 'border-bottom: 1px solid #d1d5db; ';
+				$css .= 'border-radius: 0; ';
+				$css .= 'background-color: transparent; ';
+				$css .= 'padding-left: 0; ';
+				$css .= 'padding-right: 0; ';
 				$css .= '} ';
-				// For minimalistic style, we need to adjust the select padding-right to accommodate the arrow
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'padding-right: 2.5rem !important; ';
+				$css .= 'padding-right: 2.5rem; ';
 				$css .= '} ';
 				$css .= $button_selector . '.ig-es-submit-btn, ' . $button_selector . '.es-subscribe-btn { ';
-				$css .= 'border: 1px solid #374151 !important; ';
-				$css .= 'background-color: transparent !important; ';
-				$css .= 'background-image: none !important; ';
-				$css .= 'background: transparent !important; ';
-				$css .= 'color: #374151 !important; ';
-				$css .= 'border-radius: 0 !important; ';
-				$css .= 'text-transform: uppercase !important; ';
-				$css .= 'letter-spacing: 0.05em !important; ';
-				$css .= 'height: 2.4em !important; ';
-				$css .= 'padding: 0 2em !important; ';
-				$css .= 'font-size: 1em !important; ';
+				$css .= 'border: 1px solid #374151; ';
+				$css .= 'background-color: transparent; ';
+				$css .= 'background-image: none; ';
+				$css .= 'background: transparent; ';
+				$css .= 'color: #374151; ';
+				$css .= 'border-radius: 0; ';
+				$css .= 'text-transform: uppercase; ';
+				$css .= 'letter-spacing: 0.05em; ';
+				$css .= 'height: 2.4em; ';
+				$css .= 'padding: 0 2em; ';
+				$css .= 'font-size: 1em; ';
 				$css .= '} ';
 				break;
 
@@ -2499,45 +2618,44 @@ $field_required = false;
 				$css .= $form_selector . ' .ig-es-form-input,';
 				$css .= $form_selector . ' .ig-es-form-field textarea,';
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'border: 1px solid #d1d5db !important; ';
-				$css .= 'border-radius: 4px !important; ';
-				$css .= 'background-color: white !important; ';
-				$css .= 'padding: 6px 8px !important; ';
-				$css .= 'font-size: 14px !important; ';
+				$css .= 'border: 1px solid #d1d5db; ';
+				$css .= 'border-radius: 4px; ';
+				$css .= 'background-color: white; ';
+				$css .= 'padding: 6px 8px; ';
+				$css .= 'font-size: 14px; ';
 				$css .= '} ';
-				// Ensure select fields have proper padding for the dropdown arrow
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'padding-right: 2.5rem !important; ';
+				$css .= 'padding-right: 2.5rem; ';
 				$css .= '} ';
 				$css .= $button_selector . ' { ';
-				$css .= 'padding: 6px 12px !important; ';
-				$css .= 'font-size: 14px !important; ';
-				$css .= 'margin-top: 0.5em !important; ';
+				$css .= 'padding: 6px 12px; ';
+				$css .= 'font-size: 14px; ';
+				$css .= 'margin-top: 0.5em; ';
 				$css .= '} ';
 				$css .= $form_selector . ' .es-field-wrap { ';
-				$css .= 'margin-bottom: 4px !important; ';
+				$css .= 'margin-bottom: 4px; ';
 				$css .= '} ';
 				$css .= $form_selector . ' { ';
-				$css .= 'padding: 15px !important; ';
+				$css .= 'padding: 15px; ';
 				$css .= '} ';
 				break;
 
 			case 'inline':
 				$css .= $form_selector . ' { ';
-				$css .= 'display: flex !important; ';
-				$css .= 'flex-direction: row !important; ';
-				$css .= 'align-items: flex-end !important; ';
-				$css .= 'gap: 10px !important; ';
+				$css .= 'display: flex; ';
+				$css .= 'flex-direction: row; ';
+				$css .= 'align-items: flex-end; ';
+				$css .= 'gap: 10px; ';
 				$css .= '} ';
 				$css .= $form_selector . ' .es-field-wrap { ';
-				$css .= 'flex: 1 !important; ';
-				$css .= 'margin-bottom: 0 !important; ';
-				$css .= 'min-width: 200px !important; ';
+				$css .= 'flex: 1; ';
+				$css .= 'margin-bottom: 0; ';
+				$css .= 'min-width: 200px; ';
 				$css .= '} ';
 				$css .= $form_selector . ' .es-submit-container { ';
-				$css .= 'flex: 0 0 auto !important; ';
-				$css .= 'width: auto !important; ';
-				$css .= 'min-width: 120px !important; ';
+				$css .= 'flex: 0 0 auto; ';
+				$css .= 'width: auto; ';
+				$css .= 'min-width: 120px; ';
 				$css .= '} ';
 				break;
 
@@ -2547,12 +2665,11 @@ $field_required = false;
 				$css .= $form_selector . ' .ig-es-form-input,';
 				$css .= $form_selector . ' .ig-es-form-field textarea,';
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'border: 1px solid #d1d5db !important; ';
-				$css .= 'border-radius: 4px !important; ';
+				$css .= 'border: 1px solid #d1d5db; ';
+				$css .= 'border-radius: 4px; ';
 				$css .= '} ';
-				// Ensure select fields have proper padding for the dropdown arrow
 				$css .= $form_selector . ' .ig_es_form_field_select { ';
-				$css .= 'padding-right: 2.5rem !important; ';
+				$css .= 'padding-right: 2.5rem; ';
 				$css .= '} ';
 				break;
 		}
