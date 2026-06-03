@@ -348,20 +348,33 @@ $meta = ig_es_maybe_unserialize($campaign_data['meta']);
 			if ( ! is_array( $meta ) ) {
 				$meta = array();
 			}
-		
+
+		// For existing campaigns, fetch current meta from DB and merge to preserve tracking fields
+		$campaign_id = ! empty( $campaign_data['id'] ) ? $campaign_data['id'] : 0;
+		if ( $campaign_id > 0 ) {
+			$existing_campaign = ES()->campaigns_db->get_campaign_by_id( $campaign_id );
+			if ( ! empty( $existing_campaign['meta'] ) ) {
+				$existing_meta = ig_es_maybe_unserialize( $existing_campaign['meta'] );
+				if ( is_array( $existing_meta ) ) {
+					// Merge: incoming meta takes precedence, existing meta fills gaps (preserves last_run, next_run, scheduled)
+					$meta = array_merge( $existing_meta, $meta );
+				}
+			}
+		}
+	
 		$campaign_data['subject']          = ! empty( $campaign_data['subject'] ) ? wp_strip_all_tags( $campaign_data['subject'] ) : '';
 		$campaign_data['base_template_id'] = $template_id;
 		
-			if ( '' !== $list_id ) {
-				$campaign_data['list_ids'] = $list_id;
-			} else {
-				// Remove the key entirely so save_campaign can preserve existing value
-				unset( $campaign_data['list_ids'] );
-			}
+		if ( '' !== $list_id ) {
+			$campaign_data['list_ids'] = $list_id;
+		} else {
+			// Remove the key entirely so save_campaign can preserve existing value
+			unset( $campaign_data['list_ids'] );
+		}
 		
 		$meta['scheduling_option']         = ! empty( $campaign_data['scheduling_option'] ) ? $campaign_data['scheduling_option'] : 'schedule_now';
-$meta['es_schedule_date']          = ! empty( $campaign_data['es_schedule_date'] ) ? $campaign_data['es_schedule_date'] : '';
-			$meta['es_schedule_time']          = ! empty( $campaign_data['es_schedule_time'] ) ? $campaign_data['es_schedule_time'] : '';
+		$meta['es_schedule_date']          = ! empty( $campaign_data['es_schedule_date'] ) ? $campaign_data['es_schedule_date'] : '';
+		$meta['es_schedule_time']          = ! empty( $campaign_data['es_schedule_time'] ) ? $campaign_data['es_schedule_time'] : '';
 
 			if ( ! empty( $meta['list_conditions'] ) ) {
 				$meta['list_conditions'] = IG_ES_Campaign_Rules::remove_empty_conditions( $meta['list_conditions'] );

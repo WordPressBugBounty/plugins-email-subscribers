@@ -780,6 +780,8 @@ $merge_tags = array();
 			'ig_es_webhook_urls' => $webhook_urls,
 			// Cron info
 			'ig_es_cron_info' => self::get_cron_info(),
+			// Cron intervals for dropdown
+			'ig_es_cron_intervals' => ES()->cron->cron_intervals(),
 			);			
 			// Get pages data as well
 			$pages_result = self::get_pages();

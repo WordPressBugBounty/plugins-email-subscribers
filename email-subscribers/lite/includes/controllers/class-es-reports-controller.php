@@ -687,10 +687,13 @@ $message_id            = 0;
 	MAX(CASE WHEN actions.type = %d THEN actions.created_at END) AS `sent_at`,
 	MAX(CASE WHEN actions.type = %d THEN actions.created_at END) AS `opened_at`,
 	CASE WHEN MAX(actions.type) = %d THEN 'Sent' WHEN MAX(actions.type) = %d THEN 'Opened' END AS `status`,
-	COALESCE(MAX(actions.country), MAX(contacts.country_code)) AS `country`,
-	MAX(actions.device) AS `device`,
-	MAX(actions.email_client) AS `email_client`,
-	MAX(actions.os) AS `os`
+	COALESCE(
+		MAX(CASE WHEN actions.type = %d THEN actions.country END),
+		MAX(contacts.country_code)
+	) AS `country`,
+	MAX(CASE WHEN actions.type = %d THEN actions.device END) AS `device`,
+	MAX(CASE WHEN actions.type = %d THEN actions.email_client END) AS `email_client`,
+	MAX(CASE WHEN actions.type = %d THEN actions.os END) AS `os`
 	FROM {$wpbd->prefix}ig_actions AS actions
 	LEFT JOIN {$wpbd->prefix}ig_contacts AS contacts ON actions.contact_id = contacts.id
 	WHERE actions.campaign_id = %d AND actions.message_id = %d AND actions.type IN (%d, %d)
@@ -700,72 +703,83 @@ $message_id            = 0;
 			IG_MESSAGE_OPEN,
 			IG_MESSAGE_SENT,
 			IG_MESSAGE_OPEN,
+			IG_MESSAGE_OPEN,
+			IG_MESSAGE_OPEN,
+			IG_MESSAGE_OPEN,
+			IG_MESSAGE_OPEN,
 			$campaign_id,
 			$message_id,
 			IG_MESSAGE_SENT,
 			IG_MESSAGE_OPEN,
+		);
+
+		$selects[] = $wpbd->prepare( $action_query, $query_args );
+
+	if ( $return_count ) {
+		$notification_query = 'SELECT count(*) FROM ( ';
+	} else {
+		$notification_query = 'SELECT * FROM ( ';
+	}
+	$notification_query .= implode( ' UNION ALL ', $selects );
+	$notification_query .= ') AS `activity`';
+
+	$notification       = ES()->campaigns_db->get( $campaign_id );
+		
+	// Check if notification exists before accessing array
+	if ( ! empty( $notification ) && is_array( $notification ) ) {
+		$total_email_sent   = ES()->actions_db->get_count_based_on_id_type( $notification['id'], $message_id, IG_MESSAGE_SENT );
+		$email_viewed_count = ES()->actions_db->get_count_based_on_id_type( $notification['id'], $message_id, IG_MESSAGE_OPEN );
+	} else {
+		$total_email_sent   = 0;
+		$email_viewed_count = 0;
+	}
+
+	$notification_query .= ' WHERE 1';
+
+	$search_query = '';
+	if ( ! empty( $search ) ) {
+		$search_query = $wpbd->prepare( ' AND email LIKE %s', '%' . $wpbd->esc_like( $search ) . '%' );
+	}
+
+	$status_query = '';
+	if ( ! empty( $filter_by_status ) ) {
+			$status_map = array(
+				'opened'     => 'Opened',
+				'not_opened' => 'Sent',
+				'failed'     => 'Failed',
+				'in_queue'   => 'In Queue',
+				'sending'    => 'Sending',
 			);
+			$status       = isset( $status_map[ $filter_by_status ] ) ? $status_map[ $filter_by_status ] : 'Sent';
+			$status_query = $wpbd->prepare( ' AND `status` = %s', $status );
+		}
 
-			$selects[] = $wpbd->prepare( $action_query, $query_args );
+		$country_query = '';
+		if ( ! empty( $filter_by_country ) ) {
+			$country_query = $wpbd->prepare( ' AND `country` = %s', $filter_by_country );
+		}
 
-			if ( $return_count ) {
-				$notification_query = 'SELECT count(*) FROM ( ';
+		$order_by_query = '';
+		$offset         = 0;
+
+		if ( ! $return_count ) {
+
+			if ( empty( $orderby ) ) {
+				// By default sort by opened_at and sent_at columns.
+				$orderby = "`opened_at` {$order}, `sent_at` {$order}";
 			} else {
-				$notification_query = 'SELECT * FROM ( ';
+				$orderby = "{$orderby} {$order}";
 			}
-			$notification_query .= implode( ' UNION ALL ', $selects );
-			$notification_query .= ') AS `activity`';
+			$orderby = sanitize_sql_orderby( $orderby );
+			if ( $orderby ) {
+				$offset   = $page_number > 1 ? ( $page_number - 1 ) * $per_page : 0;
 
-			$notification       = ES()->campaigns_db->get( $campaign_id );
-			
-			// Check if notification exists before accessing array
-			if ( ! empty( $notification ) && is_array( $notification ) ) {
-				$total_email_sent   = ES()->actions_db->get_count_based_on_id_type( $notification['id'], $message_id, IG_MESSAGE_SENT );
-				$email_viewed_count = ES()->actions_db->get_count_based_on_id_type( $notification['id'], $message_id, IG_MESSAGE_OPEN );
-			} else {
-				$total_email_sent   = 0;
-				$email_viewed_count = 0;
-			}
+				$order_by_query = " ORDER BY {$orderby} LIMIT {$offset}, {$per_page}";
+			}			
+		}
 
-			$notification_query .= ' WHERE 1';
-
-			$search_query = '';
-			if ( ! empty( $search ) ) {
-				$search_query = $wpbd->prepare( ' AND email LIKE %s', '%' . $wpbd->esc_like( $search ) . '%' );
-			}
-
-			$status_query = '';
-			if ( ! empty( $filter_by_status ) ) {
-				$status       = 'not_opened' === $filter_by_status ? 'Sent' : 'Opened';
-				$status_query = $wpbd->prepare( ' AND `status` = %s', $status );
-			}
-
-			$country_query = '';
-			if ( ! empty( $filter_by_country ) ) {
-				$country_query = $wpbd->prepare( ' AND `country` = %s', $filter_by_country );
-			}
-
-			$order_by_query = '';
-			$offset         = 0;
-
-			if ( ! $return_count ) {
-
-				if ( empty( $orderby ) ) {
-					// By default sort by opened_at and sent_at columns.
-					$orderby = "`opened_at` {$order}, `sent_at` {$order}";
-				} else {
-					$orderby = "{$orderby} {$order}";
-				}
-				$orderby = sanitize_sql_orderby( $orderby );
-				if ( $orderby ) {
-					$offset   = $page_number > 1 ? ( $page_number - 1 ) * $per_page : 0;
-
-					$order_by_query = " ORDER BY {$orderby} LIMIT {$offset}, {$per_page}";
-				}			
-			}
-
-			$notification_query .= $search_query . $status_query . $country_query . $order_by_query;
-			if ( $return_count ) {
+		$notification_query .= $search_query . $status_query . $country_query . $order_by_query;
+		if ( $return_count ) {
 				$count = $wpbd->get_var( $notification_query );
 				if ( empty( $count ) && $delivery_table_exists ) {
 					$count_query  = 'SELECT count(*) FROM ( ' . $delivery_query . ' ) AS delivery_report WHERE 1';

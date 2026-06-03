@@ -724,10 +724,22 @@ return $form_data;
 			$allowedtags = ig_es_allowed_html_tags_in_esc();
 		
 			if ( isset( $form_data['body'] ) ) {
+			// Check if body is JSON (for WYSIWYG forms)
+			$decoded_body = json_decode( $form_data['body'], true );
+			if ( json_last_error() === JSON_ERROR_NONE && is_array( $decoded_body ) ) {
+				// Body is JSON - sanitize field properties that contain HTML
+				array_walk_recursive( $decoded_body, function ( &$value, $key ) use ( $allowedtags ) {
+					// Only sanitize HTML-containing properties
+					$html_properties = array( 'placeholder', 'label', 'gdprText', 'description' );
+					if ( in_array( $key, $html_properties ) && is_string( $value ) ) {
+						$value = wp_kses( $value, $allowedtags );
+					}
+				});
+				$form_data['body'] = wp_json_encode( $decoded_body );
+			} else {
+				// Body is HTML or serialized - sanitize normally
 				$form_data['body'] = wp_kses( $form_data['body'], $allowedtags );
 			}
-		
-			if ( ! empty( $form_data['settings']['success_message'] ) ) {
 				$form_data['settings']['success_message'] = wp_kses( $form_data['settings']['success_message'], $allowedtags );
 			}
 		

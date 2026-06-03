@@ -4,9 +4,9 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Author URI: https://www.icegram.com/
 Tags: email subscribers, newsletter, subscription form, email marketing, email automation, post notifications, WooCommerce emails, lead generation, email sending plugin
 Requires at least: 3.9
-Tested up to: 6.9
+Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 5.9.24
+Stable tag: 5.9.25
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,15 +361,21 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.24 =
+= 5.9.25 =
 
-* Improvement: Added functionality to rename the List.
-* Improvement: Performance improvements on the Reports page
-* Improvement: Form field UI
-* Fix: Custom field compatibility issues
-* Fix: Pagination issue in the Reports Activity Info table
+* Improvement: Added bulk export option for campaign reports [MAX]
+* Update: Tested up to WordPress 7.0
+* Fix: GDPR consent field now saves correctly when it contains a link
+* Fix: Post Digest campaign sending notifications for previously sent posts after editing [MAX]
 
 == Changelog ==
+
+**5.9.25 (03.06.2026)**
+
+* Improvement: Added bulk export option for campaign reports [MAX]
+* Update: Tested up to WordPress 7.0
+* Fix: GDPR consent field now saves correctly when it contains a link
+* Fix: Post Digest campaign sending notifications for previously sent posts after editing [MAX]
 
 **5.9.24 (13.05.2026)**
 

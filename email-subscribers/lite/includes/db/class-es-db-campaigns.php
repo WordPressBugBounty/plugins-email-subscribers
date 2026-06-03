@@ -1167,7 +1167,7 @@ class ES_DB_Campaigns extends ES_DB {
 									if ( is_array( $condition['value'] ) ) {
 										$list_ids = array_merge( $list_ids, $condition['value'] );
 									} else {
-										$list_ids = array( $condition['value'] );
+										$list_ids[] = $condition['value'];
 									}
 								}
 							}
@@ -1176,6 +1176,7 @@ class ES_DB_Campaigns extends ES_DB {
 				}
 			}
 		}
+		$list_ids = array_filter( array_unique( $list_ids ) );
 
 		return $list_ids;
 	}

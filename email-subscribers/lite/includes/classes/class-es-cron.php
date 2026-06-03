@@ -331,13 +331,15 @@ class ES_Cron {
 	 */
 	public function cron_intervals() {
 
-		return array(
+		$intervals = array(
 			600  => __( '10 minutes', 'email-subscribers' ),
 			900  => __( '15 minutes', 'email-subscribers' ),
 			1200 => __( '20 minutes', 'email-subscribers' ),
 			1500 => __( '25 minutes', 'email-subscribers' ),
 			1800 => __( '30 minutes', 'email-subscribers' ),
 		);
+
+		return apply_filters( 'ig_es_cron_intervals', $intervals );
 
 	}
 
