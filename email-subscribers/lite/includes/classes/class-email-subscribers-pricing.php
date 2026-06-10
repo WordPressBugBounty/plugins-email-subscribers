@@ -29,8 +29,8 @@ class Email_Subscribers_Pricing {
 		$default_offer = array(
 			'enabled' => true,
 			'discount' => 25,
-			'title' => __( 'Start Generating More Revenue from Your Emails', 'email-subscribers' ),
-			'description' => sprintf( __( 'Unlock premium features and %s — built to increase conversions and sales.', 'email-subscribers' ), '<strong>save 25%</strong>' ),
+			'title' => __( '25% off - your exclusive discount, always applied when you choose a plan below.', 'email-subscribers' ),
+			'description' => __( 'Your permanent discount is ready.', 'email-subscribers' ),
 			'buttonText' => __( 'Boost My Revenue', 'email-subscribers' ),
 			'maxbuttonLink' => 'https://www.icegram.com/?buy-now=404335&qty=1&coupon=es-upgrade-25&page=6&with-cart=1&utm_source=ig_es&utm_medium=in_app_pricing&utm_campaign=march-2026',
 			'probuttonLink' => 'https://www.icegram.com/?buy-now=39043&qty=1&coupon=es-upgrade-25&page=6&with-cart=1&utm_source=ig_es&utm_medium=in_app_pricing&utm_campaign=march-2026',
@@ -50,11 +50,13 @@ class Email_Subscribers_Pricing {
 		// Determine offer based on days since activation
 		if ( $days_since_activation <= 1 ) {
 			// Offer 1: First 2 days - 35% off
+			$days_left = 1 - $days_since_activation; // Days remaining in this offer period
 			$config = array(
 				'enabled' => true,
 				'discount' => 35,
-				'title' => __( 'Turn Every Email Into Growth — Get 35% Off For 48 Hours', 'email-subscribers' ),
-				'description' => __( 'More subscribers. More clicks. More sales — start seeing results today.','email-subscribers' ),
+				'daysLeft' => max( 0, $days_left ),
+				'title' => __( '35% off for the next 48 hours - applied automatically when you choose a plan below.', 'email-subscribers' ),
+				'description' => __( 'Offer expires in 48 hours from your first visit.','email-subscribers' ),
 				'buttonText' => __( 'Start Growing with 35% Off', 'email-subscribers' ),
 				'maxbuttonLink' => 'https://www.icegram.com/?buy-now=404335&qty=1&coupon=BJAPXJXS&page=6&with-cart=1&utm_source=ig_es&utm_medium=in_app_pricing&utm_campaign=march-2026',
 				'probuttonLink' => 'https://www.icegram.com/?buy-now=39043&qty=1&coupon=BJAPXJXS&page=6&with-cart=1&utm_source=ig_es&utm_medium=in_app_pricing&utm_campaign=march-2026',
@@ -62,11 +64,13 @@ class Email_Subscribers_Pricing {
 			);
 		} elseif ( $days_since_activation >= 2 && $days_since_activation <= 8 ) {
 			// Offer 2: Days 3-9 (week) - 25% off
+			$days_left = 8 - $days_since_activation; // Days remaining until final day offer
 			$config = array(
 				'enabled' => true,
 				'discount' => 25,
-				'title' => __( 'Still Time to Turn Your Emails Into Revenue', 'email-subscribers' ),
-				'description' => sprintf( __( 'You missed 35%% — but %s this week is your chance to start growing faster.', 'email-subscribers' ), '<strong>25% off</strong>' ),
+				'daysLeft' => max( 0, $days_left ),
+				'title' => __( '25% off this week only - applied automatically when you choose a plan below.', 'email-subscribers' ),
+				'description' => __( 'Offer valid for 7 days from your first visit.', 'email-subscribers' ),
 				'buttonText' => __( 'Start Growing with 25% Off', 'email-subscribers' ),
 				'maxbuttonLink' => 'https://www.icegram.com/?buy-now=404335&qty=1&coupon=es-upgrade-25&page=6&with-cart=1&utm_source=ig_es&utm_medium=in_app_pricing&utm_campaign=march-2026',
 				'probuttonLink' => 'https://www.icegram.com/?buy-now=39043&qty=1&coupon=es-upgrade-25&page=6&with-cart=1&utm_source=ig_es&utm_medium=in_app_pricing&utm_campaign=march-2026',
@@ -75,10 +79,11 @@ class Email_Subscribers_Pricing {
 			// Offer 3: Day 10 only - 35% off (Final Day)
 			$config = array(
 				'enabled' => true,
-				'discount' => 35,
-				'smallTextUpper' => '',
-				'title' => __( 'Final Hours to Unlock 35% Off & Faster Growth', 'email-subscribers' ),
-				'description' => __( 'More conversions. Less manual work. Upgrade now before the deal disappears.', 'email-subscribers' ),
+				'discount' => 35,				
+				'daysLeft' => 0, // Last day				
+				// 'smallTextUpper' => '',
+				'title' => __( 'This is your last chance to get 35% off. After today, the discount drops to 25% permanently.', 'email-subscribers' ),
+				'description' => __( 'This offers expires tonight.', 'email-subscribers' ),
 				'buttonText' => __( 'Unlock 35% Savings', 'email-subscribers' ),
 				'maxbuttonLink' => 'https://www.icegram.com/?buy-now=404335&qty=1&coupon=BJAPXJXS&page=6&with-cart=1&utm_source=ig_es&utm_medium=in_app_pricing&utm_campaign=march-2026',
 				'probuttonLink' => 'https://www.icegram.com/?buy-now=39043&qty=1&coupon=BJAPXJXS&page=6&with-cart=1&utm_source=ig_es&utm_medium=in_app_pricing&utm_campaign=march-2026',

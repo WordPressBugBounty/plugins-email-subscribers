@@ -6,7 +6,7 @@ Tags: email subscribers, newsletter, subscription form, email marketing, email a
 Requires at least: 3.9
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 5.9.25
+Stable tag: 5.9.26
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,14 +361,16 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.25 =
+= 5.9.26 =
 
-* Improvement: Added bulk export option for campaign reports [MAX]
-* Update: Tested up to WordPress 7.0
-* Fix: GDPR consent field now saves correctly when it contains a link
-* Fix: Post Digest campaign sending notifications for previously sent posts after editing [MAX]
+* Improvement: Added the "Resend Failed Campaign" button to the Reports section.
 
 == Changelog ==
+
+**5.9.26 (10.06.2026)**
+
+* Improvement: Added the "Resend Failed Campaign" button to the Reports section.
+
 
 **5.9.25 (03.06.2026)**
 

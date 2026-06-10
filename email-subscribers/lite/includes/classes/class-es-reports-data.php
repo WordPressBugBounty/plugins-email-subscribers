@@ -416,15 +416,16 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 					}
 				}
 
-				// Also include queued/sending/paused items from mailing queue for parity
+				// Also include queued/sending/paused/failed items from mailing queue for parity
 				$mq_table = $wpdb->prefix . 'ig_mailing_queue';
 				// phpcs:disable
 				$mq_items = $wpdb->get_results(
 					$wpdb->prepare(
-						"SELECT id, campaign_id, subject, status, hash FROM {$mq_table} WHERE status IN (%s, %s, %s) ORDER BY id DESC LIMIT %d",
+						"SELECT id, campaign_id, subject, status, hash FROM {$mq_table} WHERE status IN (%s, %s, %s, %s) ORDER BY id DESC LIMIT %d",
 						'In Queue',
 						'Sending',
 						'Paused',
+						'Failed',
 						5
 					),
 					ARRAY_A
