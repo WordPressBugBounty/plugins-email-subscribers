@@ -1306,8 +1306,8 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 			$prefix = $this->get_admin_page_prefix();
 
 			$screens = array(
-				'es_template',
-				'edit-es_template',
+				// 'es_template',
+				// 'edit-es_template',
 				'admin_page_es_template',
 				'toplevel_page_es_dashboard',
 				'admin_page_go_to_icegram',

@@ -257,7 +257,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				}
 
 				$email      = ! empty( $form_data['esfpx_email'] ) ? strtolower( sanitize_email( $form_data['esfpx_email'] ) ): '';
-				$name       = ! empty( $form_data['esfpx_name'] ) ? sanitize_text_field( $form_data['esfpx_name'] ) : '';
+				$name       = ! empty( $form_data['esfpx_name'] ) ? str_replace( '.', ' ', sanitize_text_field( $form_data['esfpx_name'] ) ) : '';
 				$ip_address = ! empty( $form_data['esfpx_ip_address'] ) ? sanitize_text_field( $form_data['esfpx_ip_address'] ) : '';
 
 				$first_name = '';

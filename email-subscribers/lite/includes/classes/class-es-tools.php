@@ -35,6 +35,11 @@ class ES_Tools {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
+		$can_access_test_email = ES_Common::ig_es_can_access( 'manage_options' );
+		if ( ! $can_access_test_email ) {
+			return 0;
+		}
+
 		$response = array();
 
 		$email         = sanitize_email( ig_es_get_request_data( 'es_test_email' ) );

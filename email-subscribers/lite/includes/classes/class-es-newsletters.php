@@ -23,7 +23,7 @@ class ES_Newsletters {
 		add_filter( 'ig_es_refresh_newsletter_content', array( $this, 'refresh_newsletter_content' ), 10, 2 );
 
 		// Ajax handler for drafting broadcast
-		add_action( 'wp_ajax_ig_es_draft_broadcast', array( $this, 'draft_broadcast' ) );
+		//add_action( 'wp_ajax_ig_es_draft_broadcast', array( $this, 'draft_broadcast' ) );
 
 		// Ajax handler for broadcast preview
 		add_action( 'wp_ajax_ig_es_preview_broadcast', array( $this, 'preview_broadcast' ) );
@@ -712,56 +712,56 @@ class ES_Newsletters {
 	 *
 	 * @since 4.4.7
 	 */
-	public function draft_broadcast() {
+	// public function draft_broadcast() {
 
-		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+	// 	check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
-		$response = array();
+	// 	$response = array();
 
-		$broadcast_data = ig_es_get_request_data( 'broadcast_data', array(), false );
+	// 	$broadcast_data = ig_es_get_request_data( 'broadcast_data', array(), false );
 
-		/**
-		 * To allow insert of new broadcast data,
-		 * we are specifically setting $broadcast_id to null when id is empty in $broadcast_data
-		 */
-		$broadcast_id = ! empty( $broadcast_data['id'] ) ? $broadcast_data['id'] : null;
-		$is_updating  = ! empty( $broadcast_id ) ? true : false;
-		$list_id      = ! empty( $broadcast_data['list_ids'] ) ? $broadcast_data['list_ids'] : '';
-		$template_id  = ! empty( $broadcast_data['template_id'] ) ? $broadcast_data['template_id'] : '';
+	// 	/**
+	// 	 * To allow insert of new broadcast data,
+	// 	 * we are specifically setting $broadcast_id to null when id is empty in $broadcast_data
+	// 	 */
+	// 	$broadcast_id = ! empty( $broadcast_data['id'] ) ? $broadcast_data['id'] : null;
+	// 	$is_updating  = ! empty( $broadcast_id ) ? true : false;
+	// 	$list_id      = ! empty( $broadcast_data['list_ids'] ) ? $broadcast_data['list_ids'] : '';
+	// 	$template_id  = ! empty( $broadcast_data['template_id'] ) ? $broadcast_data['template_id'] : '';
 
-		$broadcast_data['base_template_id'] = $template_id;
-		$broadcast_data['list_ids']         = $list_id;
-		$broadcast_data['status']           = ! empty( $broadcast_data['status'] ) ? $broadcast_data['status'] : 0;
-		$meta                               = ! empty( $broadcast_data['meta'] ) ? $broadcast_data['meta'] : array();
-		$meta['pre_header']                 = ! empty( $broadcast_data['pre_header'] ) ? $broadcast_data['pre_header'] : '';
+	// 	$broadcast_data['base_template_id'] = $template_id;
+	// 	$broadcast_data['list_ids']         = $list_id;
+	// 	$broadcast_data['status']           = ! empty( $broadcast_data['status'] ) ? $broadcast_data['status'] : 0;
+	// 	$meta                               = ! empty( $broadcast_data['meta'] ) ? $broadcast_data['meta'] : array();
+	// 	$meta['pre_header']                 = ! empty( $broadcast_data['pre_header'] ) ? $broadcast_data['pre_header'] : '';
 
-		if ( ! empty( $meta['list_conditions'] ) ) {
-			$meta['list_conditions'] = IG_ES_Campaign_Rules::remove_empty_conditions( $meta['list_conditions'] );
-		}
+	// 	if ( ! empty( $meta['list_conditions'] ) ) {
+	// 		$meta['list_conditions'] = IG_ES_Campaign_Rules::remove_empty_conditions( $meta['list_conditions'] );
+	// 	}
 
-		$broadcast_data['meta'] = maybe_serialize( $meta );
-		$broadcast_data['type'] = 'newsletter';
-		$broadcast_data['name'] = $broadcast_data['subject'];
-		$broadcast_data['slug'] = sanitize_title( sanitize_text_field( $broadcast_data['name'] ) );
+	// 	$broadcast_data['meta'] = maybe_serialize( $meta );
+	// 	$broadcast_data['type'] = 'newsletter';
+	// 	$broadcast_data['name'] = $broadcast_data['subject'];
+	// 	$broadcast_data['slug'] = sanitize_title( sanitize_text_field( $broadcast_data['name'] ) );
 
-		$broadcast_data = apply_filters( 'ig_es_broadcast_data', $broadcast_data );
+	// 	$broadcast_data = apply_filters( 'ig_es_broadcast_data', $broadcast_data );
 
-		$result = ES()->campaigns_db->save_campaign( $broadcast_data, $broadcast_id );
+	// 	$result = ES()->campaigns_db->save_campaign( $broadcast_data, $broadcast_id );
 
-		if ( ! empty( $result ) ) {
-			if ( ! $is_updating ) {
-				// In case of insert, result is broadcast id.
-				$response['broadcast_id'] = $result;
-			} else {
-				// In case of update, only update flag is returned.
-				$response['broadcast_id'] = $broadcast_id;
-			}
-			wp_send_json_success( $response );
-		} else {
-			wp_send_json_error();
-		}
+	// 	if ( ! empty( $result ) ) {
+	// 		if ( ! $is_updating ) {
+	// 			// In case of insert, result is broadcast id.
+	// 			$response['broadcast_id'] = $result;
+	// 		} else {
+	// 			// In case of update, only update flag is returned.
+	// 			$response['broadcast_id'] = $broadcast_id;
+	// 		}
+	// 		wp_send_json_success( $response );
+	// 	} else {
+	// 		wp_send_json_error();
+	// 	}
 
-	}
+	// }
 
 	/**
 	 * Method to get preview HTML for broadcast
@@ -773,6 +773,11 @@ class ES_Newsletters {
 	public function preview_broadcast() {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$can_access_campaigns = ES_Common::ig_es_can_access( 'campaigns' );
+		if ( ! $can_access_campaigns ) {
+			return 0;
+		}
 
 		$response = array();
 

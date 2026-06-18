@@ -1177,17 +1177,33 @@ $field_required = false;
 				$lists_id_hash_map = array();
 				
 				foreach ( $field['options'] as $index => $option ) {
-					$option_text = is_array( $option ) && isset( $option['text'] ) ? $option['text'] : $option;
-					$option_value = is_array( $option ) && isset( $option['value'] ) ? $option['value'] : $option_text;
+					$list_data = null;
 					
-					$list_name = $option_value; // Use value if available, otherwise text
-					
-					$list_data = ES()->lists_db->get_list_by_name( $list_name );
-					if ( empty( $list_data ) ) {
-						$list_id = ES()->lists_db->add_list( $list_name );
-						$lists = ES()->lists_db->get_lists_by_id( $list_id );
-						if ( ! empty( $lists[0] ) ) {
-							$list_data = $lists[0];
+					if ( is_array( $option ) && isset( $option['id'] ) && isset( $option['name'] ) ) {
+						$list_id = (int) $option['id'];
+						$list_data = ES()->lists_db->get( $list_id );
+						if ( empty( $list_data ) ) {
+							continue;
+						}
+					} else {
+						$option_text = is_array( $option ) && isset( $option['text'] ) ? $option['text'] : $option;
+						$option_value = is_array( $option ) && isset( $option['value'] ) ? $option['value'] : $option_text;
+						
+						if ( is_numeric( $option_value ) ) {
+							$list_id = (int) $option_value;
+							$list_data = ES()->lists_db->get( $list_id );
+							if ( empty( $list_data ) && is_string( $option_value ) ) {
+								$list_data = ES()->lists_db->get_list_by_name( $option_value );
+							}
+							if ( empty( $list_data ) ) {
+								continue;
+							}
+						} else {
+							$list_name = $option_value;
+							$list_data = ES()->lists_db->get_list_by_name( $list_name );
+							if ( empty( $list_data ) ) {
+								continue;
+							}
 						}
 					}
 					

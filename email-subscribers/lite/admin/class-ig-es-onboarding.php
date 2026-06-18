@@ -170,6 +170,11 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 
 			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
+			$can_access_onboarding = ES_Common::ig_es_can_access( 'manage_options' );
+			if ( ! $can_access_onboarding ) {
+				return 0;
+			}
+
 			$request = ig_es_get_request_data( 'request' );
 
 			if ( ! empty( $request ) ) {

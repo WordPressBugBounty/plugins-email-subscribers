@@ -1149,7 +1149,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 			<script type="text/javascript">
 
 			jQuery(document).ready(function ($) {
-
+			
 				Swal.mixin({
 					footer: '<i><?php echo !empty($params['after_button_text']) ? $params['after_button_text'] : ''; ?></i>',
 					position: '<?php echo esc_js( $params['position'] ); ?>',
@@ -2001,7 +2001,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 			check_ajax_referer( $this->plugin_abbr . '-admin-ajax-nonce', 'security' );
 
 			$data = ! empty( $_POST ) ? $_POST : array();
-
+			 
 			$data['site'] = esc_url( home_url() );
 
 			$plugin        = ! empty( $data['misc']['plugin'] ) ? $data['misc']['plugin'] : 'ig_feedback';

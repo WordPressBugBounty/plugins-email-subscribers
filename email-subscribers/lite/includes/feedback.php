@@ -270,7 +270,7 @@ function ig_es_render_iges_merge_feedback() {
 	}
 }
 
-add_action( 'admin_footer', 'ig_es_render_iges_merge_feedback' );
+//add_action( 'admin_footer', 'ig_es_render_iges_merge_feedback' );
 
 /**
  * Can load sweetalert js file
@@ -920,3 +920,389 @@ if ( ! function_exists( 'ig_es_subscribe_to_plugin_deactivation_list' ) ) {
 }
 add_action( 'ig_es_deactivation_feedback_submitted', 'ig_es_subscribe_to_plugin_deactivation_list' );
 
+
+/**
+ * Render WhatsApp Integration Survey
+ *
+ * @since 5.x.x
+ */
+if ( ! function_exists( 'ig_es_show_whatsapp_integration_survey' ) ) {
+    function ig_es_show_whatsapp_integration_survey() {
+        global $ig_es_feedback;
+        
+        if ( is_admin() ) {
+            
+            if ( defined( 'DOING_AJAX' ) && DOING_AJAX ) {
+                return;
+            }
+            
+            if ( ! ES()->is_es_admin_screen() ) {
+                return;
+            }
+            
+			$current_page = ig_es_get_request_data( 'page' );
+
+            $allowed_pages = array( 'es_dashboard', 'es_general_information', 'es_subscribers' );
+            
+            if ( ! in_array( $current_page, $allowed_pages ) ) {
+                return;
+            }
+
+            $event = 'poll.whatsapp_integration';   
+            
+			$is_event_tracked = $ig_es_feedback->is_event_tracked( 'ig_es', $event );
+						
+            if ( $is_event_tracked ) {
+                return;
+            }
+			
+			$total_contacts = ES()->contacts_db->count_active_contacts_by_list_id();
+            if ( $total_contacts >= 5 ) {  
+                
+                $survey_title = __( 'WhatsApp for your store - should we build it?', 'email-subscribers' );
+                
+				$survey_slug  = 'ig-es-whatsapp-integration-survey';                 
+
+                $desc = '<div class="wa-survey-container">';
+                $desc .= '<p class="wa-survey-intro">' . __( 'Send order updates & shipping alerts on WhatsApp.', 'email-subscribers' ) . '</p>';
+				$desc .= '<p class="wa-survey-intro">' . __( 'Customers actually read them.', 'email-subscribers' ) . '</p>';
+
+                $desc .= '<div class="wa-stats-container">';
+                $desc .= '<div class="wa-stat-item"><strong class="wa-stat-number">98%</strong><br><span class="wa-stat-label">' . __( 'open rate', 'email-subscribers' ) . '</span></div>';
+                $desc .= '<div class="wa-stat-item"><strong class="wa-stat-number">5 min</strong><br><span class="wa-stat-label">' . __( 'avg read', 'email-subscribers' ) . '</span></div>';
+                $desc .= '<div class="wa-stat-item"><strong class="wa-stat-number">3× CTR</strong><br><span class="wa-stat-label">' . __( 'vs email', 'email-subscribers' ) . '</span></div>';
+                $desc .= '</div>';
+
+                $desc .= '</div>';
+                                
+				$survey_fields = array(
+                    array(
+                        'type'  => 'radio',
+                        'name'  => 'poll_options',
+                        'slug'  => 'whatsapp_interest',
+                        'label' => __( 'Not interested', 'email-subscribers' ),
+                        'value' => 'not_interested',
+						'class' => 'whatsapp-survey-option',
+
+                    ),
+					array(
+                        'type'  => 'radio',
+                        'name'  => 'poll_options',
+                        'slug'  => 'whatsapp_interest',
+                        'label' => __( 'Yes, build it', 'email-subscribers' ),
+                        'value' => 'yes_build_it',
+						'class' => 'whatsapp-survey-option',
+                        'required' => true,
+                    )                    
+                );
+
+                $params = array(   
+                    'type'              => 'poll',
+                    'title'             => $survey_title,
+					'desc'              => $desc,
+                    'event'             => $event,
+					'force'             => true,
+                    'slug'              => $survey_slug,
+                    'fields'            => $survey_fields,
+                    'allow_multiple'    => false,
+					'system_info'       => true,
+                    'position'          => 'center',
+                    'width'             => '500',
+                    'display_as'        => 'popup',
+                    'showConfirmButton' =>  false, 
+					'showCancelButton'  => false,  
+					'allowOutsideClick' => true,
+					'allowEscapeKey'    => true, 
+					'show_once'         => false, 
+					'set_transient'     => true,
+                );
+         
+                ES_Common::render_feedback_widget( $params );
+
+				?>
+                
+				<style>
+					.wa-survey-container {
+						text-align: center;
+					}
+
+					.wa-survey-intro {
+						font-size: 15px;
+						margin-bottom: 15px;
+					}
+
+					.wa-stats-container {
+						display: flex;
+						justify-content: space-around;
+						margin-bottom: 25px;
+						margin-top: 20px;
+					}
+
+					.wa-stat-item {
+						display: inline-block;
+					}
+
+					.wa-stat-number {
+						font-size: 24px;
+						color: #5e19cf;
+						font-weight: 500;
+					}
+
+					.wa-stat-label {
+						font-size: 12px;
+					}
+
+					p.wa-survey-intro {
+						padding-bottom: 0;
+						margin-bottom: 5px;
+					}
+					
+					.swal2-popup .ig-general-feedback p.mb-3:empty {
+						display: none !important;
+					}
+
+					.swal2-popup form.ig-general-feedback#ig-general-feedback label {
+						display: inline-flex !important;
+						align-items: center !important;
+						justify-content: center !important;
+						padding: 15px 20px !important;
+						border-radius: 8px !important;
+						cursor: pointer !important;
+						text-align: center !important;
+						transition: all 0.3s ease !important;
+						font-weight: 600 !important;
+						font-size: 14px !important;
+						margin: 0 !important;
+						border: 2px solid transparent !important;
+						min-height: 50px !important;
+						line-height: 1.4 !important;
+						white-space: nowrap !important;
+						width: calc(50% - 5px) !important;
+						box-sizing: border-box !important;
+					}
+					
+					.swal2-popup form.ig-general-feedback#ig-general-feedback label:first-of-type {
+						margin-right: 10px !important;
+					}
+
+					.swal2-popup form.ig-general-feedback#ig-general-feedback {
+						display: flex !important;
+						flex-direction: row !important;  /* ADD THIS */
+						flex-wrap: wrap !important;
+						gap: 0 !important;
+						justify-content: space-between !important;
+					}
+
+					.swal2-popup form.ig-general-feedback#ig-general-feedback .wa-survey-container {
+						width: 100% !important;
+						order: 1 !important;
+						flex-basis: 100% !important;  /* ADD THIS */
+					}
+
+					.swal2-popup form.ig-general-feedback#ig-general-feedback p.mb-3 {
+						width: 100% !important;
+						order: 2 !important;
+						flex-basis: 100% !important;
+					}
+
+					.swal2-popup form.ig-general-feedback#ig-general-feedback label:nth-of-type(1) {
+						order: 3 !important; 
+						flex: 0 0 calc(50% - 5px) !important;
+						width: calc(50% - 5px) !important;
+						margin-right: 10px !important;
+					}
+
+					.swal2-popup form.ig-general-feedback#ig-general-feedback label:nth-of-type(2) {
+						order: 4 !important;
+						flex: 0 0 calc(50% - 5px) !important;
+						width: calc(50% - 5px) !important;
+						margin-right: 0 !important;
+					}
+					
+					.swal2-popup .ig-general-feedback input[type="radio"] {
+						display: none !important;
+					}
+
+					.swal2-popup form.ig-general-feedback#ig-general-feedback label:has(input[value="not_interested"]) {
+						background: #f0f0f1 !important;
+						color: #333 !important;
+					}
+
+					.swal2-popup form.ig-general-feedback#ig-general-feedback label:has(input[value="yes_build_it"]) {
+						background: #5e19cf !important;
+						color: #fff !important;
+					}
+
+					.swal2-popup form.ig-general-feedback#ig-general-feedback label:hover {
+						opacity: 0.9 !important;
+						transform: translateY(-1px) !important;
+						box-shadow: 0 2px 8px rgba(0,0,0,0.15) !important;
+					}
+
+					.swal2-popup form.ig-general-feedback#ig-general-feedback label:has(input:checked) {
+						border-color: #5e19cf !important;
+						box-shadow: 0 0 0 3px rgba(94, 25, 207, 0.2) !important;
+					}
+
+					.swal2-popup form.ig-general-feedback#ig-general-feedback label:active {
+						transform: translateY(0) !important;
+					}
+
+					.swal2-confirm {
+						opacity: 0 !important;
+						pointer-events: none !important;
+						position: absolute !important;
+						left: -9999px !important;
+					}
+
+					.swal2-container .swal2-footer {
+						display: none !important;
+					}
+
+					.swal2-popup {
+						padding-top: 35px;
+						padding-bottom: 35px;
+					}
+
+					.swal2-title, 
+					.swal2-title #ig-feedback-title {
+						font-size: 22px !important;
+						font-weight: 600 !important;
+						color: #545454 !important;
+						line-height: 1.2 !important;
+					}
+
+					.swal2-popup.swal2-show {
+						animation: slideInFromTop 0.3s ease-out;
+					}
+
+					.wa-thankyou-popup.swal2-hide {
+						animation: slideOutToTop 0.3s ease-in;
+					}
+
+					.swal2-popup .swal2-close {
+						display: none !important;
+					}
+
+					.wa-thankyou-popup {
+						font-family: inherit !important;
+					}
+
+					.wa-thankyou-popup .swal2-title {
+						font-size: 24px !important;
+						font-weight: 600 !important;
+						color: #545454 !important;
+						margin-bottom: 10px !important;
+					}
+
+					.wa-thankyou-popup .swal2-html-container {
+						margin-top: 0 !important;
+					}
+
+					.wa-thankyou-popup .swal2-icon.swal2-success {
+						border-color: #5e19cf !important;
+					}
+
+					.wa-thankyou-popup .swal2-icon.swal2-success [class^='swal2-success-line'] {
+						background-color: #5e19cf !important;
+					}
+
+					.wa-thankyou-popup .swal2-icon.swal2-success .swal2-success-ring {
+						border-color: rgba(94, 25, 207, 0.3) !important;
+					}
+
+					@keyframes slideInFromTop {
+						from {
+							opacity: 0;
+							transform: translateY(-50px);
+						}
+						to {
+							opacity: 1;
+							transform: translateY(0);
+						}
+					}
+
+					@keyframes slideOutToTop {
+						from {
+							opacity: 1;
+							transform: translateY(0);
+						}
+						to {
+							opacity: 0;
+							transform: translateY(-50px);
+						}
+					}
+				</style>
+
+                <script type="text/javascript">
+				
+                jQuery(document).ready(function($) {
+					$('#ig-general-feedback p:empty').remove();
+					$('#ig-general-feedback label').next('br').remove();
+					
+					var allowedHashes = ['', '#', '#settings', '#reports', '#/audience', '#campaigns'];
+					
+					var currentHash = window.location.hash;
+					var isHashAllowed = allowedHashes.indexOf(currentHash) !== -1;
+					
+					if (!isHashAllowed) {
+						setTimeout(function() {
+							if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+								Swal.close();
+							}
+						}, 10);
+						return; 
+					}
+									
+					$(window).on('hashchange', function() {
+						var hash = window.location.hash;
+						if (allowedHashes.indexOf(hash) === -1) {
+							if (typeof Swal !== 'undefined' && Swal.isVisible()) {
+								Swal.close();
+							}
+						}
+					});					
+					 
+					setTimeout(function() {
+						$(document).on('change', 'input[name="feedback_data[poll_options]"]', function() {						
+							
+							var selectedValue = $(this).val();
+														
+							var data = {
+								poll_option: selectedValue,
+								additional_feedback: ''
+							};
+							
+							var request = doSend(data);
+							
+							Swal.update({
+								title: '<?php echo esc_js( __( 'Thanks for your input!', 'email-subscribers' ) ); ?>',
+								html: '<p style="font-size:15px; color:#333; margin-top: 10px; text-align:center;"><?php echo esc_js( __( 'Your vote helps us decide what to build next.', 'email-subscribers' ) ); ?></p>',
+								showClass: {
+									popup: 'swal2-show'
+								},
+								hideClass: {
+									popup: 'thankyou swal2-hide'
+								},
+								customClass: {
+									popup: 'wa-thankyou-popup'
+								}
+							});
+							
+							setTimeout(function() {
+								Swal.close();
+							}, 3000);
+							 
+						});
+						
+					}, 1000);
+				});
+				
+                </script>
+                <?php
+				
+            }
+        }
+    }
+}
+add_action( 'admin_footer', 'ig_es_show_whatsapp_integration_survey' );

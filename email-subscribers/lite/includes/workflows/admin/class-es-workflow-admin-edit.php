@@ -72,6 +72,11 @@ class ES_Workflow_Admin_Edit {
 
 	public static function send_workflow_action_test_email() {
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
+		if ( ! $can_access_workflows ) {
+			return 0;
+		}
 	
 		$email    = sanitize_email( ig_es_get_request_data( 'es_test_email' ) );
 		$subject  = ig_es_get_request_data( 'subject', '' );

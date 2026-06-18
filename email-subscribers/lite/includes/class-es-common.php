@@ -260,11 +260,17 @@ class ES_Common {
 		$content = self::handle_oembed_content( $content );
 
 		// Add p tag only if we aren't getting <html> tags inside the content, otherwise html gets marked as invalid.
-		if ( false === strpos( $content, '<html' ) ) {
+		$has_html_tags = false !== strpos( $content, '<html' );
+		if ( ! $has_html_tags ) {
 			$content = wpautop( $content );
 		}
 
-		$content             = do_shortcode( shortcode_unautop( $content ) );
+		$content = do_shortcode( shortcode_unautop( $content ) );
+		
+		if ( ! $has_html_tags && false === strpos( $content, '<p>' ) ) {
+			$content = wpautop( $content );
+		}
+
 		$data                = array();
 		$data['content']     = $content;
 		$data['tmpl_id']     = $tmpl_id;
@@ -1659,7 +1665,9 @@ class ES_Common {
 					$feedback->set_feedback_data( 'ig_es', $event );
 					$feedback->render_fb_widget( $params );
 				} elseif ( 'poll' === $params['type'] ) {
-					$feedback->set_feedback_data( 'ig_es', $event );
+					if ( $params['show_once'] ) {
+						$feedback->set_feedback_data( 'ig_es', $event );
+					}
 					$feedback->render_poll_widget( $params );
 				}
 			}

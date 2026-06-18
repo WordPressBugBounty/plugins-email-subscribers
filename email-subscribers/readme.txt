@@ -6,7 +6,7 @@ Tags: email subscribers, newsletter, subscription form, email marketing, email a
 Requires at least: 3.9
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 5.9.26
+Stable tag: 5.9.27
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,11 +361,19 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.26 =
+= 5.9.27 =
 
-* Improvement: Added the "Resend Failed Campaign" button to the Reports section.
+* Improvement: The audience edit modal can now be resized.
+* Fix: Resolved the campaign preview issue in the Classic Editor.
+* Fix: Sequence emails were getting triggered even when the status was set as "Draft" in some cases
 
 == Changelog ==
+
+**5.9.27 (18.06.2026)**
+
+* Improvement: The audience edit modal can now be resized.
+* Fix: Resolved the campaign preview issue in the Classic Editor.
+* Fix: Sequence emails were getting triggered even when the status was set as "Draft" in some cases
 
 **5.9.26 (10.06.2026)**
 

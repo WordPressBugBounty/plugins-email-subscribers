@@ -284,26 +284,114 @@ if ( ! class_exists( 'ES_Lists_Controller' ) ) {
 				'desc' => $desc,
 			);
 
-			$result = ES()->lists_db->update_list( $list_id, $list_data );
+		// Get old list name before update for form field updates
+		$old_list = ES()->lists_db->get( $list_id );
+		$old_list_name = ! empty( $old_list['name'] ) ? $old_list['name'] : '';
 
-			if ( $result ) {
-				$response['status'] = 'success';
-				$response['message'] = __( 'List updated successfully.', 'email-subscribers' );
-			} else {
-				$response['message'] = __( 'Failed to update list.', 'email-subscribers' );
+		$result = ES()->lists_db->update_list( $list_id, $list_data );
+
+		if ( $result ) {
+			// Update list name in all forms that reference this list
+			if ( ! empty( $old_list_name ) && $old_list_name !== $name ) {
+				self::update_list_name_in_forms( $list_id, $old_list_name, $name );
 			}
-
-			return $response;
+			
+			$response['status'] = 'success';
+			$response['message'] = __( 'List updated successfully.', 'email-subscribers' );
+		} else {
+			$response['message'] = __( 'Failed to update list.', 'email-subscribers' );
 		}
 
-		/**
-		 * Delete a list
-		 *
-		 * @param array $args Arguments containing list_id
-		 *
-		 * @return array
-		 */
-		public static function delete_list( $args = array() ) {
+		return $response;
+	}
+
+	/**
+	 * Update list name in forms (backward compatibility for old name-based forms)
+	 *
+	 * @param int $list_id List ID
+	 * @param string $old_list_name Old list name
+	 * @param string $new_list_name New list name
+	 *
+	 * @since 5.9.27
+	 */
+	private static function update_list_name_in_forms( $list_id, $old_list_name, $new_list_name ) {
+		global $wpdb;
+		
+		// Get all forms
+		$forms_table = $wpdb->prefix . 'ig_forms';
+		$forms = $wpdb->get_results( "SELECT id, body FROM {$forms_table}", ARRAY_A );
+		
+		if ( empty( $forms ) ) {
+			return;
+		}
+		
+		$forms_updated = 0;
+		
+		foreach ( $forms as $form ) {
+			$form_id = $form['id'];
+			$body = ig_es_maybe_unserialize( $form['body'] );
+			
+			if ( empty( $body ) || ! is_array( $body ) ) {
+				continue;
+			}
+			
+			$body_updated = false;
+			
+			foreach ( $body as $index => $field ) {
+				if ( ! empty( $field['id'] ) && 'list' === $field['id'] && ! empty( $field['options'] ) ) {
+					foreach ( $field['options'] as $opt_index => $option ) {
+						if ( is_array( $option ) && isset( $option['id'] ) && is_numeric( $option['id'] ) ) {
+							continue;
+						}
+						
+						$option_text = is_array( $option ) && isset( $option['text'] ) ? $option['text'] : $option;
+						$option_value = is_array( $option ) && isset( $option['value'] ) ? $option['value'] : $option_text;
+						
+						if ( is_numeric( $option_value ) ) {
+							continue;
+						}
+						
+						if ( $option_value === $old_list_name || $option_text === $old_list_name ) {
+							if ( is_array( $option ) ) {
+								if ( isset( $option['text'] ) && $option['text'] === $old_list_name ) {
+									$body[ $index ]['options'][ $opt_index ]['text'] = $new_list_name;
+									$body_updated = true;
+								}
+								if ( isset( $option['value'] ) && $option['value'] === $old_list_name ) {
+									$body[ $index ]['options'][ $opt_index ]['value'] = $new_list_name;
+									$body_updated = true;
+								}
+							} else {
+								$body[ $index ]['options'][ $opt_index ] = $new_list_name;
+								$body_updated = true;
+							}
+						}
+					}
+				}
+			}
+			
+			if ( $body_updated ) {
+				$updated_body = maybe_serialize( $body );
+				$wpdb->update(
+					$forms_table,
+					array( 'body' => $updated_body ),
+					array( 'id' => $form_id ),
+					array( '%s' ),
+					array( '%d' )
+				);
+				$forms_updated++;
+			}
+		}
+	}
+
+	/**
+	 * Delete a list
+	 *
+	 * @param array $args Arguments containing list_id
+	 *
+	 * @return array
+	 */
+	public static function delete_list( $args = array() ) {
 			$response = array( 'status' => 'error', 'message' => '' );
 
 			if ( empty( $args['list_id'] ) ) {

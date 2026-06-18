@@ -505,6 +505,12 @@ class ES_Import_Subscribers {
 	public function ajax_import_subscribers_upload_handler() {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$can_access_audience = ES_Common::ig_es_can_access( 'audience' );
+		if ( ! $can_access_audience ) {
+			return 0;
+		}
+
 		$args = [
 			'importing_from'  => ig_es_get_request_data( 'importing_from' ),
 			'selected_roles'  => ig_es_get_request_data( 'selected_roles' ),
@@ -525,6 +531,11 @@ class ES_Import_Subscribers {
 	public function ajax_get_import_data() {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$can_access_audience = ES_Common::ig_es_can_access( 'audience' );
+		if ( ! $can_access_audience ) {
+			return 0;
+		}
 
 		$response = array(
 			'success' => false,
@@ -670,6 +681,11 @@ class ES_Import_Subscribers {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
+		$can_access_audience = ES_Common::ig_es_can_access( 'audience' );
+		if ( ! $can_access_audience ) {
+			return 0;
+		}
+
 		$args = array(
 			'id'         => $_POST['id'],
 			'options'    => $_POST['options'],
@@ -757,6 +773,12 @@ class ES_Import_Subscribers {
 	public function api_request() {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$can_access_audience = ES_Common::ig_es_can_access( 'audience' );
+		if ( ! $can_access_audience ) {
+			return 0;
+		}
+		
 		$endpoint = str_replace( 'wp_ajax_ig_es_mailchimp_', '', current_filter() );
 
 		$args = array(
