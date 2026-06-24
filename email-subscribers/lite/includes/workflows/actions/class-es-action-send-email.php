@@ -182,10 +182,10 @@ if ( ! class_exists( 'ES_Action_Send_Email' ) ) {
 							// If we don't replace it here then for workflow configured to be sent to admins, {{EMAIL}}, {{NAME}} gets replaced with admin email and names which is not desired for subscriber based workflows.
 							if ( isset( $data['source'] ) && 'es' === $data['source'] ) {
 								$subject = str_replace( '{{EMAIL}}', isset( $data['email'] ) ? $data['email'] : '', $subject );
-								$subject = str_replace( '{{NAME}}', isset( $data['name'] ) ? $data['name'] : '', $subject );
+								$subject = str_replace( '{{NAME}}', isset( $data['name'] ) ? strip_shortcodes( $data['name'] ) : '', $subject );
 							
 								$email_content = str_replace( '{{EMAIL}}', isset( $data['email'] ) ? $data['email'] : '', $email_content );
-								$email_content = str_replace( '{{NAME}}', isset( $data['name'] ) ? $data['name'] : '', $email_content );
+								$email_content = str_replace( '{{NAME}}', isset( $data['name'] ) ? strip_shortcodes( $data['name'] ) : '', $email_content );
 								$email_content = str_replace( '{{LIST}}', isset( $data['list_name'] ) ? $data['list_name'] : '', $email_content );
 							}
 							

@@ -371,6 +371,15 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 			
 			// Use pre-fetched mailing queue data
 			$report = isset( $campaign_queue_data[ $campaign_id ] ) ? $campaign_queue_data[ $campaign_id ] : array();
+
+		// Add sent date from mailing queue for sent campaigns
+	if ( IG_ES_CAMPAIGN_STATUS_FINISHED === $campaign_status && ! empty( $report ) ) {
+			if ( ! empty( $report['finish_at'] ) && '0000-00-00 00:00:00' !== $report['finish_at'] ) {
+				$campaign['sent_at'] = $report['finish_at'];
+			} elseif ( ! empty( $report['start_at'] ) && '0000-00-00 00:00:00' !== $report['start_at'] ) {
+				$campaign['sent_at'] = $report['start_at'];
+			}
+		}
 			
 			if ( self::is_post_campaign( $campaign_type ) ) {
 				if ( $report && ! empty( $report['meta'] ) ) {

@@ -169,7 +169,97 @@ class IG_ES_DB_Unsubscribe_Feedback extends ES_DB {
 			),
 			ARRAY_A
 		);
-// phpcs:enable
+		// phpcs:enable
 		return $feedback_counts;
+	}
+
+
+	/**
+	 * Get feedback count for audience unsubscribed contacts only
+	 * 
+	 * @param int $number_of_days Number of days to look back
+	 * @return array Feedback counts filtered by unsubscribed contacts
+	 * 
+	 * @since 5.7.55
+	 */
+	public static function get_audience_unsubscribe_feedback_counts( $number_of_days ) {
+		global $wpdb;
+		
+		$feedback_table = $wpdb->prefix . 'ig_unsubscribe_feedback';
+		$lists_contacts_table = $wpdb->prefix . 'ig_lists_contacts';
+
+		// phpcs:disable
+		$feedback_counts = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT uf.feedback_slug, COUNT(DISTINCT uf.contact_id) AS feedback_count 
+				FROM `{$feedback_table}` uf
+				WHERE uf.contact_id IN (
+					SELECT DISTINCT contact_id 
+					FROM `{$lists_contacts_table}` 
+					WHERE status = 'unsubscribed' 
+					AND unsubscribed_at >= DATE_SUB(NOW(), INTERVAL %d DAY)
+				)
+				GROUP BY uf.feedback_slug",
+				$number_of_days
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
+		
+		return $feedback_counts;
+	}
+
+
+	/**
+	 * Get feedback count for campaign level unsubscribed contacts only
+	 * 
+	 * @param int $number_of_days Number of days to look back
+	 * @return array Feedback counts filtered by campaign
+	 * 
+	 * @since 5.7.55
+	 */
+	public static function get_campaign_level_unsubscribe_feedback_counts( $number_of_days, $mailing_queue_id = 0, $campaign_id = 0 ) {
+
+		global $wpdb;
+		
+		$actions_table = $wpdb->prefix . 'ig_actions';
+		$feedback_table = $wpdb->prefix . 'ig_unsubscribe_feedback';
+		
+		$where_conditions = array();
+
+		$where_conditions[] = $wpdb->prepare( "a.created_at >= UNIX_TIMESTAMP(DATE_SUB(NOW(), INTERVAL %d DAY))", $number_of_days );
+
+		$where_conditions[] = $wpdb->prepare( "a.type = %d", IG_CONTACT_UNSUBSCRIBE );
+		
+		$where_clause = implode( ' AND ', $where_conditions );
+		
+		// phpcs:disable
+		$query = "SELECT 
+					CASE 
+						WHEN uf.feedback_slug IS NULL OR uf.feedback_slug = '' THEN 'no_feedback'
+						ELSE uf.feedback_slug 
+					END AS feedback_slug,
+					COUNT(DISTINCT a.contact_id) AS feedback_count 
+				FROM `{$actions_table}` a
+				LEFT JOIN `{$feedback_table}` uf 
+					ON a.contact_id = uf.contact_id 
+					AND a.list_id = uf.list_id"; 
+
+		if ( ! empty( $campaign_id ) ) {
+			$query .= $wpdb->prepare( " AND uf.campaign_id = %d", $campaign_id );
+		}
+
+		if ( ! empty( $mailing_queue_id ) ) {
+			$query .= $wpdb->prepare( " AND uf.mailing_queue_id = %d", $mailing_queue_id );
+		}
+
+		$query .= " WHERE {$where_clause}
+				GROUP BY feedback_slug";
+
+
+		$feedback_counts = $wpdb->get_results( $query, ARRAY_A );
+		// phpcs:enable
+    
+    	return $feedback_counts;
 	}
 }

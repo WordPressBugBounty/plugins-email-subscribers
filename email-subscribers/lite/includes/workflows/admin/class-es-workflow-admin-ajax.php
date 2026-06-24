@@ -50,6 +50,11 @@ class ES_Workflow_Admin_Ajax {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
+		$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
+		if ( ! $can_access_workflows ) {
+			return 0;
+		}
+
 		$trigger_name = ig_es_get_request_data( 'trigger_name' );
 		$workflow_id  = ig_es_get_request_data( 'workflow_id' );
 
@@ -91,6 +96,11 @@ class ES_Workflow_Admin_Ajax {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
+		$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
+		if ( ! $can_access_workflows ) {
+			return 0;
+		}
+
 		$action_name   = ig_es_get_request_data( 'action_name' );
 		$action_number = ig_es_get_request_data( 'action_number' );
 		$trigger_name  = ig_es_get_request_data( 'trigger_name' );
@@ -129,6 +139,12 @@ class ES_Workflow_Admin_Ajax {
 	public static function toggle_workflow_status() {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
+		if ( ! $can_access_workflows ) {
+			return 0;
+		}
+
 		$args = array(
 			'workflow_id' => ig_es_get_request_data( 'workflow_id' ),
 			'new_state'   => ig_es_get_request_data( 'new_state' ),
@@ -151,6 +167,11 @@ class ES_Workflow_Admin_Ajax {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
+		$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
+		if ( ! $can_access_workflows ) {
+			return 0;
+		}
+
 		$variable = IG_ES_Variables::get_variable( ES_Clean::string( ig_es_get_request_data( 'variable' ) ) );
 		if ( $variable ) {
 			ES_Workflow_Admin::get_view(
@@ -171,6 +192,11 @@ class ES_Workflow_Admin_Ajax {
 	public static function create_workflow_from_gallery_item() {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$can_access_workflows = ES_Common::ig_es_can_access( 'workflows' );
+		if ( ! $can_access_workflows ) {
+			return 0;
+		}
 
 		$item_name = ig_es_get_request_data( 'item_name' );
 

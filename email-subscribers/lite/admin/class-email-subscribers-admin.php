@@ -419,7 +419,20 @@ class Email_Subscribers_Admin {
 					}
 				}
 			}
+
+			$unsubscribe_feedbacks = array();
+			if ( class_exists( 'IG_ES_Unsubscribe_Feedback' ) ) {
+				$unsubscribe_feedback_instance = new IG_ES_Unsubscribe_Feedback();
+				$unsubscribe_feedbacks = $unsubscribe_feedback_instance->get_default_unsubscribe_feedbacks();
+			}
+
 			
+			$unsubscribe_feedbacks = array();
+			if ( class_exists( 'IG_ES_Unsubscribe_Feedback' ) ) {
+				$unsubscribe_feedback_instance = new IG_ES_Unsubscribe_Feedback();
+				$unsubscribe_feedbacks = $unsubscribe_feedback_instance->get_default_unsubscribe_feedbacks();
+			}
+
 			wp_localize_script( 'es-shadcn-dashboard', 'icegramExpressAdminData', array(
 				'apiUrl' => admin_url( 'admin-ajax.php' ),
 				'baseUrl' => ES_PLUGIN_URL . 'lite/admin/shadcn-frontend/dist/',
@@ -429,6 +442,14 @@ class Email_Subscribers_Admin {
 				'security'    => wp_create_nonce( 'ig-es-admin-ajax-nonce' ),
 				'plan' => ES()->get_plan(),
 				'defaultRoute' => $default_route,
+				'campaignStatus' => array(
+					'DRAFT' => IG_ES_CAMPAIGN_STATUS_IN_ACTIVE,
+					'ACTIVE' => IG_ES_CAMPAIGN_STATUS_ACTIVE,
+					'SCHEDULED' => IG_ES_CAMPAIGN_STATUS_SCHEDULED,
+					'QUEUED' => IG_ES_CAMPAIGN_STATUS_QUEUED,
+					'PAUSED' => IG_ES_CAMPAIGN_STATUS_PAUSED,
+					'FINISHED' => IG_ES_CAMPAIGN_STATUS_FINISHED,
+				),
 				'currentUser' => array(
 					'displayName' => $current_user->display_name,
 					'firstName' => $current_user->first_name,
@@ -450,6 +471,7 @@ class Email_Subscribers_Admin {
 					'ig_es_track_utm' => get_option( 'ig_es_track_utm', 'no' ),
 				),
 				'pricingBanner' => Email_Subscribers_Pricing::get_pricing_banner_config(),
+				'unsubscribeFeedbacks' => $unsubscribe_feedbacks,
 			) );
 			wp_register_style( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/dist/index.css', array(), $this->version );
 			wp_enqueue_script( 'es-shadcn-dashboard' );

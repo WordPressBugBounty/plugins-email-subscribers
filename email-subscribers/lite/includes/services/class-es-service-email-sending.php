@@ -184,6 +184,11 @@ class ES_Service_Email_Sending extends ES_Services {
 
 		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
 
+		$can_access_settings = ES_Common::ig_es_can_access( 'settings' );
+		if ( ! $can_access_settings ) {
+			return 0;
+		}
+
 		$request = ig_es_get_request_data( 'request' );
 
 		if ( ! empty( $request ) ) {

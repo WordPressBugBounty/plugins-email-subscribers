@@ -260,6 +260,14 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				$name       = ! empty( $form_data['esfpx_name'] ) ? str_replace( '.', ' ', sanitize_text_field( $form_data['esfpx_name'] ) ) : '';
 				$ip_address = ! empty( $form_data['esfpx_ip_address'] ) ? sanitize_text_field( $form_data['esfpx_ip_address'] ) : '';
 
+				// Security: Strip shortcode delimiters from subscriber name before storage.
+				// Prevents shortcode injection via subscriber-controlled name fields.
+				// See Wordfence advisory: Unauthenticated Arbitrary Shortcode Execution via Subscriber Name Field.
+				if ( ! empty( $name ) ) {
+					$name = wp_strip_all_tags( $name );
+					$name = str_replace( array( '[', ']' ), '', $name );
+				}
+
 				$first_name = '';
 				$last_name  = '';
 				if ( ! empty( $name ) ) {

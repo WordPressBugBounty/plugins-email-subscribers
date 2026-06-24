@@ -25,7 +25,9 @@ class IG_ES_Variable_Subscriber_Name extends IG_ES_Workflow_Variable {
 	 * @return string
 	 */
 	public function get_value( $subscriber, $parameters ) {
-		return $subscriber['name'];
+		// Security: strip shortcodes from subscriber-controlled name to prevent
+		// arbitrary shortcode execution when this value is merged into email content.
+		return strip_shortcodes( (string) $subscriber['name'] );
 	}
 }
 

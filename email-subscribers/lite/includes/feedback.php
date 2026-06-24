@@ -959,18 +959,18 @@ if ( ! function_exists( 'ig_es_show_whatsapp_integration_survey' ) ) {
 			$total_contacts = ES()->contacts_db->count_active_contacts_by_list_id();
             if ( $total_contacts >= 5 ) {  
                 
-                $survey_title = __( 'WhatsApp for your store - should we build it?', 'email-subscribers' );
+                $survey_title = __( 'Unlock more sales with WhatsApp messaging', 'email-subscribers' );
                 
 				$survey_slug  = 'ig-es-whatsapp-integration-survey';                 
 
                 $desc = '<div class="wa-survey-container">';
-                $desc .= '<p class="wa-survey-intro">' . __( 'Send order updates & shipping alerts on WhatsApp.', 'email-subscribers' ) . '</p>';
-				$desc .= '<p class="wa-survey-intro">' . __( 'Customers actually read them.', 'email-subscribers' ) . '</p>';
+                $desc .= '<p class="wa-survey-intro">' . __( 'Send order updates on WhatsApp', 'email-subscribers' ) . '</p>';
+				$desc .= '<p class="wa-survey-intro">' . __( ' where they won\'t get lost in an inbox.', 'email-subscribers' ) . '</p>';
 
                 $desc .= '<div class="wa-stats-container">';
                 $desc .= '<div class="wa-stat-item"><strong class="wa-stat-number">98%</strong><br><span class="wa-stat-label">' . __( 'open rate', 'email-subscribers' ) . '</span></div>';
                 $desc .= '<div class="wa-stat-item"><strong class="wa-stat-number">5 min</strong><br><span class="wa-stat-label">' . __( 'avg read', 'email-subscribers' ) . '</span></div>';
-                $desc .= '<div class="wa-stat-item"><strong class="wa-stat-number">3× CTR</strong><br><span class="wa-stat-label">' . __( 'vs email', 'email-subscribers' ) . '</span></div>';
+                $desc .= '<div class="wa-stat-item"><strong class="wa-stat-number">3x CTR</strong><br><span class="wa-stat-label">' . __( 'vs email', 'email-subscribers' ) . '</span></div>';
                 $desc .= '</div>';
 
                 $desc .= '</div>';

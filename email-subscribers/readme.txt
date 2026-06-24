@@ -6,7 +6,7 @@ Tags: email subscribers, newsletter, subscription form, email marketing, email a
 Requires at least: 3.9
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 5.9.27
+Stable tag: 5.9.28
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,13 +361,19 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.27 =
+= 5.9.28 =
 
-* Improvement: The audience edit modal can now be resized.
-* Fix: Resolved the campaign preview issue in the Classic Editor.
-* Fix: Sequence emails were getting triggered even when the status was set as "Draft" in some cases
+* New: Show unsubscribe stats in the audience dashboard
+* New: Option to set title for "Popup form"
+* Fix: Broadcast campaigns were showing the incorrect sent date in report
 
 == Changelog ==
+
+**5.9.28 (24.06.2026)**
+
+* New: Show unsubscribe stats in the audience dashboard
+* New: Option to set title for "Popup form"
+* Fix: Broadcast campaigns were showing the incorrect sent date in report
 
 **5.9.27 (18.06.2026)**
 

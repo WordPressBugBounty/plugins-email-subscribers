@@ -1205,6 +1205,13 @@ if ( ! class_exists( 'ES_Mailer' ) ) {
 			$campaign_id   = ig_es_get_data( $merge_tags, 'campaign_id', 0 );
 			$message_id    = ig_es_get_data( $merge_tags, 'message_id', 0 );
 			$list_ids      = ig_es_get_data( $merge_tags, 'list_ids', '' );
+
+			// Security: strip shortcodes from subscriber-controlled name fields
+			// before merging them into email content to prevent Arbitrary
+			// Shortcode Execution (Wordfence advisory, affects <= 5.9.27).
+			$name       = strip_shortcodes( (string) $name );
+			$first_name = strip_shortcodes( (string) $first_name );
+			$last_name  = strip_shortcodes( (string) $last_name );
 			
 			$link_data = array(
 				'message_id'  => $message_id,
