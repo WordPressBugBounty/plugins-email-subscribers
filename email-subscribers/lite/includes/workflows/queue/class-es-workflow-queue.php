@@ -52,6 +52,15 @@ class ES_Workflow_Queue extends ES_DB_Workflows_Queue {
 	public $data = array();
 
 	/**
+	 * Original data as last saved to the database.
+	 * Used to track which fields have changed since last save.
+	 *
+	 * @since 5.9.29
+	 * @var array
+	 */
+	public $original_data = array();
+
+	/**
 	 * Variable to store changed field in workflow queue data
 	 *
 	 * @since 4.4.1

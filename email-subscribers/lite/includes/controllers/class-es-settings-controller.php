@@ -329,15 +329,8 @@ if ( ! class_exists( 'ES_Settings_Controller' ) ) {
 				);
 			}
 			
-			$template_id = 0;
-			$campaign_id = 0;
-		
-			// Process template body
-			$content = ES_Common::es_process_template_body( $content, $template_id, $campaign_id );
-$merge_tags = array();
-			
 			// Send test email using the mailer (same method used by ES_Tools)
-			$response = ES()->mailer->send_test_email( $email, $subject, $content, $merge_tags );
+			$response = ES()->mailer->send_test_email( $email );
 			
 			if ( $response && 'SUCCESS' === $response['status'] ) {
 				return array(
@@ -776,6 +769,9 @@ $merge_tags = array();
 			// Gmail OAuth validation
 			'ig_es_gmail_valid_credentials' => self::get_gmail_valid_credentials(),
 			'ig_es_gmail_valid_tokens' => self::get_gmail_valid_tokens(),
+			// Outlook OAuth validation
+			'ig_es_outlook_valid_credentials' => self::get_outlook_valid_credentials(),
+			'ig_es_outlook_valid_tokens' => self::get_outlook_valid_tokens(),
 			// Webhook URLs for email services
 			'ig_es_webhook_urls' => $webhook_urls,
 			// Cron info
@@ -1800,6 +1796,34 @@ $merge_tags = array();
 		return array(
 			'streams' => $result,
 		);
+	}
+
+	/**
+	 * Check if Outlook client credentials are valid
+	 *
+	 * @return bool
+	 * @since 5.7.0
+	 */
+	private static function get_outlook_valid_credentials() {
+		if ( ! class_exists( 'ES_Outlook_Oauth_Handler' ) ) {
+			return false;
+		}
+		$es_outlook_oauth_handler = ES_Outlook_Oauth_Handler::get_instance();
+		return $es_outlook_oauth_handler->is_valid_client_credentials();
+	}
+
+	/**
+	 * Check if Outlook OAuth tokens are valid
+	 *
+	 * @return bool
+	 * @since 5.7.0
+	 */
+	private static function get_outlook_valid_tokens() {
+		if ( ! class_exists( 'ES_Outlook_Oauth_Handler' ) ) {
+			return false;
+		}
+		$es_outlook_oauth_handler = ES_Outlook_Oauth_Handler::get_instance();
+		return $es_outlook_oauth_handler->is_valid_tokens();
 	}
 
 }

@@ -6,7 +6,7 @@ Tags: email subscribers, newsletter, subscription form, email marketing, email a
 Requires at least: 3.9
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 5.9.28
+Stable tag: 5.9.29
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,13 +361,19 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.28 =
+= 5.9.29 =
 
-* New: Show unsubscribe stats in the audience dashboard
-* New: Option to set title for "Popup form"
-* Fix: Broadcast campaigns were showing the incorrect sent date in report
+* New: Send emails using "Microsoft Outlook" API [MAX]
+* Improvement: Contacts can now be sorted using "Last Opened" column in the Audience page
+* Fix: Fixed report deletion issue on sites using RTL language
 
 == Changelog ==
+
+**5.9.29 (02.07.2026)**
+
+* New: Send emails using "Microsoft Outlook" API [MAX]
+* Improvement: Contacts can now be sorted using "Last Opened" column in the Audience page
+* Fix: Fixed report deletion issue on sites using RTL language
 
 **5.9.28 (24.06.2026)**
 

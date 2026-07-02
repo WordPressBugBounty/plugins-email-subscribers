@@ -1073,6 +1073,55 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 			delete_option( self::$onboarding_completed_option );
 			delete_option( self::$onboarding_new_completed_option );
 		}
+
+		/**
+		 * Method to sign up user to Icegram.com
+		 *
+		 * @param array $data Data containing name and email
+		 * @return array Response with success/error status
+		 *
+		 * @since 5.7.0
+		 */
+		public static function signup_to_icegram( $data = array() ) {
+			
+			if ( is_string( $data ) ) {
+				$decoded_data = json_decode( $data, true );
+				if ( $decoded_data ) {
+					$data = $decoded_data;
+				}
+			}
+
+			$name  = isset( $data['name'] ) ? sanitize_text_field( $data['name'] ) : '';
+			$email = isset( $data['email'] ) ? sanitize_email( $data['email'] ) : '';
+
+			if ( empty( $email ) || ! is_email( $email ) ) {
+				return array(
+					'status'  => 'error',
+					'message' => __( 'Valid email address is required.', 'email-subscribers' ),
+				);
+			}
+
+			// Get the list hash
+			$list = ES()->get_es_optin_list_hash();
+
+			$sign_up_data = array(
+				'name'  => $name,
+				'email' => $email,
+				'list'  => $list,
+			);
+
+			// Use the trial class to send the signup request
+			if ( ! class_exists( 'IG_ES_Trial' ) ) {
+				return array(
+					'status'  => 'error',
+					'message' => __( 'Trial class not available.', 'email-subscribers' ),
+				);
+			}
+
+			$response = ES()->trial->send_ig_sign_up_request( $sign_up_data );
+
+			return $response;
+		}
 	}
 }
 

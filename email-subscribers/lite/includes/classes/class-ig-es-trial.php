@@ -534,22 +534,28 @@ class IG_ES_Trial {
 
 			// Make a get request.
 			$api_response = wp_remote_get( $ig_es_url, $request_args );
+			
 			if ( ! is_wp_error( $api_response ) ) {
-				$body = ! empty( $api_response['body'] ) && ES_Common::is_valid_json( $api_response['body'] ) ? json_decode( $api_response['body'], true ) : '';
-				if ( ! empty( $body ) ) {
+				$body = wp_remote_retrieve_body( $api_response );
+				
+				$body_decoded = ! empty( $body ) && ES_Common::is_valid_json( $body ) ? json_decode( $body, true ) : '';
+				
+				if ( ! empty( $body_decoded ) ) {
 					// If we have received an id in response then email is successfully queued at mailgun server.
-					if ( ! empty( $body['status'] ) && 'SUCCESS' === $body['status'] ) {
+					if ( ! empty( $body_decoded['status'] ) && 'SUCCESS' === $body_decoded['status'] ) {
 						$response['status'] = 'success';
-					} elseif ( ! empty( $body['status'] ) && 'ERROR' === $body['status'] ) {
+					} elseif ( ! empty( $body_decoded['status'] ) && 'ERROR' === $body_decoded['status'] ) {
 						$response['status']       = 'error';
-						$response['message']      = $body['message'];
-						$response['message_text'] = $body['message_text'];
+						$response['message']      = $body_decoded['message'];
+						$response['message_text'] = $body_decoded['message_text'];
 					}
 				} else {
 					$response['status'] = 'success';
 				}
 			} else {
 				$response['status'] = 'error';
+				$error_message = $api_response->get_error_message();
+				$response['message'] = $error_message;
 			}
 		}
 

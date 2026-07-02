@@ -58,6 +58,14 @@ class ES_Workflow {
 	private $data_layer;
 
 	/**
+	 * Variable processor object
+	 *
+	 * @since 5.9.29
+	 * @var IG_ES_Variables_Processor
+	 */
+	private $variable_processor;
+
+	/**
 	 * Workflow status
 	 *
 	 * @since 4.4.1

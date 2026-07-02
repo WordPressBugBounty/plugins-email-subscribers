@@ -1420,7 +1420,11 @@ class ES_DB_Contacts extends ES_DB {
 			? strtoupper( $args['order'] )
 			: 'DESC';
 
-		$sql .= " ORDER BY c.{$order_by} {$order}";
+		if ( 'last_opened_at' === $order_by ) {
+			$sql .= " ORDER BY last_opened_at {$order}";
+		} else {
+			$sql .= " ORDER BY c.{$order_by} {$order}";
+		}	 
 
 		$offset = ( max( 1, (int) $args['page_number'] ) - 1 ) * (int) $args['per_page'];
 		$sql   .= " LIMIT {$offset}, " . (int) $args['per_page'];

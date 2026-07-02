@@ -45,7 +45,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 				__( 'List', 'email-subscribers' ),
 				__( 'Status', 'email-subscribers' ),
 				__( 'Opt-In Type', 'email-subscribers' ),
-				__( 'Created On', 'email-subscribers' ),
+				__( 'Created On', 'email-subscribers' ), 
 			);
 			return implode( ',', $headers );
 		}
@@ -162,7 +162,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 			}
 
 			$contact_ids = array_unique( array_column( $results, 'contact_id' ) );
-		$contacts    = ES()->import_utils_db->get_contacts_by_ids( $contact_ids, true );
+			$contacts    = ES()->import_utils_db->get_contacts_by_ids( $contact_ids, true );
 
 			if ( empty( $contacts ) ) {
 				return self::get_empty_csv_headers();
@@ -187,8 +187,9 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 				__( 'Opt-In Type', 'email-subscribers' ),
 				__( 'Created On', 'email-subscribers' ),
 			);
-		// Add custom field headers
-		$custom_fields = ES()->custom_fields_db->get_custom_fields();
+
+			// Add custom field headers
+			$custom_fields = ES()->custom_fields_db->get_custom_fields();
 			if ( ! empty( $custom_fields ) ) {
 				foreach ( $custom_fields as $field ) {
 					$headers[] = $field['label'];
@@ -210,8 +211,8 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 					$data['status']     = ucfirst( $list_details['status'] );
 					$data['optin_type'] = ( 1 == $list_details['optin_type'] ) ? 'Single Opt-In' : 'Double Opt-In';
 					$data['created_at'] = $contact['created_at'];
-				
-				// Add custom field data
+										
+					// Add custom field data
 					if ( ! empty( $custom_fields ) ) {
 						foreach ( $custom_fields as $field ) {
 							$column_name = $field['slug'];
@@ -219,7 +220,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 						}
 					}
 				
-				$csv_output .= "\n";
+					$csv_output .= "\n";
 					$csv_output .= '"' . implode( '","', $data ) . '"';
 				}
 			}
@@ -259,10 +260,10 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 			global $wpdb;
 
 			$subscribers = array();
+			$contact_ids      = array();
 
 			if ( count( $results ) > 0 ) {
-				$contact_list_map = array();
-				$contact_ids      = array();
+				$contact_list_map = array();				
 				foreach ( $results as $result ) {
 					if ( ! in_array( $result['contact_id'], $contact_ids, true ) ) {
 						$contact_ids[] = $result['contact_id'];
@@ -297,7 +298,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 					$subscribers = $wpdb->get_results( $query, ARRAY_A );
 				}
 			}
-
+			
 			$csv_output = '';
 			if ( count( $subscribers ) > 0 ) {
 				$headers = array(
@@ -333,6 +334,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 							$data['status']     = ucfirst( $list_details['status'] );
 							$data['optin_type'] = ( 1 == $list_details['optin_type'] ) ? 'Single Opt-In' : 'Double Opt-In';
 							$data['created_at'] = $subscriber['created_at'];
+							
 							if ( ! empty( $custom_fields ) ) {
 								foreach ( $custom_fields as $field ) {
 									$column_name = $field['slug'];
@@ -446,10 +448,11 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 			}
 
 			$subscribers = array();
+			$contact_ids      = array();
 
 			if ( count( $results ) > 0 ) {
 				$contact_list_map = array();
-				$contact_ids      = array();
+				
 				foreach ( $results as $result ) {
 
 					if ( ! in_array( $result['contact_id'], $contact_ids, true ) ) {
@@ -521,6 +524,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 							$data['status']     = ucfirst( $list_details['status'] );
 							$data['optin_type'] = ( 1 == $list_details['optin_type'] ) ? 'Single Opt-In' : 'Double Opt-In';
 							$data['created_at'] = $subscriber['created_at'];
+
 							if ( ! empty( $custom_fields ) ) {
 								foreach ( $custom_fields as $field ) {
 									$column_name = $field['slug'];
