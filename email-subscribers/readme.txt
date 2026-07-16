@@ -6,7 +6,7 @@ Tags: email subscribers, newsletter, subscription form, email marketing, email a
 Requires at least: 3.9
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 5.9.29
+Stable tag: 5.9.30
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -361,13 +361,19 @@ Option 2:
 
 == Upgrade Notice ==
 
-= 5.9.29 =
+= 5.9.30 =
 
-* New: Send emails using "Microsoft Outlook" API [MAX]
-* Improvement: Contacts can now be sorted using "Last Opened" column in the Audience page
-* Fix: Fixed report deletion issue on sites using RTL language
+* Improvement: Added an option to "Resend" failed campaigns
+* Fix: Resolved page caching compatibility issue [PRO]
+* Fix: Form editor now shows updated list names after renaming
 
 == Changelog ==
+
+**5.9.30 (16.07.2026)**
+
+* Improvement: Added an option to "Resend" failed campaigns
+* Fix: Resolved page caching compatibility issue [PRO]
+* Fix: Form editor now shows updated list names after renaming
 
 **5.9.29 (02.07.2026)**
 

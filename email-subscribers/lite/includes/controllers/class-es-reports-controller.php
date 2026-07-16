@@ -604,6 +604,14 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 						$result[ $key ]['start_at'] = ! empty( $notification['start_at'] ) ? ig_es_format_date_time( $notification['start_at'] ) : '';
 						$result[ $key ]['finish_at'] = ! empty( $notification['finish_at'] ) ? ig_es_format_date_time( $notification['finish_at'] ) : '';
 						$result[ $key ]['created_at'] = ! empty( $notification['created_at'] ) ? ig_es_format_date_time( $notification['created_at'] ) : '';
+						
+						// Add cron URL for resending failed campaigns
+						$hash = ! empty( $notification['hash'] ) ? $notification['hash'] : '';
+						$cron_url = '';
+						if ( ! empty( $hash ) ) {
+							$cron_url = ES()->cron->url( true, false, $hash );
+						}
+						$result[ $key ]['cron_url'] = $cron_url;
 					}
 				}
 

@@ -170,8 +170,12 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 			$form_id = intval( $args['form_id'] );
 			$deleted = ES()->forms_db->delete( $form_id );
 		
-			return $deleted !== false;
+		if ( $deleted !== false ) {
+			do_action( 'ig_es_form_deleted', $form_id );
 		}
+	
+		return $deleted !== false;
+	}
 	
 	/**
 	 * Retrieve forms data from the database

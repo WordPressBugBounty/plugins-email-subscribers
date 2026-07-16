@@ -400,8 +400,9 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 			} elseif ( IG_CAMPAIGN_TYPE_NEWSLETTER === $campaign_type ) {
 				if ( $report && ! empty( $report['hash'] ) ) {
 					$campaign['report_link'] = admin_url( 'admin.php?page=es_dashboard#/reports/' . $report['hash'] );
-					$campaign['hash'] = $report['hash'];
-				}
+				$campaign['hash'] = $report['hash'];
+				$campaign['cron_url'] = ES()->cron->url( true, false, $report['hash'] );
+			}
 			} elseif ( in_array( $campaign_type, array( IG_CAMPAIGN_TYPE_SEQUENCE, IG_CAMPAIGN_TYPE_WORKFLOW ), true ) ) {
 				$campaign['report_link'] = admin_url( 'admin.php?page=es_dashboard#/reports/sequence-messages?campaign_id=' . $campaign_id );
 			}

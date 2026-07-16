@@ -24,6 +24,10 @@ if ( ! class_exists( 'ES_Form_Controller' ) ) {
 		}
 
 		public function init() {
+			if ( is_admin() ) {
+				add_action( 'ig_es_after_settings_save', array( $this, 'update_global_captcha_on_settings_save' ) );
+				add_action( 'ig_es_form_deleted', array( $this, 'update_global_captcha_on_form_delete' ) );
+			}
 		}
 
 		/**
@@ -158,23 +162,64 @@ return $form_data;
 			$result = false;
 			if ( ! empty( $form_id ) ) {
 				$form_data['updated_at'] = ig_get_current_date_time();
-
-				// We don't want to change the created_at date for update
 				unset( $form_data['created_at'] );
-				// phpcs:disable
-				//$return = $wpdb->update( IG_FORMS_TABLE, $form_data, array( 'form_id' => $form_id ) );
 				$result = ES()->forms_db->update( $form_id, $form_data );
 			} else {
-				//$return = $wpdb->insert( IG_FORMS_TABLE, $form_data );
 				$result = ES()->forms_db->insert( $form_data );
 			}
+			
+			if ( $result ) {
+				self::update_global_captcha_availability();
+			}
+			
 			$response['status'] = $result ? 'success' : 'error';
 
 			return $response;
 		}
 
-		public static function prepare_form_data( $data ) {
-		
+		/**
+		 * Update global captcha availability option
+		 */
+		public static function update_global_captcha_availability() {
+			$has_captcha = false;
+			
+			if ( 'yes' === get_option( 'ig_es_captcha', 'no' ) ) {
+				$has_captcha = true;
+			} else {
+				$forms = ES()->forms_db->get_forms( array(), true );
+				if ( ! empty( $forms ) ) {
+					foreach ( $forms as $form ) {
+						if ( ! empty( $form['settings'] ) ) {
+							$settings = ig_es_maybe_unserialize( $form['settings'] );
+							if ( ! empty( $settings['captcha'] ) && 'yes' === $settings['captcha'] ) {
+								$has_captcha = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+			
+			update_option( 'ig_es_captcha_enabled', $has_captcha ? 'yes' : 'no', false );
+		}
+
+	/**
+	 * Update global captcha availability when settings are saved
+	 * 
+	 */
+	public function update_global_captcha_on_settings_save( $settings ) {
+		self::update_global_captcha_availability();
+	}
+
+	/**
+	 * Update global captcha availability when a form is deleted
+	 */
+	public function update_global_captcha_on_form_delete( $form_id ) {
+		self::update_global_captcha_availability();
+	}
+	
+	public static function prepare_form_data( $data ) {
+	
 			$form_data     = array();
 			$name          = ! empty( $data['name'] ) ? sanitize_text_field( $data['name'] ) : '';
 			$editor_type   = ! empty( $data['settings']['editor_type'] ) ? sanitize_text_field( $data['settings']['editor_type'] ) : 'wysiwyg';
