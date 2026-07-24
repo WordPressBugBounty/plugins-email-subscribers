@@ -113,6 +113,8 @@ class Email_Subscribers_Admin {
 		add_action( 'admin_notices', array( $this, 'show_ig_engage_promotion_notice' ) );
 		add_action( 'wp_ajax_ig_es_dismiss_ig_engage_promotion_notice', array( $this, 'dismiss_ig_engage_promotion_notice' ) );
 
+		add_action( 'wp_ajax_ig_es_save_upsell_flow', array( $this, 'ig_es_save_upsell_flow' ) );
+
 		add_action( 'admin_init', array( $this, 'maybe_apply_bulk_actions_on_all_contacts' ) );
 
 		add_action( 'wp_ajax_ig_es_get_subscribers_stats', array( 'ES_Dashboard', 'get_subscribers_stats' ) );
@@ -471,6 +473,7 @@ class Email_Subscribers_Admin {
 					'ig_es_track_utm' => get_option( 'ig_es_track_utm', 'no' ),
 				),
 				'pricingBanner' => Email_Subscribers_Pricing::get_pricing_banner_config(),
+				'upsellFlow' => Email_Subscribers_Pricing::get_upsell_flow(),
 				'unsubscribeFeedbacks' => $unsubscribe_feedbacks,
 			) );
 			wp_register_style( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/dist/index.css', array(), $this->version );
@@ -2062,6 +2065,19 @@ class Email_Subscribers_Admin {
 		update_option( 'ig_es_engage_promotion_notice_dismissed', 'yes', false );
 
 		wp_send_json( $response );
+	}
+
+	public function ig_es_save_upsell_flow() {
+		check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+		$flow = isset( $_POST['flow'] ) ? sanitize_text_field( wp_unslash( $_POST['flow'] ) ) : '';
+
+		if ( in_array( $flow, array( 'pricing', 'direct' ), true ) ) {
+			update_option( 'ig_es_upsell_flow', $flow );
+			wp_send_json_success();
+		}
+
+		wp_send_json_error();
 	}
 
 	/**

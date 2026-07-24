@@ -97,6 +97,10 @@ class Email_Subscribers_Pricing {
 		return $config;
 	}
 
+	public static function get_upsell_flow() {
+		return get_option( 'ig_es_upsell_flow', '' );
+	}
+
 	public static function es_show_pricing() {
 		$utm_medium  = apply_filters( 'ig_es_pricing_page_utm_medium', 'in_app_pricing' );
 		$allowedtags = ig_es_allowed_html_tags_in_esc();
