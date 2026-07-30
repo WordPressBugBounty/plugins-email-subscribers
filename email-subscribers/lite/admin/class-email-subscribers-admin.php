@@ -398,9 +398,53 @@ class Email_Subscribers_Admin {
 			if ( $is_ig_mailer_plugin_active && is_callable( 'Icegram_Mailer_Account', 'is_opted_for_ess' ) ) {
 				$is_opted_for_ess = Icegram_Mailer_Account::is_opted_for_ess();
 			}
-			wp_register_script( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/dist/index.js', array('wp-element'), $this->version, true );
-			$current_user = wp_get_current_user();
+			// Build script dependencies conditionally.
+			// On WP 5.0+, WordPress provides 'react', 'react-dom', and 'wp-i18n' handles
+			// which expose window.React, window.ReactDOM, and window.wp.i18n respectively.
+			// On WP < 5.0, none of these handles exist, so we must provide our own.
+			if ( function_exists( 'wp_set_script_translations' ) ) {
+				// WP 5.0+: use WordPress-bundled React, ReactDOM, and wp-i18n globals.
+				$es_script_deps = array( 'react', 'react-dom', 'wp-i18n' );
+			} else {
+				// WP < 5.0: register our own local UMD copies so the globals are available.
+				$es_dist_url = plugin_dir_url( __FILE__ ) . 'shadcn-frontend/dist/';
+				wp_register_script(
+					'es-react-compat',
+					$es_dist_url . 'react.min.js',
+					array(),
+					'18.3.1',
+					false // load in <head> so it is available before the footer bundle
+				);
+				wp_register_script(
+					'es-react-dom-compat',
+					$es_dist_url . 'react-dom.min.js',
+					array( 'es-react-compat' ),
+					'18.3.1',
+					false
+				);
+				wp_enqueue_script( 'es-react-compat' );
+				wp_enqueue_script( 'es-react-dom-compat' );
+				$es_script_deps = array( 'es-react-compat', 'es-react-dom-compat' );
+			}
+			wp_register_script( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/dist/index.js', $es_script_deps, $this->version, true );
 
+			// WP < 5.0 compatibility: inject a lightweight passthrough shim before the React
+			// bundle so every wp.i18n.__() call returns the English source string instead of
+			// throwing a TypeError (which would crash the entire React application).
+			if ( ! function_exists( 'wp_set_script_translations' ) ) {
+				$es_i18n_shim  = 'window.wp = window.wp || {};';
+				$es_i18n_shim .= 'if ( ! window.wp.i18n ) {';
+				$es_i18n_shim .= 	'window.wp.i18n = {';
+				$es_i18n_shim .= 		'"__": function( text ) { return text; },';
+				$es_i18n_shim .= 		'"_x": function( text ) { return text; },';
+				$es_i18n_shim .= 		'"_n": function( singular, plural, number ) { return number === 1 ? singular : plural; },';
+				$es_i18n_shim .= 		'"sprintf": function( text ) { return text; }';
+				$es_i18n_shim .= 	'};';
+				$es_i18n_shim .= '}';
+				wp_add_inline_script( 'es-shadcn-dashboard', $es_i18n_shim, 'before' );
+			}
+			$current_user = wp_get_current_user();
+					
 			// Determine default route based on current page
 				$default_route = '';
 			if ( 'es_subscribers' === $page ) {
@@ -479,9 +523,12 @@ class Email_Subscribers_Admin {
 			wp_register_style( 'es-shadcn-dashboard', plugin_dir_url( __FILE__ ) . 'shadcn-frontend/dist/index.css', array(), $this->version );
 			wp_enqueue_script( 'es-shadcn-dashboard' );
 			wp_enqueue_style( 'es-shadcn-dashboard' );
-			
-			// Load text domain for JavaScript translations
-			wp_set_script_translations( 'es-shadcn-dashboard', 'email-subscribers', ES_PLUGIN_DIR . 'lite/languages' );
+
+			// wp_set_script_translations() was introduced in WP 5.0. Guard it so the plugin
+			// does not throw a PHP fatal error on WP 4.9 and below.
+			if ( function_exists( 'wp_set_script_translations' ) ) {
+				wp_set_script_translations( 'es-shadcn-dashboard', 'email-subscribers', dirname( dirname( __FILE__ ) ) . '/languages' );
+			}
 		}
 		
 	}

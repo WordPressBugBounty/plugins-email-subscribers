@@ -6,7 +6,7 @@ Tags: email subscribers, newsletter, subscription form, email marketing, email a
 Requires at least: 3.9
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 5.9.31
+Stable tag: 5.9.32
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -365,12 +365,15 @@ Create your form under Forms, then set its display type to "Popup" and configure
 
 == Upgrade Notice ==
 
-= 5.9.31 =
+= 5.9.32 =
 
-* Fix: Disabled editing options for sent campaigns
-* Fix: Resolved UI issues in WP 7.0
+* Improvement: Improved localization support
 
 == Changelog ==
+
+**5.9.32 (30.07.2026)**
+
+* Improvement: Improved localization support
 
 **5.9.31 (23.07.2026)**
 
