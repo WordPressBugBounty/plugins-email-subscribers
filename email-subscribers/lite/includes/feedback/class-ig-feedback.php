@@ -1464,7 +1464,9 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 					};
 					$.post(ajaxurl, data).always(function(){
 						if ( ! skipRedirect ) {
-							location.href = $deactivateLink.attr('href');
+							var href = $deactivateLink.attr('href');
+							href += '&feedback_provided=1';
+							location.href = href;
 						}
 					});
 				}

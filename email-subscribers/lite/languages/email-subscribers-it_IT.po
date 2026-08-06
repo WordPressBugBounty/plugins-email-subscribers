@@ -12449,7 +12449,6 @@ msgstr "La percentuale di iscritti che aprono una specifica email sul numero tot
 msgid ""
 "The percentage of people who click on a link or other action in an email."
 msgstr "La percentuale di persone che cliccano su un link o altra azione in un'email."
-msgstr ""
 
 #: lite/admin/dist/index.js:381 lite/admin/js/src/views/campaign/Kpi.js:87
 msgid "Count of unsubscribers"
@@ -14959,15 +14958,15 @@ msgstr "Si è verificato un errore durante la pulizia della lista. Riprova."
 msgid ""
 "Emails with <b style='color: #000000; font-weight: 500;'>personalized "
 "subject lines</b> get <b style='color: #000000; font-weight: 500;'>higher "
-"open rates </b> \u2014 try adding the recipient's name."
-msgstr "Le email con <b style='color: #000000; font-weight: 500;'>oggetti personalizzati</b> ottengono <b style='color: #000000; font-weight: 500;'>tassi di apertura più alti</b> \u2014 prova ad aggiungere il nome del destinatario."
+"open rates </b> — try adding the recipient's name."
+msgstr "Le email con <b style='color: #000000; font-weight: 500;'>oggetti personalizzati</b> ottengono <b style='color: #000000; font-weight: 500;'>tassi di apertura più alti</b> — prova ad aggiungere il nome del destinatario."
 
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
 "<b style='color: #000000; font-weight: 500;'>Resending to non-openers after "
 "48 hours</b> can <b style='color: #000000; font-weight: 500;'>increase reach "
-"by 10\u201320%</b>."
-msgstr "<b style='color: #000000; font-weight: 500;'>Inviare nuovamente a chi non ha aperto dopo 48 ore</b> può <b style='color: #000000; font-weight: 500;'>aumentare la portata del 10\u201320%</b>."
+"by 10–20%</b>."
+msgstr "<b style='color: #000000; font-weight: 500;'>Inviare nuovamente a chi non ha aperto dopo 48 ore</b> può <b style='color: #000000; font-weight: 500;'>aumentare la portata del 10–20%</b>."
 
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
@@ -14979,9 +14978,9 @@ msgstr "Aggiungere <b style='color: #000000; font-weight: 500;'>CTA chiari</b> (
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
 "<b style='color: #000000; font-weight: 500;'>High image-to-text ratio</b> "
-"can <b style='color: #000000; font-weight: 500;'> trigger spam filters</b> \u2014 "
+"can <b style='color: #000000; font-weight: 500;'> trigger spam filters</b> — "
 "maintain balance."
-msgstr "<b style='color: #000000; font-weight: 500;'>Un alto rapporto immagini-testo</b> può <b style='color: #000000; font-weight: 500;'>attivare i filtri antispam</b> \u2014 mantieni l'equilibrio."
+msgstr "<b style='color: #000000; font-weight: 500;'>Un alto rapporto immagini-testo</b> può <b style='color: #000000; font-weight: 500;'>attivare i filtri antispam</b> — mantieni l'equilibrio."
 
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
@@ -15016,9 +15015,9 @@ msgstr "Evita <b style='color: #000000; font-weight: 500;'>parole trigger spam</
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
 "Adding <b style='color: #000000; font-weight: 500;'>emojis to subject lines</"
-"b> can <b style='color: #000000; font-weight: 500;'>boost opens</b> \u2014 but "
+"b> can <b style='color: #000000; font-weight: 500;'>boost opens</b> — but "
 "use them sparingly."
-msgstr "Aggiungere <b style='color: #000000; font-weight: 500;'>emoji agli oggetti</b> può <b style='color: #000000; font-weight: 500;'>aumentare le aperture</b> \u2014 ma usali con parsimonia."
+msgstr "Aggiungere <b style='color: #000000; font-weight: 500;'>emoji agli oggetti</b> può <b style='color: #000000; font-weight: 500;'>aumentare le aperture</b> — ma usali con parsimonia."
 
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
@@ -15036,9 +15035,9 @@ msgstr "Evita di inviare <b style='color: #000000; font-weight: 500;'>troppe ema
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
 "Your <b style='color: #000000; font-weight: 500;'>preview text</b> can <b "
-"style='color: #000000; font-weight: 500;'>double open rates</b> \u2014 don't "
+"style='color: #000000; font-weight: 500;'>double open rates</b> — don't "
 "leave it blank."
-msgstr "Il tuo <b style='color: #000000; font-weight: 500;'>testo di anteprima</b> può <b style='color: #000000; font-weight: 500;'>raddoppiare i tassi di apertura</b> \u2014 non lasciarlo vuoto."
+msgstr "Il tuo <b style='color: #000000; font-weight: 500;'>testo di anteprima</b> può <b style='color: #000000; font-weight: 500;'>raddoppiare i tassi di apertura</b> — non lasciarlo vuoto."
 
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
@@ -15050,9 +15049,9 @@ msgstr "Usa <b style='color: #000000; font-weight: 500;'>colori e caratteri del 
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
 "<b style='color: #000000; font-weight: 500;'>White space</b> improves <b "
-"style='color: #000000; font-weight: 500;'>readability</b> \u2014 don't cram too "
+"style='color: #000000; font-weight: 500;'>readability</b> — don't cram too "
 "much content."
-msgstr "<b style='color: #000000; font-weight: 500;'>Lo spazio bianco</b> migliora <b style='color: #000000; font-weight: 500;'>la leggibilità</b> \u2014 non stipare troppo contenuto."
+msgstr "<b style='color: #000000; font-weight: 500;'>Lo spazio bianco</b> migliora <b style='color: #000000; font-weight: 500;'>la leggibilità</b> — non stipare troppo contenuto."
 
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
@@ -15077,9 +15076,9 @@ msgstr "<b style='color: #000000; font-weight: 500;'>Segmentare per punteggio di
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
 "<b style='color: #000000; font-weight: 500;'>New subscribers</b> engage <b "
-"style='color: #000000; font-weight: 500;'>3x more</b> \u2014 <b style='color: "
+"style='color: #000000; font-weight: 500;'>3x more</b> — <b style='color: "
 "#000000; font-weight: 500;'>nurture them early</b>."
-msgstr "<b style='color: #000000; font-weight: 500;'>I nuovi iscritti</b> si impegnano <b style='color: #000000; font-weight: 500;'>3 volte di più</b> \u2014 <b style='color: #000000; font-weight: 500;'>coltivali subito</b>."
+msgstr "<b style='color: #000000; font-weight: 500;'>I nuovi iscritti</b> si impegnano <b style='color: #000000; font-weight: 500;'>3 volte di più</b> — <b style='color: #000000; font-weight: 500;'>coltivali subito</b>."
 
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
@@ -15091,9 +15090,9 @@ msgstr "Usa <b style='color: #000000; font-weight: 500;'>sondaggi o questionari<
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
 "Adding a <b style='color: #000000; font-weight: 500;'>P.S. line</b> "
-"increases <b style='color: #000000; font-weight: 500;'>responses</b> \u2014 "
+"increases <b style='color: #000000; font-weight: 500;'>responses</b> — "
 "readers often <b style='color: #000000; font-weight: 500;'>skim to it</b>."
-msgstr "Aggiungere una <b style='color: #000000; font-weight: 500;'>riga P.S.</b> aumenta <b style='color: #000000; font-weight: 500;'>le risposte</b> \u2014 i lettori spesso <b style='color: #000000; font-weight: 500;'>la leggono per prima</b>."
+msgstr "Aggiungere una <b style='color: #000000; font-weight: 500;'>riga P.S.</b> aumenta <b style='color: #000000; font-weight: 500;'>le risposte</b> — i lettori spesso <b style='color: #000000; font-weight: 500;'>la leggono per prima</b>."
 
 #: lite/admin/shadcn-frontend/dist/index.js:50
 msgid ""
@@ -15916,6 +15915,106 @@ msgstr "Seleziona i tipi di profilo."
 msgid "Please select member groups."
 msgstr "Seleziona i gruppi membri."
 
+#: lite/includes/feedback.php
+msgid "&#x1F614; Before you go&hellip;"
+msgstr "&#x1F614; Prima di andare&hellip;"
+
+msgid "What made you deactivate Icegram Express?"
+msgstr "Cosa ti ha spinto a disattivare Icegram Express?"
+
+msgid "Emails aren't sending or landing in spam"
+msgstr "Le email non vengono inviate o finiscono nello spam"
+
+msgid "Setup or configuration was confusing"
+msgstr "La configurazione o l'installazione era poco chiara"
+
+msgid "The plugin is affecting performance"
+msgstr "Il plugin sta influendo sulle prestazioni"
+
+msgid "I'm switching to another plugin"
+msgstr "Sto passando a un altro plugin"
+
+msgid "It's missing features I need"
+msgstr "Mancano le funzionalità di cui ho bisogno"
+
+msgid "Continue Deactivation"
+msgstr "Continua la disattivazione"
+
+msgid "Get Expert Help"
+msgstr "Ottieni assistenza da un esperto"
+
+msgid "Submit and Deactivate"
+msgstr "Invia e disattiva"
+
+msgid "Skip &amp; Deactivate"
+msgstr "Salta e disattiva"
+
+<<<<<<< HEAD
+msgid "What issue are you facing specifically?"
+msgstr "Quale problema stai riscontrando esattamente?"
+
+msgid "Emails are not being sent at all"
+msgstr "Le email non vengono inviate affatto"
+
+msgid "Emails are going to spam"
+msgstr "Le email finiscono nella cartella spam"
+
+msgid "Issue with setting up email service"
+msgstr "Problema durante la configurazione del servizio email"
+
+msgid "Thank you for reaching out, we are here for you."
+msgstr "Grazie per averci contattato. Siamo qui per aiutarti."
+
+msgid "What felt confusing or difficult?"
+msgstr "Cosa ti è sembrato confuso o difficile?"
+
+msgid "Forms creation issues"
+msgstr "Problemi nella creazione dei moduli"
+
+msgid "Campaign creation issues"
+msgstr "Problemi nella creazione delle campagne"
+
+msgid "Email service setup issues"
+msgstr "Problemi nella configurazione del servizio email"
+
+msgid "Other issues"
+msgstr "Altri problemi"
+
+msgid "View Documentation"
+msgstr "Visualizza la documentazione"
+
+msgid "Tell us more about the issue."
+msgstr "Raccontaci di più sul problema."
+
+msgid "Describe the performance issue you're facing..."
+msgstr "Descrivi il problema di prestazioni che stai riscontrando..."
+
+msgid "Which plugin are you switching to?"
+msgstr "A quale plugin stai passando?"
+
+msgid "Plugin name (optional)..."
+msgstr "Nome del plugin (facoltativo)..."
+
+msgid "What are you looking for?"
+msgstr "Che cosa stai cercando?"
+
+msgid "Describe the feature or capability you were looking for..."
+msgstr "Descrivi la funzionalità o la caratteristica che stavi cercando..."
+
+msgid "Any details you share will help us improve."
+msgstr "Qualsiasi dettaglio tu condivida ci aiuterà a migliorare."
+
+msgid "Tell us what went wrong or what we could do better..."
+msgstr "Raccontaci cosa è andato storto o cosa potremmo migliorare..."
+
+msgid "Skip and Deactivate"
+msgstr "Salta e disattiva"
+
+msgid "Thanks for trying Icegram Express"
+msgstr "Grazie per aver provato Icegram Express"
+
+=======
+>>>>>>> upstream/survey-popup-translate
 #~ msgid ", still there?"
 #~ msgstr ", sei ancora lì?"
 

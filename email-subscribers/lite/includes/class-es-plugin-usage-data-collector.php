@@ -35,7 +35,8 @@ if (!class_exists('ES_Plugin_Usage_Data_Collector')) {
 		public function register_hooks() {
 		
 			add_filter('ig_es_tracking_data_params', array(__CLASS__, 'add_tracking_data'));
-			add_action('ig_es_plugin_activate', array(__CLASS__, 'add_plan_activation_dates'));
+			add_action('ig_es_plugin_activate', array(__CLASS__, 'add_plan_activation_dates')); 
+
 		}
 
 		/**
@@ -65,7 +66,6 @@ if (!class_exists('ES_Plugin_Usage_Data_Collector')) {
 		}
 		
 		
-
 		/**
 		 * Get plugin meta info
 		 *
@@ -108,7 +108,13 @@ if (!class_exists('ES_Plugin_Usage_Data_Collector')) {
 			$ess_email_sending_stats = self::get_ess_email_sending_stats();
 			$average_messages_per_sequence_campaign = self::get_average_messages_per_sequence_campaign();
 			$plan_change_stats = self::get_plan_change_stats();
-			  
+			$first_contact_created_at = ES()->contacts_db->get_first_contact_created_at();
+			$first_list_created_at = ES()->lists_db->get_first_list_created_at();
+			$first_form_created_at = ES()->forms_db->get_first_form_created_at();
+			$first_campaign_created_at = ES()->campaigns_db->get_first_campaign_created_at();
+			$email_delivery_stats_last_30_days = ES_DB_Sending_Queue::get_email_delivery_stats_last_30_days();
+			
+
 			return array(
 				'version' => ES_PLUGIN_VERSION,
 				'installed_on' => get_option('ig_es_installed_on', ''),
@@ -142,6 +148,11 @@ if (!class_exists('ES_Plugin_Usage_Data_Collector')) {
 				'ess_email_sending_stats' => $ess_email_sending_stats,
 				'average_messages_per_sequence_campaign' => $average_messages_per_sequence_campaign,
 				'plan_change_stats'=>$plan_change_stats,
+				'first_contact_created_at'  => $first_contact_created_at,
+				'first_list_created_at'     => $first_list_created_at,
+				'first_form_created_at'     => $first_form_created_at,
+				'first_campaign_created_at' => $first_campaign_created_at,
+				'email_delivery_stats_last_30_days' => $email_delivery_stats_last_30_days, // Added in 5.9.x
 			);
 		}
 

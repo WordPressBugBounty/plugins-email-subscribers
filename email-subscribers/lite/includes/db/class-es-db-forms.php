@@ -415,4 +415,14 @@ class ES_DB_Forms extends ES_DB {
 	}
 
 
+	public static function get_first_form_created_at() {
+
+		global $wpdb;
+
+		return $wpdb->get_var(
+			"SELECT MIN(created_at)
+			FROM {$wpdb->prefix}ig_forms"
+		);
+	}
+
 }

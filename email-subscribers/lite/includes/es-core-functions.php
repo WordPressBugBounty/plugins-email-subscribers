@@ -1118,6 +1118,34 @@ if ( ! function_exists( 'ig_es_maybe_unserialize' ) ) {
 			return @unserialize(trim( $data), ['allowed_classes' => false]);	
 		}
 		return $data;
+	} 
+
+}
+
+if (!function_exists('ig_es_get_es_admin_pages')) {
+ 	/**
+	 * Returns the list of known ES admin page slugs used for last-visited tracking.
+	 *
+	 * @return array
+	 * @since 5.9.32
+	 */
+	function ig_es_get_es_admin_pages() {
+		return array(
+			'es_dashboard',
+			'es_subscribers',
+			'es_lists',
+			'es_forms',
+			'es_campaigns',
+			'es_notifications',
+			'es_newsletters',
+			'es_workflows',
+			'es_reports',
+			'es_logs',
+			'es_settings',
+			'es_gutenberg_editor',
+			'es_general_information',
+			'es_pricing',
+		);
 	}
 
 }

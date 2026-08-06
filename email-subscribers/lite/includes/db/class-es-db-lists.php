@@ -651,4 +651,14 @@ class ES_DB_Lists extends ES_DB {
 
 		return $this->get_by_conditions( $where );
 	}
+
+	public static function get_first_list_created_at() {
+
+		global $wpdb;
+		
+		return $wpdb->get_var(
+			"SELECT MIN(created_at)
+			FROM {$wpdb->prefix}ig_lists"
+		);
+	}
 }

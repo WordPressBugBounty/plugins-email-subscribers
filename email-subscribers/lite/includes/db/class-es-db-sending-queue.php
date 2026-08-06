@@ -1018,5 +1018,74 @@ class ES_DB_Sending_Queue {
 		}
 	}
 
+	
+	/**
+	 * Get email open and failure rates for the past 30 days.
+	 *
+	 * Queries ig_sending_queue for emails sent in the last 30 days and returns:
+	 *  - total_sent:    number of emails with status 'Sent'
+	 *  - total_failed:  number of emails with status 'Failed'
+	 *  - total_opened:  number of sent emails that were opened (opened = 1)
+	 *  - open_rate:     percentage of sent emails that were opened
+	 *  - failure_rate:  percentage of attempted emails (sent + failed) that failed
+	 *
+	 * @since 5.9.x
+	 *
+	 * @return array
+	 */
+	public static function get_email_delivery_stats_last_30_days() {
+
+		global $wpdb;
+
+		$cache_key = 'email_delivery_stats_last_30_days';
+		$cached    = ES_Cache::get_transient( $cache_key );
+		if ( false !== $cached ) {
+			return $cached;
+		}
+
+		$since = gmdate( 'Y-m-d H:i:s', strtotime( '-30 days' ) );
+
+		$row = $wpdb->get_row(
+			$wpdb->prepare(
+				"SELECT
+					SUM( status = %s )                        AS total_sent,
+					SUM( status = %s )                        AS total_failed,
+					SUM( status = %s AND opened = 1 )         AS total_opened
+				FROM `{$wpdb->prefix}ig_sending_queue`
+				WHERE sent_at >= %s",
+				IG_ES_SENDING_QUEUE_STATUS_SENT,
+				IG_ES_SENDING_QUEUE_STATUS_FAILED,
+				IG_ES_SENDING_QUEUE_STATUS_SENT,
+				$since
+			),
+			ARRAY_A
+		);
+
+		if ( empty( $row ) ) {
+			return array();
+		}
+
+		$total_sent   = (int) $row['total_sent'];
+		$total_failed = (int) $row['total_failed'];
+		$total_opened = (int) $row['total_opened'];
+		$total_attempted = $total_sent + $total_failed;
+
+		$open_rate    = ( $total_sent > 0 )      ? round( ( $total_opened / $total_sent )      * 100, 2 ) : 0;
+		$failure_rate = ( $total_attempted > 0 ) ? round( ( $total_failed / $total_attempted ) * 100, 2 ) : 0;
+
+		$stats = array(
+			'period_days'    => 30,
+			'since'          => $since,
+			'total_sent'     => $total_sent,
+			'total_failed'   => $total_failed,
+			'total_opened'   => $total_opened,
+			'open_rate'      => $open_rate,
+			'failure_rate'   => $failure_rate,
+		);
+
+		ES_Cache::set_transient( $cache_key, $stats, HOUR_IN_SECONDS );
+
+		return $stats;
+	}
 
 }

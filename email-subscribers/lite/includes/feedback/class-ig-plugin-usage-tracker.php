@@ -195,13 +195,18 @@ if ( ! class_exists( 'IG_Plugin_Usage_Tracker_V_1_0_0' ) ) {
 
 			$this->clear_scheduled_cron();
 
-			$survey_status = ig_es_get_request_data( 'survey_status', '' );
-			if ( ! empty( $survey_status ) && 'skipped' === $survey_status ) {
-				$extra_params = array(
-					'is_deactivated' => 1,
-				);
-				$this->send_tracking_data( true, $extra_params );
-			}
+			$feedback_provided = isset( $_GET['feedback_provided'] ) ? absint( wp_unslash( $_GET['feedback_provided'] ) ) : 0;
+ 
+			$extra_params = array(
+				'is_deactivated' => 1,
+			);
+
+			// Skip the tracking permission check if the user has provided deactivation feedback,
+			// as submitting feedback is considered implicit consent.
+			$skip_tracking_permission_check = ! empty( $feedback_provided );
+
+			$this->send_tracking_data( true, $extra_params, $skip_tracking_permission_check );
+			
 		}
 
 		/**
@@ -422,14 +427,18 @@ if ( ! class_exists( 'IG_Plugin_Usage_Tracker_V_1_0_0' ) ) {
 		 * @param bool  $ignore_last_send Whether to consider last sending time before sending a new request.
 		 * @param array $extra_params Extra request params.
 		 */
-		public function send_tracking_data( $ignore_last_send = false, $extra_params = array() ) {
+		public function send_tracking_data( $ignore_last_send = false, $extra_params = array(), $skip_tracking_check = false ) {
 
-			$tracking_allowed = $this->is_tracking_allowed();
+			if ( ! $skip_tracking_check ) {
+				
+				$tracking_allowed = $this->is_tracking_allowed();
 
-			// Return if tracking not allowed
-			if ( 'yes' !== $tracking_allowed ) {
-				return;
-			}
+				// Return if tracking not allowed
+				if ( 'yes' !== $tracking_allowed ) {
+					return;
+				}
+
+			}		
 
 			if ( ! $ignore_last_send ) {
 				$last_send = $this->get_last_send_time();
@@ -463,6 +472,7 @@ if ( ! class_exists( 'IG_Plugin_Usage_Tracker_V_1_0_0' ) ) {
 						),
 					)
 				);
+
 			}
 		}
 

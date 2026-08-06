@@ -1801,7 +1801,7 @@ msgid ""
 "We've simplified and automated email marketing, so you can get\r\n"
 "\t\t                results quickly."
 msgstr ""
-"Wir haben E-Mail-Marketing vereinfacht und automatisiert, damit Sie schnell Ergebnisse erzielen k\u00f6nnen."
+"Wir haben E-Mail-Marketing vereinfacht und automatisiert, damit Sie schnell Ergebnisse erzielen können."
 
 #: lite/admin/partials/onboarding.php:64 lite/language.php:297
 msgid "Essentials:"
@@ -1824,7 +1824,7 @@ msgid ""
 "Add a couple of your own email addresses below. We will add\r\n"
 "\t\t                  them to your audience lists."
 msgstr ""
-"F\u00fcgen Sie unten ein paar Ihrer eigenen E-Mail-Adressen hinzu. Wir werden sie zu Ihren Publikumslisten hinzuf\u00fcgen."
+"Fügen Sie unten ein paar Ihrer eigenen E-Mail-Adressen hinzu. Wir werden sie zu Ihren Publikumslisten hinzufügen."
 
 #: lite/admin/partials/onboarding.php:129
 msgid "Need to send email?"
@@ -1855,7 +1855,7 @@ msgid ""
 "Enable double opt-in (people have to click a confirmation\r\n"
 "\t\t\t\t\t\t\t\tlink in email before they're subscribed)"
 msgstr ""
-"Double Opt-in aktivieren (Personen m\u00fcssen auf einen Best\u00e4tigungslink in der E-Mail klicken, bevor sie abonniert werden)"
+"Double Opt-in aktivieren (Personen müssen auf einen Bestätigungslink in der E-Mail klicken, bevor sie abonniert werden)"
 
 #: lite/admin/partials/onboarding.php:212 lite/language.php:310
 #: lite/admin/shadcn-frontend/dist/index.js:50
@@ -1917,7 +1917,7 @@ msgid ""
 "Adding the form to an active sidebar, so you can show it on\r\n"
 "\t\t                    the site"
 msgstr ""
-"F\u00fcge das Formular zu einer aktiven Seitenleiste hinzu, damit Sie es auf der Website anzeigen k\u00f6nnen"
+"Füge das Formular zu einer aktiven Seitenleiste hinzu, damit Sie es auf der Website anzeigen können"
 
 #: lite/admin/partials/onboarding.php:377 lite/language.php:330
 msgid "Continue anyway →"
@@ -2018,7 +2018,7 @@ msgid ""
 "delivered before\r\n"
 "\t\t\t\t\t                  you send any real campaigns."
 msgstr ""
-"Wir empfehlen Ihnen, dieses Problem schnell nach Abschluss der Einrichtung zu l\u00f6sen. Stellen Sie sicher, dass E-Mails zugestellt werden, bevor Sie echte Kampagnen senden."
+"Wir empfehlen Ihnen, dieses Problem schnell nach Abschluss der Einrichtung zu lösen. Stellen Sie sicher, dass E-Mails zugestellt werden, bevor Sie echte Kampagnen senden."
 
 #: lite/admin/partials/onboarding.php:590 lite/language.php:361
 msgid " Understood, continue for now →"
@@ -2364,7 +2364,7 @@ msgstr ""
 "category/icegram-express-premium/check-spam-score#what-to-do-if-my-spam-"
 "score-is-higher-than-5/?"
 "utm_source=es&utm_medium=dashboard&utm_campaign=revamp-01' "
-"target='_blank'>Spam-Score-\u00dcberpr\u00fcfung</a> - Verhindern Sie, dass Ihre E-Mails im Spam landen"
+"target='_blank'>Spam-Score-Überprüfung</a> - Verhindern Sie, dass Ihre E-Mails im Spam landen"
 
 #: lite/admin/views/dashboard/trial-optin-ess.php:71
 msgid ""
@@ -16204,6 +16204,103 @@ msgstr "Bitte wählen Sie Profil-Typen aus."
 #: pro/assets/js/admin.js:751
 msgid "Please select member groups."
 msgstr "Bitte wählen Sie Mitgliedergruppen aus."
+
+#: lite/includes/feedback.php
+msgid "&#x1F614; Before you go&hellip;"
+msgstr "&#x1F614; Bevor Sie gehen&hellip;"
+
+msgid "What made you deactivate Icegram Express?"
+msgstr "Warum haben Sie Icegram Express deaktiviert?"
+
+msgid "Emails aren't sending or landing in spam"
+msgstr "E-Mails werden nicht gesendet oder landen im Spam"
+
+msgid "Setup or configuration was confusing"
+msgstr "Die Einrichtung oder Konfiguration war verwirrend"
+
+msgid "The plugin is affecting performance"
+msgstr "Das Plugin beeinträchtigt die Leistung"
+
+msgid "I'm switching to another plugin"
+msgstr "Ich wechsle zu einem anderen Plugin"
+
+msgid "It's missing features I need"
+msgstr "Es fehlen Funktionen, die ich benötige"
+
+msgid "Continue Deactivation"
+msgstr "Deaktivierung fortsetzen"
+
+msgid "Get Expert Help"
+msgstr "Expertenhilfe erhalten"
+
+msgid "Submit and Deactivate"
+msgstr "Senden und deaktivieren"
+
+msgid "Skip &amp; Deactivate"
+msgstr "Überspringen und deaktivieren"
+
+msgid "What issue are you facing specifically?"
+msgstr "Mit welchem Problem haben Sie genau zu kämpfen?"
+
+msgid "Emails are not being sent at all"
+msgstr "E-Mails werden überhaupt nicht versendet"
+
+msgid "Emails are going to spam"
+msgstr "E-Mails landen im Spam"
+
+msgid "Issue with setting up email service"
+msgstr "Problem beim Einrichten des E-Mail-Dienstes"
+
+msgid "Thank you for reaching out, we are here for you."
+msgstr "Vielen Dank, dass Sie uns kontaktiert haben. Wir sind für Sie da."
+
+msgid "What felt confusing or difficult?"
+msgstr "Was war verwirrend oder schwierig?"
+
+msgid "Forms creation issues"
+msgstr "Probleme beim Erstellen von Formularen"
+
+msgid "Campaign creation issues"
+msgstr "Probleme beim Erstellen von Kampagnen"
+
+msgid "Email service setup issues"
+msgstr "Probleme beim Einrichten des E-Mail-Dienstes"
+
+msgid "Other issues"
+msgstr "Andere Probleme"
+
+msgid "View Documentation"
+msgstr "Dokumentation anzeigen"
+
+msgid "Tell us more about the issue."
+msgstr "Erzählen Sie uns mehr über das Problem."
+
+msgid "Describe the performance issue you're facing..."
+msgstr "Beschreiben Sie das Leistungsproblem, das bei Ihnen auftritt..."
+
+msgid "Which plugin are you switching to?"
+msgstr "Zu welchem Plugin wechseln Sie?"
+
+msgid "Plugin name (optional)..."
+msgstr "Plugin-Name (optional)..."
+
+msgid "What are you looking for?"
+msgstr "Wonach suchen Sie?"
+
+msgid "Describe the feature or capability you were looking for..."
+msgstr "Beschreiben Sie die Funktion oder Fähigkeit, nach der Sie gesucht haben..."
+
+msgid "Any details you share will help us improve."
+msgstr "Alle Informationen, die Sie uns mitteilen, helfen uns, uns zu verbessern."
+
+msgid "Tell us what went wrong or what we could do better..."
+msgstr "Teilen Sie uns mit, was schiefgelaufen ist oder was wir besser machen könnten..."
+
+msgid "Skip and Deactivate"
+msgstr "Überspringen und deaktivieren"
+
+msgid "Thanks for trying Icegram Express"
+msgstr "Vielen Dank, dass Sie Icegram Express ausprobiert haben"
 
 #~ msgid ", still there?"
 #~ msgstr ", noch da?"

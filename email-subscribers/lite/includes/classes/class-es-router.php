@@ -12,6 +12,8 @@ if ( ! class_exists( 'ES_Router' ) ) {
 		// class instance
 		public static $instance;
 
+		const LAST_VISITED_PAGE_OPTION = 'ig_es_last_visited_page';
+
 		// class constructor
 		public function __construct() {
 			$this->init();
@@ -31,6 +33,10 @@ if ( ! class_exists( 'ES_Router' ) ) {
 
 		public function register_hooks() {
 			add_action( 'wp_ajax_icegram-express', array( $this, 'handle_ajax_request' ) );
+
+			add_action( 'current_screen', array( __CLASS__, 'save_last_visited_plugin_page' ) );
+
+			add_action( 'wp_ajax_ig_es_save_last_visited_react_route', array( __CLASS__, 'save_last_visited_react_route' ) );
 		}
 
 		/**
@@ -100,6 +106,99 @@ if ( ! class_exists( 'ES_Router' ) ) {
 			}
 
 			wp_send_json( $response );
+		}
+
+		/**
+		 * Update last visited Express page.
+		 *
+		 * Avoids unnecessary database writes.
+		 *
+		 * @since 5.9.32
+		 *
+		 * @param string $page Page identifier.
+		 */
+		private static function update_last_visited_plugin_page( $page ) {
+
+			if ( empty( $page ) ) {
+				return;
+			}
+
+			$last_page = get_option( self::LAST_VISITED_PAGE_OPTION, '' );
+
+			if ( is_array( $last_page ) && isset( $last_page['page'] ) && $last_page['page'] === $page ) {
+				return;
+			}
+
+			update_option(
+				self::LAST_VISITED_PAGE_OPTION,
+				array(
+					'page'       => $page,
+					'visited_at' => ig_get_current_date_time(),
+				),
+				false
+			);
+		}
+
+		/**
+		 * Store last visited WordPress admin page.
+		 *
+		 * @since 5.9.32
+		 */
+		public static function save_last_visited_plugin_page() {
+
+			$current_page = sanitize_key( ig_es_get_request_data( 'page' ) );
+
+			if ( empty( $current_page ) ) {
+				return;
+			}
+
+			if ( ES()->is_es_admin_screen() ) {
+				self::update_last_visited_plugin_page( $current_page );
+			}
+		}
+
+		/**
+		 * Store last visited React dashboard page.
+		 *
+		 * Called via wp_ajax on every React route change.
+		 *
+		 * @since 5.9.32
+		 */
+		public static function save_last_visited_react_route() {
+
+			check_ajax_referer( 'ig-es-admin-ajax-nonce', 'security' );
+
+			if ( ! current_user_can( 'edit_posts' ) ) {
+				wp_send_json_error( null, 403 );
+			}
+
+			$raw_data = ig_es_get_request_data( 'data', '', false );
+			$data     = json_decode( $raw_data, true );
+
+			if ( ! is_array( $data ) ) {
+				wp_send_json_success();
+			}
+
+			$wp_page = isset( $data['wp_page'] )
+				? sanitize_key( $data['wp_page'] )
+				: '';
+
+			$route = isset( $data['page'] )
+				? sanitize_text_field( $data['page'] )
+				: '';
+
+			if ( ! in_array( $wp_page, ig_es_get_es_admin_pages(), true ) ) {
+				wp_send_json_success();
+			}
+
+			if ( ! empty( $route ) && preg_match( '#^/[a-zA-Z0-9/_-]*$#', $route ) ) {
+
+				$page = $wp_page . '#' . $route;
+
+				self::update_last_visited_plugin_page( $page );
+			}
+
+			wp_send_json_success();
 		}
 	}
 }

@@ -16177,6 +16177,103 @@ msgstr "Por favor selecione tipos de perfil."
 msgid "Please select member groups."
 msgstr "Por favor selecione grupos de membros."
 
+#: lite/includes/feedback.php
+msgid "&#x1F614; Before you go&hellip;"
+msgstr "&#x1F614; Antes de sair&hellip;"
+
+msgid "What made you deactivate Icegram Express?"
+msgstr "O que o levou a desativar o Icegram Express?"
+
+msgid "Emails aren't sending or landing in spam"
+msgstr "Os e-mails não estão a ser enviados ou estão a ir para o spam"
+
+msgid "Setup or configuration was confusing"
+msgstr "A configuração ou instalação foi confusa"
+
+msgid "The plugin is affecting performance"
+msgstr "O plugin está a afetar o desempenho"
+
+msgid "I'm switching to another plugin"
+msgstr "Vou mudar para outro plugin"
+
+msgid "It's missing features I need"
+msgstr "Faltam funcionalidades de que preciso"
+
+msgid "Continue Deactivation"
+msgstr "Continuar a desativação"
+
+msgid "Get Expert Help"
+msgstr "Obter ajuda de um especialista"
+
+msgid "Submit and Deactivate"
+msgstr "Enviar e desativar"
+
+msgid "Skip &amp; Deactivate"
+msgstr "Ignorar e desativar"
+
+msgid "What issue are you facing specifically?"
+msgstr "Que problema está a enfrentar especificamente?"
+
+msgid "Emails are not being sent at all"
+msgstr "Os e-mails não estão a ser enviados de todo"
+
+msgid "Emails are going to spam"
+msgstr "Os e-mails estão a ir para a pasta de spam"
+
+msgid "Issue with setting up email service"
+msgstr "Problema na configuração do serviço de e-mail"
+
+msgid "Thank you for reaching out, we are here for you."
+msgstr "Obrigado por nos contactar. Estamos aqui para o ajudar."
+
+msgid "What felt confusing or difficult?"
+msgstr "O que lhe pareceu confuso ou difícil?"
+
+msgid "Forms creation issues"
+msgstr "Problemas na criação de formulários"
+
+msgid "Campaign creation issues"
+msgstr "Problemas na criação de campanhas"
+
+msgid "Email service setup issues"
+msgstr "Problemas na configuração do serviço de e-mail"
+
+msgid "Other issues"
+msgstr "Outros problemas"
+
+msgid "View Documentation"
+msgstr "Ver documentação"
+
+msgid "Tell us more about the issue."
+msgstr "Conte-nos mais sobre o problema."
+
+msgid "Describe the performance issue you're facing..."
+msgstr "Descreva o problema de desempenho que está a enfrentar..."
+
+msgid "Which plugin are you switching to?"
+msgstr "Para que plugin está a mudar?"
+
+msgid "Plugin name (optional)..."
+msgstr "Nome do plugin (opcional)..."
+
+msgid "What are you looking for?"
+msgstr "O que está à procura?"
+
+msgid "Describe the feature or capability you were looking for..."
+msgstr "Descreva a funcionalidade ou capacidade que procurava..."
+
+msgid "Any details you share will help us improve."
+msgstr "Qualquer detalhe que partilhe ajudará a melhorar o nosso produto."
+
+msgid "Tell us what went wrong or what we could do better..."
+msgstr "Diga-nos o que correu mal ou o que podemos fazer melhor..."
+
+msgid "Skip and Deactivate"
+msgstr "Ignorar e desativar"
+
+msgid "Thanks for trying Icegram Express"
+msgstr "Obrigado por experimentar o Icegram Express"
+
 #~ msgid ", still there?"
 #~ msgstr ", ainda aí?"
 

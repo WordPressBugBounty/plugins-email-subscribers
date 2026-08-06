@@ -2,19 +2,18 @@
 Contributors: icegram, niravmehta, sandhyam, storeapps, Mansi Shah, kishanranawat, shubhanshukandani
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BMFRMVXQ87JWA&source=url
 Author URI: https://www.icegram.com/
-Tags: email subscribers, newsletter, subscription form, email marketing, email automation, post notifications, WooCommerce emails, lead generation, email sending plugin
+Tags: email subscribers, WooCommerce emails, lead generation, email sending plugin, newsletter, subscription form, email marketing, email automation, post notifications
 Requires at least: 3.9
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 5.9.32
+Stable tag: 5.9.33
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
 
-Add subscription forms on the website and send newsletters & automatically send post notification about new blog posts once it gets published.
-
 == Description ==
 
+Add subscription forms on the website and send newsletters & automatically send post notification about new blog posts once it gets published.
 **Icegram Express** makes email marketing simple, effective, and fully WordPress native.
 This powerful email marketing plugin helps you grow your subscriber list using high converting opt-in forms, send beautiful newsletters, and automate follow-ups all without writing a single line of code.
 
@@ -274,67 +273,67 @@ Create your form under Forms, then set its display type to "Popup" and configure
 [Refer here](https://www.icegram.com/docs/category/icegram-express/show-subscribe-form-inside-popup/?utm_source=ig_express_wp_readme&utm_medium=faq16here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 9. How to modify the existing emails like Confirmation, Welcome, Admin emails and Cron Settings and Assign User Roles? =
-
+Go to Icegram Express > Settings, where you can edit the content of system emails (Confirmation, Welcome, Admin notifications), configure how often cron runs, and assign which user roles can access campaigns and audience data.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/plugin-settings/?utm_source=ig_express_wp_readme&utm_medium=faq3here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 10. How does Sync work? =
-
+Sync keeps your subscriber data consistent when contacts are added, updated, or removed through WordPress users, WooCommerce customers, or other integrations, so your audience lists stay accurate without manual updates.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/how-does-sync-work/?utm_source=ig_express_wp_readme&utm_medium=faq4here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 11. How to change/update/translate any strings from the plugin? =
-
+Icegram Express is translation-ready. Use a plugin like Loco Translate, or contribute directly via the WordPress.org translation project, to update or localize any text string in the plugin.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/change-update-transate-texts/?utm_source=ig_express_wp_readme&utm_medium=faq6here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 12. What are the available keywords in the Newsletters? =
-
+Newsletters support merge tags like {{FIRSTNAME}}, {{LASTNAME}}, {{EMAIL}}, and list-specific fields to personalize each email automatically for every subscriber.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/available-merge-tags-keywords-in-broadcasts/?utm_source=ig_express_wp_readme&utm_medium=faq9here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 13. What are the available keywords in the Post Notifications? =
-
+Post Notifications support keywords like {{POSTTITLE}}, {{POSTLINK}}, {{POSTIMAGE-URL}}, {{POSTEXCERPT}}, and {{POSTAUTHOR}} to auto-populate email content from your published post.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/available-merge-tags-keywords-in-post-notifications/?utm_source=ig_express_wp_readme&utm_medium=faq11here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 14. How to send a sample new post notification email to test group/me? =
-
+From the Post Notification campaign screen, use the "Send Test" option to email a sample version to yourself or a test list before it goes live to subscribers.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/send-sample-new-post-notification-email/?utm_source=ig_express_wp_readme&utm_medium=faq12here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 15. How to check sent emails reports? =
-
+Go to Campaigns > Reports to see opens, clicks, bounces, and unsubscribes for every sent campaign, broken down per recipient.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/check-sent-emails/?utm_source=ig_express_wp_readme&utm_medium=faq13here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 16. How to Add/Update Existing Subscribers Group & Status? =
-
+From the Audience page, select one or more contacts and use the bulk actions menu to change their list assignment or subscription status (Subscribed, Unconfirmed, Unsubscribed).
 [Refer here](https://www.icegram.com/docs/category/icegram-express/audience-subscription-lists-statuses/?utm_source=ig_express_wp_readme&utm_medium=faq14here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 17. How to use Rainmaker’s form in Icegram Express  =
-
+If you use Icegram Collect (Rainmaker) for lead capture, you can connect its forms directly to Icegram Express lists so new leads sync automatically as subscribers.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/use-icegram-collect-forms/?utm_source=ig_express_wp_readme&utm_medium=faq17here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 18. How to Redirect Subscribers to a new page/URL after successful sign up? =
-
+In the form's settings, set a custom "Success Redirect URL" so subscribers land on a thank-you page, lead magnet, or any URL of your choice after signing up.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/redirect-subscribers-to-new-page-after-signup/?utm_source=ig_express_wp_readme&utm_medium=faq18here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 19. How to add captcha in Subscribe form of Icegram Express  =
-
+Enable CAPTCHA under the form's settings tab to block spam signups — Icegram Express supports Google reCAPTCHA out of the box.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/enable-captcha/?utm_source=ig_express_wp_readme&utm_medium=faq19here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 20. How to Schedule Cron Emails/auto emails? =
-
+Icegram Express relies on WordPress cron (or your server's real cron) to send scheduled and automated emails on time. Configure the frequency under Settings > Cron.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/schedule-cron-emails/?utm_source=ig_express_wp_readme&utm_medium=faq20here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 21. How to Schedule Cron Emails in cPanel? =
-
+Add a cron job in cPanel pointing to your site's wp-cron.php on a fixed interval (e.g. every 5–15 minutes) for more reliable email delivery than WordPress's default pseudo-cron.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/schedule-cron-emails-cpanel/?utm_source=ig_express_wp_readme&utm_medium=faq21here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 22. How to Schedule Cron Emails in Parallels Plesk? =
-
+In Plesk, set up a scheduled task under Tools & Settings > Scheduled Tasks to call wp-cron.php at a fixed interval, the same way as a standard server cron job.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/schedule-cron-emails-in-parallels-plesk/?utm_source=ig_express_wp_readme&utm_medium=faq22here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 23. What to do if Hosting doesn’t support Cron Jobs? =
-
+If your host doesn't allow server-level cron, use an external cron service (like cron-job.org or EasyCron) to ping your site's wp-cron.php on schedule instead.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/hosting-does-not-support-cron-jobs/?utm_source=ig_express_wp_readme&utm_medium=faq23here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 24. CSS Help =
-
+You can customize form and email styling using the built-in style editor, or add custom CSS through your theme if you need finer control over appearance.
 [Refer here](https://www.icegram.com/docs/category/icegram-express/css-help/?utm_source=ig_express_wp_readme&utm_medium=faq24here_anchor_text&utm_campaign=ig_express_wp_readme_traffic).
 
 = 25. Icegram Express FAQ =
@@ -365,11 +364,15 @@ Create your form under Forms, then set its display type to "Popup" and configure
 
 == Upgrade Notice ==
 
-= 5.9.32 =
+= 5.9.33 =
 
-* Improvement: Improved localization support
+* Improvement: Enhanced translation support for deactivation survey
 
 == Changelog ==
+
+**5.9.33 (06.08.2026)**
+
+* Improvement: Enhanced translation support for deactivation survey
 
 **5.9.32 (30.07.2026)**
 

@@ -1237,17 +1237,16 @@ class ES_DB_Campaigns extends ES_DB {
 			$wpdb->query($wpdb->prepare("DELETE FROM `{$wpdb->prefix}ig_sending_queue` WHERE campaign_id = %d", $campaign_id));
 		}
 	}
-
-	/**
-	 * Get stats for multiple campaigns in one query
-	 * 
-	 * @param array $campaign_ids Array of campaign IDs
-	 * @return array Map of campaign_id => stats
-	 * 
-	 * @since 5.8.0
-	 */
-
 	
 
-	
+	public static function get_first_campaign_created_at() {
+
+		global $wpdb;
+
+		return $wpdb->get_var(
+			"SELECT MIN(created_at)
+			FROM {$wpdb->prefix}ig_campaigns"
+		);
+	}
+
 }

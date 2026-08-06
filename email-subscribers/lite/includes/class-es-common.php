@@ -1737,6 +1737,7 @@ class ES_Common {
 			'ig_es_welcome_email_subject',
 			'ig_es_email_sent_data',
 			'ig_es_remote_gallery_items',
+			'ig_es_outlook_token_details'
 		);
 
 	}

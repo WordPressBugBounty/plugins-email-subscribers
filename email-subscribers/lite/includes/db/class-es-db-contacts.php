@@ -1722,4 +1722,14 @@ class ES_DB_Contacts extends ES_DB {
 		wp_cache_flush_group( 'ig_es_query' );
 	}
 
+	public static function get_first_contact_created_at() {
+
+		global $wpdb; 
+
+		return $wpdb->get_var(
+			"SELECT MIN(created_at)
+			FROM {$wpdb->prefix}ig_contacts"
+		);
+	}
+
 }
