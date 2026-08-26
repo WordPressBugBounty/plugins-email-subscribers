@@ -1144,4 +1144,132 @@ class ES_DB_Actions extends ES_DB {
 		return $country_counts;
 	}
 
+	/**
+	 * Get aggregated campaign statistics
+	 *
+	 * Uses SQL CASE WHEN to aggregate by type efficiently instead of PHP loops
+	 *
+	 * @param array $campaign_ids Campaign IDs to fetch stats for
+	 * @return array Array keyed by campaign_id with stats (total_sent, total_opens, total_clicks, total_unsubscribe)
+	 * 
+	 */
+	public function get_campaign_stats_aggregated( $campaign_ids = array() ) {
+		global $wpdb;
+		
+		if ( empty( $campaign_ids ) ) {
+			return array();
+		}
+		
+		$campaign_ids = array_map( 'intval', $campaign_ids );
+		$campaign_ids = array_filter( $campaign_ids );
+		
+		if ( empty( $campaign_ids ) ) {
+			return array();
+		}
+		
+		$placeholders = implode( ',', array_fill( 0, count( $campaign_ids ), '%d' ) );
+		
+		// Use SQL CASE WHEN to aggregate by type
+		// phpcs:disable
+		$results = $wpdb->get_results(
+			$wpdb->prepare( 
+				"SELECT 
+					campaign_id,
+					SUM(CASE WHEN type = %d THEN 1 ELSE 0 END) as total_sent,
+					SUM(CASE WHEN type = %d THEN 1 ELSE 0 END) as total_opens,
+					SUM(CASE WHEN type = %d THEN 1 ELSE 0 END) as total_clicks,
+					SUM(CASE WHEN type = %d THEN 1 ELSE 0 END) as total_unsubscribe
+				FROM {$wpdb->prefix}ig_actions 
+				WHERE campaign_id IN ($placeholders) 
+				GROUP BY campaign_id",
+				IG_MESSAGE_SENT,
+				IG_MESSAGE_OPEN,
+				IG_LINK_CLICK,
+				IG_CONTACT_UNSUBSCRIBE,
+				...$campaign_ids
+			), 
+			ARRAY_A 
+		);
+		// phpcs:enable
+		
+		$all_stats = array();
+		foreach ( $results as $result ) {
+			$campaign_id = (int) $result['campaign_id'];
+			$all_stats[ $campaign_id ] = array(
+				'total_sent'        => (int) $result['total_sent'],
+				'total_opens'       => (int) $result['total_opens'],
+				'total_clicks'      => (int) $result['total_clicks'],
+				'total_unsubscribe' => (int) $result['total_unsubscribe'],
+			);
+		}
+		
+		return $all_stats;
+	}
+
+	/**
+	 * Get top clicked links with aggregated click counts
+	 *
+	 * Efficiently fetches top links using SQL JOIN and aggregation
+	 *
+	 * @param int $limit Maximum number of links to return (default 5)
+	 * @param int $days Number of days to look back (0 for all time)
+	 * @return array Array of links with click counts
+	 * 
+	 */
+	public function get_top_clicked_links( $limit = 5, $days = 0 ) {
+		global $wpdb;
+		
+		$actions_table = $wpdb->prefix . 'ig_actions';
+		$links_table   = $wpdb->prefix . 'ig_links';
+		
+		$query = "SELECT
+			a.link_id,
+			MAX(l.link) AS link,
+			COUNT(*) AS clicks
+		FROM {$actions_table} a
+		INNER JOIN {$links_table} l
+			ON l.id = a.link_id
+		WHERE a.type = %d";
+		
+		$query_params = array( IG_LINK_CLICK );
+		
+		// Add date filters - note: ig_actions.created_at is unix timestamp (int)
+		// ig_links.created_at is datetime string
+		if ( $days > 0 ) {
+			$start_epoch    = time() - ( $days * DAY_IN_SECONDS );
+			$start_datetime = gmdate( 'Y-m-d H:i:s', $start_epoch );
+			
+			$query .= " AND a.created_at >= %d";
+			$query .= " AND l.created_at >= %s";
+			
+			$query_params[] = $start_epoch;
+			$query_params[] = $start_datetime;
+		}
+		
+		$query .= " GROUP BY a.link_id
+		ORDER BY clicks DESC
+		LIMIT %d";
+		
+		$query_params[] = (int) $limit;
+		
+		// phpcs:disable
+		$results = $wpdb->get_results(
+			$wpdb->prepare( $query, $query_params ),
+			ARRAY_A
+		);
+		// phpcs:enable
+		
+		$top_links = array();
+		if ( ! empty( $results ) ) {
+			foreach ( $results as $result ) {
+				$top_links[] = array(
+					'link'   => $result['link'],
+					'clicks' => (int) $result['clicks']
+				);
+			}
+		}
+		
+		return $top_links;
+	}
+
 }

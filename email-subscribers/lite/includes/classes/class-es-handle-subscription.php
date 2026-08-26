@@ -648,11 +648,6 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 		private function transform_wysiwyg_form_data( $form_data, $form_id ) {
 			$transformed_data = $form_data;
 			
-			// Ensure required fields
-			if ( empty( $transformed_data['esfpx_es_hp_email'] ) ) {
-				$transformed_data['esfpx_es_hp_email'] = '';
-			}
-			
 			if ( empty( $transformed_data['es'] ) ) {
 				$transformed_data['es'] = 'subscribe';
 			}

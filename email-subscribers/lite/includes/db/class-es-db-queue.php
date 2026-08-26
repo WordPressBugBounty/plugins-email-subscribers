@@ -72,4 +72,70 @@ class ES_DB_Queue extends ES_DB {
 // phpcs:enable
 	}
 
+	/**
+	 * Get latest mailing queue entries for specific campaigns
+	 *
+	 * Efficiently fetches latest mailing queue record for each campaign
+	 *
+	 * @param array $campaign_ids Campaign IDs to fetch queue entries for
+	 * @return array Organized by campaign_id with status, hash, and other details
+	 * 
+	 */
+	public  function get_latest_mailing_queue_by_campaigns( $campaign_ids = array() ) {
+		global $wpdb;
+		
+		if ( empty( $campaign_ids ) ) {
+			return array();
+		}
+		
+		$campaign_ids = array_map( 'intval', $campaign_ids );
+		$campaign_ids = array_filter( $campaign_ids );
+		
+		if ( empty( $campaign_ids ) ) {
+			return array();
+		}
+		
+		$mq_table = $wpdb->prefix . 'ig_mailing_queue';
+		$placeholders = implode( ',', array_fill( 0, count( $campaign_ids ), '%d' ) );
+		
+		// Fetch latest mailing queue record for each campaign in one query
+		// phpcs:disable
+		$mq_latest_records = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT campaign_id, MAX(id) as latest_id FROM {$mq_table} 
+				WHERE campaign_id IN ($placeholders) 
+				GROUP BY campaign_id",
+				$campaign_ids
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
+		
+		$mq_by_campaign = array();
+		
+		if ( ! empty( $mq_latest_records ) ) {
+			$latest_ids = array_column( $mq_latest_records, 'latest_id' );
+			$latest_ids = array_filter( array_map( 'intval', $latest_ids ) );
+			
+			if ( ! empty( $latest_ids ) ) {
+				$id_placeholders = implode( ',', array_fill( 0, count( $latest_ids ), '%d' ) );
+				// phpcs:disable
+				$mq_details = $wpdb->get_results(
+					$wpdb->prepare(
+						"SELECT id, campaign_id, status, hash FROM {$mq_table} 
+						WHERE id IN ($id_placeholders)",
+						$latest_ids
+					),
+					ARRAY_A
+				);
+				// phpcs:enable
+				
+				foreach ( $mq_details as $mq ) {
+					$mq_by_campaign[ (int) $mq['campaign_id'] ] = $mq;
+				}
+			}
+		}
+		
+		return $mq_by_campaign;
+	}
 }

@@ -157,7 +157,7 @@ class ES_Shortcode {
 					$name_label .= '*';
 				}
 			}
-			$name_html = '<div class="es-field-wrap"><label>' . $name_label . '<br/><input type="text" name="esfpx_name" class="ig_es_form_field_name" placeholder="' . $name_placeholder . '" value="' . $submitted_name . '" ';
+			$name_html = '<div class="es-field-wrap"><label>' . esc_html( $name_label ) . '<br/><input type="text" name="esfpx_name" class="ig_es_form_field_name" placeholder="' . esc_attr( $name_placeholder ) . '" value="' . esc_attr( $submitted_name ) . '" ';
 
 			/* Adding required="required" as attribute name, value pair because wp_kses will strip off the attribute if only 'required' attribute is provided. */
 			$name_html .= 'required' === $required ? 'required="' . $required . '"' : '';
@@ -180,9 +180,9 @@ class ES_Shortcode {
 	public static function get_email_field_html( $email_label, $email_placeholder, $submitted_email = '' ) {
 		$email_html = '<div class="es-field-wrap ig-es-form-field"><label class="es-field-label">';
 		if ( ! empty( $email_label ) ) {
-			$email_html .= $email_label . '*<br/>';
+			$email_html .= esc_html( $email_label ) . '*<br/>';
 		}
-		$email_html .= '<input class="es_required_field es_txt_email ig_es_form_field_email ig-es-form-input" type="email" name="esfpx_email" value="' . $submitted_email . '" placeholder="' . $email_placeholder . '" required="required"/></label></div>';
+		$email_html .= '<input class="es_required_field es_txt_email ig_es_form_field_email ig-es-form-input" type="email" name="esfpx_email" value="' . esc_attr( $submitted_email ) . '" placeholder="' . esc_attr( $email_placeholder ) . '" required="required"/></label></div>';
 
 		return $email_html;
 	}
@@ -210,7 +210,7 @@ class ES_Shortcode {
 			if ( ! empty( $lists ) ) {
 				foreach ( $lists as $list ) {
 					if ( ! empty( $list ) && ! empty( $list['hash'] ) ) {
-						$list_html .= '<input type="hidden" name="esfpx_lists[]" value="' . $list['hash'] . '" />';
+						$list_html .= '<input type="hidden" name="esfpx_lists[]" value="' . esc_attr( $list['hash'] ) . '" />';
 					}
 				}
 			}
@@ -220,7 +220,7 @@ class ES_Shortcode {
 			if ( ! empty( $lists ) ) {
 				$list_hash = ! empty( $lists[0]['hash'] ) ? $lists[0]['hash'] : '';
 				if ( ! empty( $list_hash ) ) {
-					$list_html = '<input type="hidden" name="esfpx_lists[]" value="' . $list_hash . '" />';
+					$list_html = '<input type="hidden" name="esfpx_lists[]" value="' . esc_attr( $list_hash ) . '" />';
 				}
 			}
 		} else {
@@ -236,7 +236,7 @@ class ES_Shortcode {
 			if ( ! empty( $lists ) ) {
 				$list_hash = ! empty( $lists[0]['hash'] ) ? $lists[0]['hash'] : '';
 				if ( ! empty( $list_hash ) ) {
-					$list_html = '<input type="hidden" name="esfpx_lists[]" value="' . $list_hash . '" />';
+					$list_html = '<input type="hidden" name="esfpx_lists[]" value="' .esc_attr( $list_hash ) . '" />';
 				}
 			}
 		}
@@ -273,6 +273,7 @@ class ES_Shortcode {
 		$editor_type   = ! empty( $data['settings']['editor_type'] ) ? $data['settings']['editor_type'] : '';
 		$is_dnd_editor = IG_ES_DRAG_AND_DROP_EDITOR === $editor_type;
 		$is_wysiwyg_editor = 'wysiwyg' === $editor_type;
+		$allowedtags = ig_es_allowed_html_tags_in_esc();
 
 		if ( $is_wysiwyg_editor ) {
 			// Handle new WYSIWYG editor
@@ -382,7 +383,7 @@ class ES_Shortcode {
 		$nonce     = wp_create_nonce( 'es-subscribe' );
 
 		// Form html
-		$form_html = '<input type="hidden" name="esfpx_form_id" value="' . $form_id . '" />';
+		$form_html = '<input type="hidden" name="esfpx_form_id" value="' . esc_attr( $form_id ) . '" />';
 
 		$form_header_html = '';
 		$form_data_html   = '';
@@ -394,18 +395,18 @@ class ES_Shortcode {
 			$enable_ajax_form_submission = get_option( 'ig_es_enable_ajax_form_submission', 'yes' );
 			$extra_form_class            = ( 'yes' == $enable_ajax_form_submission ) ? ' es_ajax_subscription_form' : '';
 
-			$form_header_html .= '<form action="' . $form_action_url . '#es_form_' . self::$form_identifier . '" method="post" class="es_subscription_form es_shortcode_form ' . esc_attr( $extra_form_class ) . '" id="es_subscription_form_' . $unique_id . '" data-source="ig-es" data-form-id="' . $form_id . '">';
+			$form_header_html .= '<form action="' . esc_url( $form_action_url ) . '#es_form_' . esc_attr( self::$form_identifier ) . '" method="post" class="es_subscription_form es_shortcode_form ' . esc_attr( $extra_form_class ) . '" id="es_subscription_form_' . esc_attr( $unique_id ). '" data-source="ig-es" data-form-id="' .  esc_attr( $form_id ) . '">';
 				
 			if ( '' != $desc ) {
 				$form_header_html .= '<div class="es_caption">' . $desc . '</div>';
 			} 
 			
 			$form_data_html = '<input type="hidden" name="es" value="subscribe" />
-			<input type="hidden" name="esfpx_es_form_identifier" value="' . self::$form_identifier . '" />
-			<input type="hidden" name="esfpx_es_email_page" value="' . $current_page . '"/>
-			<input type="hidden" name="esfpx_es_email_page_url" value="' . $current_page_url . '"/>
+			<input type="hidden" name="esfpx_es_form_identifier" value="' . esc_attr(self::$form_identifier) . '" />
+			<input type="hidden" name="esfpx_es_email_page" value="' .esc_attr( $current_page ) . '"/>
+			<input type="hidden" name="esfpx_es_email_page_url" value="' .esc_attr( $current_page_url ) . '"/>
 			<input type="hidden" name="esfpx_status" value="Unconfirmed"/>
-			<input type="hidden" name="esfpx_es-subscribe" id="es-subscribe-' . $unique_id . '" value="' . $nonce . '"/>
+			<input type="hidden" name="esfpx_es-subscribe" id="es-subscribe-' . esc_attr( $unique_id ) . '" value="' . esc_attr($nonce) . '"/>
 			<label style="' . $hp_style . '" aria-hidden="true"><span hidden>' . __( 'Please leave this field empty.', 'email-subscribers' ) . '</span><input type="email" name="esfpx_es_hp_email" class="es_required_field" tabindex="-1" autocomplete="-1" value=""/></label>';
 
 			$spinner_image_path = ES_PLUGIN_URL . 'lite/public/images/spinner.gif';
@@ -427,13 +428,13 @@ class ES_Shortcode {
 	
 				if ( 'yes' === $gdpr_consent ) { 
 					
-					$form_data_html .= '<label style="display: inline"><input type="checkbox" name="es_gdpr_consent" value="true" required="required"/>&nbsp;' . $gdpr_consent_text . '</label><br/>'; 
+					$form_data_html .= '<label style="display: inline"><input type="checkbox" name="es_gdpr_consent" value="true" required="required"/>&nbsp;' . wp_kses( $gdpr_consent_text, $allowedtags ) . '</label><br/>'; 
 				} elseif ( ( in_array( 'gdpr/gdpr.php', $active_plugins ) || array_key_exists( 'gdpr/gdpr.php', $active_plugins ) ) ) {
 					GDPR::consent_checkboxes();
 				}
 	
 				
-				$form_data_html .= '<input type="submit" name="submit" class="es_subscription_form_submit es_submit_button es_textbox_button" id="es_subscription_form_submit_' . $unique_id . '" value="' . $button_label . '"/>'; 
+				$form_data_html .= '<input type="submit" name="submit" class="es_subscription_form_submit es_submit_button es_textbox_button" id="es_subscription_form_submit_' .esc_attr(  $unique_id ). '" value="' . esc_attr( $button_label ) . '"/>'; 
 	
 				
 			} else {
@@ -464,14 +465,14 @@ class ES_Shortcode {
 				}
 			}
 
-			$form_data_html .= '<span class="es_spinner_image" id="spinner-image"><img src="' . $spinner_image_path . '" alt="Loading"/></span></form>';
+			$form_data_html .= '<span class="es_spinner_image" id="spinner-image"><img src="' . esc_url( $spinner_image_path ) . '" alt="Loading"/></span></form>';
 		
 		}
 		
-		$form_data_html .= '<span class="es_subscription_message ' . $message_class . '" id="es_subscription_message_' . $unique_id . '" role="alert" aria-live="assertive">' . $message_text . '</span>';
+		$form_data_html .= '<span class="es_subscription_message ' . esc_attr( $message_class ) . '" id="es_subscription_message_' . esc_attr( $unique_id ) . '" role="alert" aria-live="assertive">' . esc_html( $message_text ) . '</span>';
 
 		// Wrap form html inside a container.
-		$form_data_html = '<div class="emaillist" id="es_form_' . self::$form_identifier . '">' . $form_data_html . '</div>';
+		$form_data_html = '<div class="emaillist" id="es_form_' . esc_attr( self::$form_identifier ) . '">' . $form_data_html . '</div>';
 		$form_data_html = ES_Common::strip_js_code($form_data_html);
 		$form = str_replace(['`', '´','&#096;'], '', $form_data_html);
 
@@ -635,8 +636,8 @@ class ES_Shortcode {
 	public static function prepare_lists_multi_select( $lists, $list_ids = array(), $columns = 3, $selected_lists = array(), $list_label = '', $contact_id = 0, $name = 'lists[]', $lists_id_hash_map = array() ) {
 		$list_label = ! empty( $list_label ) ? $list_label : __( 'Select list(s)', 'email-subscribers' );
 		$lists_html = '<div class="max-w-sm mx-auto bg-white shadow-md rounded-lg p-6 pt-0.5">';
-		$lists_html .= '<label for="form multi-select" class="block text-gray-700 text-sm font-bold mb-2">' . $list_label . '*</label>';
-		$lists_html .= '<select id="ig-es-multiselect-lists" name="' . $name . '" multiple class="block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300">';
+		$lists_html .= '<label for="form multi-select" class="block text-gray-700 text-sm font-bold mb-2">' .  esc_html( $list_label ) . '*</label>';
+		$lists_html .= '<select id="ig-es-multiselect-lists" name="' . esc_attr($name) . '" multiple class="block w-full border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-blue-300">';
 		$lists = apply_filters( 'ig_es_lists', $lists );
 	
 		foreach ( $lists as $list_id => $list_name ) {
@@ -914,7 +915,7 @@ class ES_Shortcode {
 		
 		echo '<div class="es_form_wrapper es-form-' . esc_attr( $form_id ) . ' ig-es-form-wrapper" id="es_form_' . esc_attr( $form_identifier ) . '"';
 		if ( $wrapper_style ) {
-			echo ' style="' . esc_attr( $wrapper_style ) . '"';
+			echo ' style="' . $wrapper_style  . '"';
 		}
 		echo '>';
 		
@@ -1919,8 +1920,10 @@ $field_required = false;
 			'is_custom_field' => false,
 			'custom_logo_html' => ''
 		);
+
 		
 		$args = wp_parse_args( $args, $defaults );
+		$allowedtags = ig_es_allowed_html_tags_in_esc();
 		
 	$button_text = !empty( $args['label'] ) ? $args['label'] : 'Subscribe';
 	$button_value = !empty( $args['value'] ) ? $args['value'] : $button_text;
@@ -1928,7 +1931,7 @@ $field_required = false;
 	$html = '<div class="es-field-wrap es-submit-container" style="display: flex; flex-direction: row; align-items: center; gap: 10px;">';
 	$html .= '<input type="submit" name="esfpx_submit" value="' . esc_attr( $button_text ) . '" class="es-subscribe-btn es-custom-button" />';		// Add logo if provided
 		if ( ! empty( $args['custom_logo_html'] ) ) {
-			$html .= $args['custom_logo_html'];
+			$html .= wp_kses( $args['custom_logo_html'], $allowedtags );
 		}
 		
 		$html .= '</div>';
@@ -2428,7 +2431,7 @@ $field_required = false;
 	 */
 	public static function get_form_style_css( $form_style, $form_id ) {
 		// Base selector with good specificity (specificity: 032)
-		$form_selector = 'body form.es_subscription_form.es_subscription_form[data-form-id="' . $form_id . '"].wysiwyg-form';
+		$form_selector = 'body form.es_subscription_form.es_subscription_form[data-form-id="' . absint( $form_id ) . '"].wysiwyg-form';
 		$button_selector = $form_selector . ' input.ig-es-submit-btn, ' . $form_selector . ' input.es-subscribe-btn, ' . $form_selector . ' .ig-es-submit-btn, ' . $form_selector . ' .es-subscribe-btn';
 		$css = '';
 

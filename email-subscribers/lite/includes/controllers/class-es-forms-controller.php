@@ -300,6 +300,7 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 			$form_id    = $args['form_id'];
 			$form       = ES()->forms_db->get_form_by_id( $form_id );
 			$embed_html = '';
+			$allowedtags = ig_es_allowed_html_tags_in_esc();
 			if ( $form ) {
 				$form_data = ES_Form_Controller::get_form_data_from_body( $form );
 				$editor_type = ! empty( $form_data['settings']['editor_type'] ) ? $form_data['settings']['editor_type'] : '';
@@ -323,7 +324,7 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 				$form_action_url  = admin_url( 'admin-ajax.php' );
 				$form_action_url  = add_query_arg( array( 'action' => 'ig_es_external_subscription_form_submission' ), $form_action_url );
 
-				$embed_html .= "<form method='post' action='$form_action_url' class='ig-es-embeded-from'>";
+				$embed_html .= "<form method='post' action='" . esc_url( $form_action_url ) . "' class='ig-es-embeded-from'>";
 
 				if ( ! $is_dnd_editor ) {
 					$form_data['captcha'] = 'no';
@@ -344,12 +345,12 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 	
 					$gdpr_consent      = ! empty( $form_data['gdpr_consent'] ) ? $form_data['gdpr_consent'] : 'no';
 					$gdpr_consent_text = ! empty( $form_data['gdpr_consent_text'] ) ? $form_data['gdpr_consent_text'] : '';
-
+  
 					$name_field_html  = ES_Shortcode::get_name_field_html( $show_name, $name_label, $name_required, $name_placeholder );
 					$email_field_html = ES_Shortcode::get_email_field_html( $email_label, $email_placeholder );
 					$list_field_html  = ES_Shortcode::get_list_field_html( $show_list, $list_label, $list_ids, $list );
 					if ( '' !== $desc ) {
-						$embed_html .= '<div class="es_caption">' . $desc . '</div>';
+						$embed_html .= '<div class="es_caption">' . wp_kses( $desc, $allowedtags ) . '</div>';
 					}
 					$embed_html .= $name_field_html;
 					$embed_html .= $email_field_html;
@@ -367,28 +368,28 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 
 
 			
-				$embed_html .= "<input type='hidden' name='esfpx_es_form_identifier' value='$form_identifier' />";
+				$embed_html .= "<input type='hidden' name='esfpx_es_form_identifier' value='" . esc_attr( $form_identifier ) . "' />";
 				$embed_html .= "<input type='hidden' name='esfpx_status' value='Unconfirmed' />";
-				$embed_html .= "<input type='hidden' name='esfpx_es-subscribe' value='$unique_id' />";
-				$embed_html .= "<input type='hidden' name='esfpx_form_id' value='$form_id' />";
+				$embed_html .= "<input type='hidden' name='esfpx_es-subscribe' value='" . esc_attr( $unique_id ) . "' />";
+				$embed_html .= "<input type='hidden' name='esfpx_form_id' value='" . esc_attr( $form_id ) . "' />";
 				$embed_html .= "<label style='position:absolute;top:-99999px;'><input type='email' name='esfpx_es_hp_email' class='es_required_field' tabindex='-1' autocomplete='-1' value=''/></label>";
 
 				if ( ! $is_dnd_editor ) {
 					if ( 'yes' === $gdpr_consent ) {
-						$embed_html .= "<div class='ig-es-gdpr-content'><label><input type='checkbox' name='es_gdpr_consent' value='true' required='required'/>&nbsp;$gdpr_consent_text</label></div>";
+						$embed_html .= "<div class='ig-es-gdpr-content'><label><input type='checkbox' name='es_gdpr_consent' value='true' required='required'/>&nbsp;" . wp_kses( $gdpr_consent_text, $allowedtags ) . "</label></div>";
 					}
-					$embed_html .= "<input type='submit' name='submit' class='es_subscription_form_submit es_submit_button es_textbox_button' value='$button_label' />";
+					$embed_html .= "<input type='submit' name='submit' class='es_subscription_form_submit es_submit_button es_textbox_button' value='" . esc_attr( $button_label ) . "' />";
 				}
 
 				$spinner_image_path = ES_PLUGIN_URL . 'lite/public/images/spinner.gif';
 
-				$embed_html .= "<span class='es_spinner_image' style='display: none' id='spinner-image'><img src='$spinner_image_path' alt='Loading'/></span>";
+				$embed_html .= "<span class='es_spinner_image' style='display: none' id='spinner-image'><img src='" . esc_url( $spinner_image_path ) . "' alt='Loading'/></span>";
 				$embed_html .= '</form>';
 
 				$embed_form_js = ES_PLUGIN_URL . 'pro/public/js/embed-form.js';
 
 				$embed_html .= '<script '; // To fix phpcs error, we have spitted the script tag.
-				$embed_html	.=		"src='$embed_form_js' id='ig-es-embed-form-script'></script>";
+				$embed_html	.=		"src='" . esc_url( $embed_form_js ) . "' id='ig-es-embed-form-script'></script>";
 			}
 
 			return $embed_html;

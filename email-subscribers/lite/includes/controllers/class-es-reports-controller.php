@@ -1,22 +1,40 @@
 <?php
+/**
+ * Reports controller.
+ *
+ * Handles building and serving report data (campaign KPIs, activity, notifications listing, etc.).
+ *
+ * @package Email_Subscribers
+ */
 
 if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 
 	/**
-	 * Class to handle reports 
-	 * 
+	 * Class to handle reports
+	 *
 	 * @class ES_Reports_Controller
 	 */
 	class ES_Reports_Controller {
 
-		// class instance
+		/**
+		 * Class instance.
+		 *
+		 * @var ES_Reports_Controller
+		 */
 		public static $instance;
 
-		// class constructor
+		/**
+		 * Class constructor.
+		 */
 		public function __construct() {
 			$this->init();
 		}
 
+		/**
+		 * Get the singleton instance of this class.
+		 *
+		 * @return ES_Reports_Controller
+		 */
 		public static function get_instance() {
 			if ( ! isset( self::$instance ) ) {
 				self::$instance = new self();
@@ -25,105 +43,129 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 			return self::$instance;
 		}
 
+		/**
+		 * Initialise the controller.
+		 */
 		public function init() {
 			$this->register_hooks();
 		}
 
+		/**
+		 * Register WordPress hooks used by this controller.
+		 */
 		public function register_hooks() {
 		}
 
+		/**
+		 * Get data required to render the reports dashboard.
+		 *
+		 * @param array $args Arguments to filter/customise the dashboard data.
+		 *
+		 * @return array
+		 */
 		public static function get_dashboard_reports_data( $args = array() ) {
 			$page = isset( $args['page'] ) ? $args['page'] : 'reports';
 			$override_cache = isset( $args['override_cache'] ) ? $args['override_cache'] : false;
 			$days = isset( $args['days'] ) ? intval( $args['days'] ) : 7;
 			$list_id = isset( $args['list_id'] ) ? $args['list_id'] : '';
 			$campaign_count = isset( $args['campaign_count'] ) ? intval( $args['campaign_count'] ) : 5;
-		
+
 			$filter_args = array( 'days' => $days );
 			if ( ! empty( $list_id ) ) {
 				$filter_args['list_id'] = $list_id;
 			}
-		
+
 			return ES_Reports_Data::get_dashboard_reports_data( $page, $override_cache, $filter_args, $campaign_count );
 		}
 
+		/**
+		 * Get the report data for a single campaign.
+		 *
+		 * @param array $args Arguments identifying the campaign/report (e.g. hash or campaign_id).
+		 *
+		 * @return array
+		 */
 		public static function get_campaign_report( $args = array() ) {
 			$result = apply_filters( 'ig_es_get_campaign_report', null, $args );
 			if ( null !== $result ) {
 				return $result;
 			}
-		
+
 			global $wpdb;
-		
+
 			$hash = isset( $args['hash'] ) ? $args['hash'] : '';
 			$campaign_id = isset( $args['campaign_id'] ) ? intval( $args['campaign_id'] ) : 0;
-		
+
 			if ( empty( $hash ) && empty( $campaign_id ) ) {
 				return array( 'error' => __( 'Invalid report hash or campaign ID', 'email-subscribers' ) );
 			}
-		
+
 			if ( ! empty( $hash ) ) {
 				$notification = ES_DB_Mailing_Queue::get_notification_by_hash( $hash );
 			} else {
 				$notification = ES_DB_Mailing_Queue::get_notification_by_campaign_id( $campaign_id );
 			}
-		
+
 			if ( empty( $notification ) ) {
 				return array( 'error' => __( 'Report not found', 'email-subscribers' ) );
 			}
-		
+
 			$report_id = $notification['id'];
 			$notification_campaign_id = $notification['campaign_id'];
 			$notification_campaign = ES()->campaigns_db->get_campaign_by_id( $notification_campaign_id, -1 );
-		
-			// Aggregate KPI totals in a single DB call for consistency and performance
-			$kpi_counts = ES()->actions_db->get_actions_count( array(
-			'campaign_id' => $notification_campaign_id,
-			'message_id'  => $report_id,
-			'types'       => array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK, IG_CONTACT_UNSUBSCRIBE, IG_MESSAGE_HARD_BOUNCE ),
-			) );
+
+			// Aggregate KPI totals in a single DB call for consistency and performance.
+			$kpi_counts = ES()->actions_db->get_actions_count(
+				array(
+					'campaign_id' => $notification_campaign_id,
+					'message_id'  => $report_id,
+					'types'       => array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK, IG_CONTACT_UNSUBSCRIBE, IG_MESSAGE_HARD_BOUNCE ),
+				)
+			);
 
 			$total_email_sent        = isset( $kpi_counts['sent'] ) ? (int) $kpi_counts['sent'] : 0;
 			$email_viewed_count      = isset( $kpi_counts['opened'] ) ? (int) $kpi_counts['opened'] : 0;
 			$email_click_count       = isset( $kpi_counts['clicked'] ) ? (int) $kpi_counts['clicked'] : 0;
-			$email_unsubscribed_count= isset( $kpi_counts['unsubscribed'] ) ? (int) $kpi_counts['unsubscribed'] : 0;
-		
+			$email_unsubscribed_count = isset( $kpi_counts['unsubscribed'] ) ? (int) $kpi_counts['unsubscribed'] : 0;
+
 			$avg_open_rate = ! empty( $total_email_sent ) ? number_format_i18n( ( ( $email_viewed_count * 100 ) / $total_email_sent ), 2 ) : 0;
 			$avg_click_rate = ! empty( $total_email_sent ) ? number_format_i18n( ( ( $email_click_count * 100 ) / $total_email_sent ), 2 ) : 0;
 			$avg_unsubscribed_rate = ! empty( $total_email_sent ) ? number_format_i18n( ( ( $email_unsubscribed_count / $total_email_sent ) * 100 ), 2 ) : 0;
 			$hard_bounced_count = isset( $kpi_counts['hard_bounced'] ) ? (int) $kpi_counts['hard_bounced'] : 0;
-		
+
 			$spam_complaint_count = 0;
 			$spam_complaint_count = number_format_i18n( $spam_complaint_count );
-		
-			$total_reports_sent = ES_DB_Mailing_Queue::count_notifications( array(
-			'campaign_id' => $notification_campaign_id,
-			'statuses'    => array( 'Sent', 'Sending' ),
-			) );
-		
+
+			$total_reports_sent = ES_DB_Mailing_Queue::count_notifications(
+				array(
+					'campaign_id' => $notification_campaign_id,
+					'statuses'    => array( 'Sent', 'Sending' ),
+				)
+			);
+
 			$campaign_created_at = ! empty( $notification_campaign['created_at'] ) ? $notification_campaign['created_at'] : '';
 			$created_timestamp = ! empty( $campaign_created_at ) ? strtotime( $campaign_created_at ) : time();
 			$current_timestamp = time();
 			$days_elapsed = max( 1, round( ( $current_timestamp - $created_timestamp ) / DAY_IN_SECONDS ) );
 			$weeks_elapsed = max( 1, $days_elapsed / 7 );
-		
+
 			$email_frequency_per_week = $total_reports_sent > 0 ? number_format_i18n( ( $total_reports_sent / $weeks_elapsed ), 2 ) : 0;
-		
+
 			$total_engaged = $email_viewed_count + $email_click_count;
 			$engagement_rate = ! empty( $total_email_sent ) ? number_format_i18n( ( ( $total_engaged / $total_email_sent ) * 100 ), 2 ) : 0;
-		
+
 			$report_kpi_statistics = array(
-			'total_email_sent' => number_format_i18n( $total_email_sent),
-			'email_viewed_count' => number_format_i18n( $email_viewed_count),
-			'email_click_count' => number_format_i18n( $email_click_count),
-			'email_unsubscribed_count' => number_format_i18n( $email_unsubscribed_count),
-			'avg_open_rate' => $avg_open_rate,
-			'avg_click_rate' => $avg_click_rate,
-			'avg_unsubscribed_rate' => $avg_unsubscribed_rate,
-			'spam_complaint_count' => $spam_complaint_count,
-			'total_hard_bounced_contacts' => number_format_i18n( $hard_bounced_count ),
-			'email_frequency_per_week' => $email_frequency_per_week,
-			'engagement_rate' => $engagement_rate,
+				'total_email_sent' => number_format_i18n( $total_email_sent ),
+				'email_viewed_count' => number_format_i18n( $email_viewed_count ),
+				'email_click_count' => number_format_i18n( $email_click_count ),
+				'email_unsubscribed_count' => number_format_i18n( $email_unsubscribed_count ),
+				'avg_open_rate' => $avg_open_rate,
+				'avg_click_rate' => $avg_click_rate,
+				'avg_unsubscribed_rate' => $avg_unsubscribed_rate,
+				'spam_complaint_count' => $spam_complaint_count,
+				'total_hard_bounced_contacts' => number_format_i18n( $hard_bounced_count ),
+				'email_frequency_per_week' => $email_frequency_per_week,
+				'engagement_rate' => $engagement_rate,
 			);
 
 			try {
@@ -133,24 +175,28 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 				$current_start_mysql = gmdate( 'Y-m-d H:i:s', $current_start );
 				$previous_start_mysql = gmdate( 'Y-m-d H:i:s', $previous_start );
 
-				// Aggregated counts via DB layer (single query per period)
-				$current_counts = ES()->actions_db->get_actions_count( array(
-				'campaign_id' => $notification_campaign_id,
-				'types'       => array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK, IG_MESSAGE_HARD_BOUNCE ),
-				'start_date'  => $current_start_mysql,
-				) );
+				// Aggregated counts via DB layer (single query per period).
+				$current_counts = ES()->actions_db->get_actions_count(
+					array(
+						'campaign_id' => $notification_campaign_id,
+						'types'       => array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK, IG_MESSAGE_HARD_BOUNCE ),
+						'start_date'  => $current_start_mysql,
+					)
+				);
 
 				$current_sent  = isset( $current_counts['sent'] ) ? (int) $current_counts['sent'] : 0;
 				$current_open  = isset( $current_counts['opened'] ) ? (int) $current_counts['opened'] : 0;
 				$current_click = isset( $current_counts['clicked'] ) ? (int) $current_counts['clicked'] : 0;
 				$current_hard_bounce = isset( $current_counts['hard_bounced'] ) ? (int) $current_counts['hard_bounced'] : 0;
 
-				$previous_counts = ES()->actions_db->get_actions_count( array(
-					'campaign_id' => $notification_campaign_id,
-					'types'       => array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK, IG_MESSAGE_HARD_BOUNCE ),
-					'start_date'  => $previous_start_mysql,
-					'end_date'    => $current_start_mysql,
-				) );
+				$previous_counts = ES()->actions_db->get_actions_count(
+					array(
+						'campaign_id' => $notification_campaign_id,
+						'types'       => array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK, IG_MESSAGE_HARD_BOUNCE ),
+						'start_date'  => $previous_start_mysql,
+						'end_date'    => $current_start_mysql,
+					)
+				);
 
 				$previous_sent  = isset( $previous_counts['sent'] ) ? (int) $previous_counts['sent'] : 0;
 				$previous_open  = isset( $previous_counts['opened'] ) ? (int) $previous_counts['opened'] : 0;
@@ -176,11 +222,12 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 				$report_kpi_statistics['engagement_rate_percentage_growth'] = 0 !== $engagement_rate_growth ? number_format_i18n( $engagement_rate_growth, 2 ) : 0;
 				$report_kpi_statistics['bounce_percentage_growth'] = 0 !== $hard_bounce_growth ? number_format_i18n( $hard_bounce_growth, 2 ) : 0;
 			} catch ( Exception $e ) {
-				// Swallow errors to avoid breaking report; no growth fields in case of failure
+				// Log the error but don't break the report; no growth fields are set in case of failure.
+				error_log( 'ES_Reports_Controller::get_campaign_report growth calculation failed: ' . $e->getMessage() ); // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_error_log
 			}
-		
+
 			// $notification_campaign already retrieved above
-		
+
 			if ( empty( $notification['campaign_id'] ) ) {
 				$notification_type = __( 'Post Notification', 'email-subscribers' );
 			} else {
@@ -188,19 +235,19 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 				$notification_type = strtolower( $notification_type );
 				$notification_type = ( 'newsletter' === $notification_type ) ? __( 'Broadcast', 'email-subscribers' ) : $notification_type;
 			}
-		
+
 			$notification['type'] = ucwords( str_replace( '_', ' ', $notification_type ) );
 			$notification['from_email'] = ! empty( $notification_campaign['from_email'] ) ? $notification_campaign['from_email'] : '';
 			$notification_lists_ids = ! empty( $notification_campaign['list_ids'] ) ? explode( ',', $notification_campaign['list_ids'] ) : array();
 			$notification['list_name'] = ES_Common::prepare_list_name_by_ids( $notification_lists_ids );
-		
+
 			$campaign_meta = ! empty( $notification_campaign['meta'] ) ? ig_es_maybe_unserialize( $notification_campaign['meta'] ) : '';
 			$notification['list_conditions'] = ! empty( $campaign_meta['list_conditions'] ) ? $campaign_meta['list_conditions'] : '';
-		
+
 			$where = $wpdb->prepare( 'message_id = %d ORDER BY updated_at DESC', $report_id );
 			$notification_actions = ES()->actions_db->get_by_conditions( $where );
-		
-			// Enrich notification_actions with contact information
+
+			// Enrich notification_actions with contact information.
 			if ( ! empty( $notification_actions ) ) {
 				foreach ( $notification_actions as &$action ) {
 					if ( ! empty( $action['contact_id'] ) ) {
@@ -211,17 +258,17 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 						}
 					}
 				}
-				unset( $action ); // Break reference
+				unset( $action ); // Break reference.
 			}
-		
+
 			$links_where = $wpdb->prepare( 'message_id = %d', $report_id );
 			$notification_links = ES()->links_db->get_by_conditions( $links_where );
-		
+
 			$activity_data = array();
 			$time_offset = get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
-		
+
 			$daily_unique_contacts = array();
-		
+
 			if ( ! empty( $notification_actions ) ) {
 				foreach ( $notification_actions as $notification_action ) {
 					$action_type = (int) $notification_action['type'];
@@ -229,19 +276,19 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 						$created_timestamp = $notification_action['created_at'];
 						$created_date = gmdate( 'Y-m-d', $created_timestamp + $time_offset );
 						$contact_id = isset( $notification_action['contact_id'] ) ? $notification_action['contact_id'] : 0;
-					
+
 						if ( ! isset( $activity_data[ $created_date ] ) ) {
 							$activity_data[ $created_date ] = array(
-							'opened' => 0,
-							'clicked' => 0,
+								'opened' => 0,
+								'clicked' => 0,
 							);
 							$daily_unique_contacts[ $created_date ] = array(
-							'opened' => array(),
-							'clicked' => array(),
+								'opened' => array(),
+								'clicked' => array(),
 							);
 						}
-					
-						// Count unique contacts per day, not total events
+
+						// Count unique contacts per day, not total events.
 						if ( IG_MESSAGE_OPEN === $action_type ) {
 							if ( ! in_array( $contact_id, $daily_unique_contacts[ $created_date ]['opened'], true ) ) {
 								$daily_unique_contacts[ $created_date ]['opened'][] = $contact_id;
@@ -256,14 +303,14 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 					}
 				}
 			}
-		
+
 			if ( ! empty( $activity_data ) ) {
 				ksort( $activity_data );
 			}
-		
+
 			$device_opens = array();
 			$country_opens = array();
-		
+
 			if ( ES()->is_pro() ) {
 				if ( ! empty( $notification_actions ) ) {
 					foreach ( $notification_actions as $action ) {
@@ -274,7 +321,7 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 							}
 							$device_opens[ $device ]++;
 						}
-					
+
 						if ( ! empty( $action['country'] ) ) {
 							$country = $action['country'];
 							if ( ! isset( $country_opens[ $country ] ) ) {
@@ -284,8 +331,8 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 						}
 					}
 				}
-			
-				// Limit country data to top 5 + others (only if Pro controller not available)
+
+				// Limit country data to top 5 + others (only if Pro controller not available).
 				if ( ! empty( $country_opens ) && ! class_exists( 'ES_Pro_Reports_Controller' ) ) {
 					arsort( $country_opens );
 					if ( count( $country_opens ) > 5 ) {
@@ -298,87 +345,109 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 					}
 				}
 			}
-		
+
 			$notification['start_at'] = ! empty( $notification['start_at'] ) ? ig_es_format_date_time( $notification['start_at'] ) : '';
 			$notification['finish_at'] = ! empty( $notification['finish_at'] ) ? ig_es_format_date_time( $notification['finish_at'] ) : '';
 			$notification['created_at'] = ! empty( $notification['created_at'] ) ? ig_es_format_date_time( $notification['created_at'] ) : '';
-		
+
 			return array(
-			'notification' => $notification,
-			'report_kpi_statistics' => $report_kpi_statistics,
-			'notification_actions' => $notification_actions,
-			'notification_links' => $notification_links,
-			'activity_data' => $activity_data,
-			'device_opens' => $device_opens,
-			'country_opens' => $country_opens,
+				'notification' => $notification,
+				'report_kpi_statistics' => $report_kpi_statistics,
+				'notification_actions' => $notification_actions,
+				'notification_links' => $notification_links,
+				'activity_data' => $activity_data,
+				'device_opens' => $device_opens,
+				'country_opens' => $country_opens,
 			);
 		}
 
+		/**
+		 * Get sequence messages for reports.
+		 *
+		 * @param array $args Arguments to filter the sequence messages.
+		 *
+		 * @return array
+		 */
 		public static function get_sequence_messages( $args = array() ) {
 			$result = apply_filters( 'ig_es_get_sequence_messages', null, $args );
 			if ( null !== $result ) {
 				return $result;
 			}
-		
+
 			return array( 'messages' => array() );
 		}
 
+		/**
+		 * Get a paginated, filtered list of reports (notifications).
+		 *
+		 * @param array $args Filter/pagination/sort arguments.
+		 *
+		 * @return array
+		 */
 		public static function get_reports_with_filters( $args = array() ) {
 			$notifications_args = array(
-			'order_by' => isset( $args['order_by'] ) ? $args['order_by'] : 'created_at',
-			'order' => isset( $args['order'] ) ? $args['order'] : 'DESC',
-			'per_page' => isset( $args['per_page'] ) ? intval( $args['per_page'] ) : 20,
-			'page_number' => isset( $args['page_number'] ) ? intval( $args['page_number'] ) : 1,
-			'do_count_only' => false,
+				'order_by' => isset( $args['order_by'] ) ? $args['order_by'] : 'created_at',
+				'order' => isset( $args['order'] ) ? $args['order'] : 'DESC',
+				'per_page' => isset( $args['per_page'] ) ? intval( $args['per_page'] ) : 20,
+				'page_number' => isset( $args['page_number'] ) ? intval( $args['page_number'] ) : 1,
+				'do_count_only' => false,
 			);
-		
+
 			if ( isset( $args['search'] ) && ! empty( $args['search'] ) ) {
 				$notifications_args['search'] = $args['search'];
 			}
-		
+
 			if ( isset( $args['filter_reports_by_campaign_status'] ) ) {
 				$notifications_args['filter_reports_by_campaign_status'] = $args['filter_reports_by_campaign_status'];
 			}
-		
+
 			if ( isset( $args['filter_reports_by_campaign_type'] ) ) {
 				$notifications_args['filter_reports_by_campaign_type'] = $args['filter_reports_by_campaign_type'];
 			}
-		
+
 			if ( isset( $args['filter_reports_by_month_year'] ) ) {
 				$notifications_args['filter_reports_by_month_year'] = $args['filter_reports_by_month_year'];
 			}
-		
+
 			$notifications = self::get_notifications( $notifications_args );
-		
+
 			$count_args = $notifications_args;
 			$count_args['do_count_only'] = true;
 			$total_count = self::get_notifications( $count_args );
-		
+
 			$total_pages = ceil( $total_count / $notifications_args['per_page'] );
-		
+
 			return array(
-			'notifications' => $notifications,
-			'total' => $total_count,
-			'total_pages' => $total_pages,
-			'current_page' => $notifications_args['page_number'],
-			'per_page' => $notifications_args['per_page'],
+				'notifications' => $notifications,
+				'total' => $total_count,
+				'total_pages' => $total_pages,
+				'current_page' => $notifications_args['page_number'],
+				'per_page' => $notifications_args['per_page'],
 			);
 		}
 
+		/**
+		 * Get the available filter options (campaign types and date ranges) for the reports listing.
+		 *
+		 * @param array $args Unused, reserved for future use.
+		 *
+		 * @return array
+		 */
 		public static function get_report_filter_options( $args = array() ) {
-			global $wpdb;
-		
-			// Get all campaign types that have notifications sent
-			$types_query = "
-			SELECT DISTINCT c.type 
-			FROM {$wpdb->prefix}ig_campaigns c
-			INNER JOIN {$wpdb->prefix}ig_mailing_queue mq ON c.id = mq.campaign_id
-			WHERE c.type IS NOT NULL AND c.type != ''
-			ORDER BY c.type
-		";
-		
-			$types = $wpdb->get_col( $types_query );
-		
+			global $wpdb,$wpbd;
+
+			$campaigns_table     = $wpbd->prefix . 'ig_campaigns';
+			$mailing_queue_table = $wpbd->prefix . 'ig_mailing_queue';
+
+			$types_query =
+				"SELECT DISTINCT c.type 
+				FROM {$campaigns_table} c
+				INNER JOIN {$mailing_queue_table} mq ON c.id = mq.campaign_id
+				WHERE c.type IS NOT NULL AND c.type != ''
+				ORDER BY c.type";
+
+			$types = $wpbd->get_col( $types_query );
+
 			$formatted_types = array();
 			if ( ! empty( $types ) ) {
 				foreach ( $types as $type ) {
@@ -391,169 +460,191 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 					}
 				}
 			}
-		
+
+			$mailing_queue_table  = $wpbd->prefix . 'ig_mailing_queue';
 			$dates_query = "
 			SELECT DISTINCT 
 				YEAR(start_at) as year,
 				MONTH(start_at) as month
-			FROM {$wpdb->prefix}ig_mailing_queue
+			FROM {$mailing_queue_table}
 			WHERE start_at IS NOT NULL AND start_at != '0000-00-00 00:00:00'
 			ORDER BY year DESC, month DESC
 			LIMIT 24
 		";
-		
-			$dates_raw = $wpdb->get_results( $dates_query, ARRAY_A );
-		
+
+			$dates_raw = $wpbd->get_results( $dates_query, ARRAY_A );
+
 			$dates = array();
 			$month_names = array(
-			'January', 'February', 'March', 'April', 'May', 'June',
-			'July', 'August', 'September', 'October', 'November', 'December'
+				'January',
+				'February',
+				'March',
+				'April',
+				'May',
+				'June',
+				'July',
+				'August',
+				'September',
+				'October',
+				'November',
+				'December',
 			);
-		
+
 			if ( ! empty( $dates_raw ) ) {
 				foreach ( $dates_raw as $date ) {
 					$year = $date['year'];
 					$month = (int) $date['month'];
 					$key = $year . str_pad( $month, 2, '0', STR_PAD_LEFT );
 					$label = $month_names[ $month - 1 ] . ' ' . $year;
-				
+
 					$dates[] = array(
-					'value' => $key,
-					'label' => $label,
+						'value' => $key,
+						'label' => $label,
 					);
 				}
 			}
-		
+
 			return array(
-			'types' => $formatted_types,
-			'dates' => $dates,
+				'types' => $formatted_types,
+				'dates' => $dates,
 			);
 		}
+		/**
+		 * Get (or count) notifications matching the given filters.
+		 *
+		 * @param array $args Filter/sort/pagination arguments. Set 'do_count_only' to true to get a count instead of rows.
+		 *
+		 * @return array|int|null Array of notifications, or the total count when 'do_count_only' is true.
+		 */
 		public static function get_notifications( $args = array() ) {
 			global $wpdb, $wpbd;
-			
+
 			$order_by    = isset( $args['order_by'] ) ? $args['order_by'] : '';
 			$order       = isset( $args['order'] ) ? $args['order'] : '';
-			$campaign_id = isset( $args['campaign_id'] ) ? $args['campaign_id'] : '';
-			$per_page = isset( $args['per_page'] ) ? $args['per_page'] : 5;
-			$page_number = isset( $args['page_number'] ) ? $args['page_number'] : 1;
+			$campaign_id = isset( $args['campaign_id'] ) ? absint( $args['campaign_id'] ) : '';
+			$per_page    = isset( $args['per_page'] ) ? absint( $args['per_page'] ) : 5;
+			$page_number = isset( $args['page_number'] ) ? max( 1, absint( $args['page_number'] ) ) : 1;
 			$do_count_only = isset( $args['do_count_only'] ) ? $args['do_count_only'] : false;
 			$search = isset( $args['search'] ) ? $args['search'] : '';
 			$filter_reports_by_campaign_status = isset( $args['filter_reports_by_campaign_status'] ) ? $args['filter_reports_by_campaign_status'] : '';
 			$filter_reports_by_campaign_type = isset( $args['filter_reports_by_campaign_type'] ) ? $args['filter_reports_by_campaign_type'] : '';
 			$filter_reports_by_month_year = isset( $args['filter_reports_by_month_year'] ) ? $args['filter_reports_by_month_year'] : '';
-				
+
 			$ig_mailing_queue_table = IG_MAILING_QUEUE_TABLE;
-	
+
 			if ( $do_count_only ) {
 				$sql = "SELECT count(*) as total FROM {$ig_mailing_queue_table}";
 			} else {
 				$sql = "SELECT * FROM {$ig_mailing_queue_table}";
 			}
-	
+
 			$where_columns    = array();
 			$where_args       = array();
 			$add_where_clause = true;
-	
+
 			if ( ! empty( $campaign_id ) && is_numeric( $campaign_id ) ) {
 				$where_columns[] = 'campaign_id = %d';
 				$where_args[]    = $campaign_id;
 			}
-	
+
 			if ( ! empty( $filter_reports_by_month_year ) ) {
-	
-				if ( preg_match('/^[0-9]{6}$/', $filter_reports_by_month_year) ) {
-	
-					$year_val  = substr($filter_reports_by_month_year, 0, 4);
-					$month_val = substr($filter_reports_by_month_year, 4 );
-	
+
+				if ( preg_match( '/^[0-9]{6}$/', $filter_reports_by_month_year ) ) {
+
+					$year_val  = substr( $filter_reports_by_month_year, 0, 4 );
+					$month_val = substr( $filter_reports_by_month_year, 4 );
+
 					$date_string = $year_val . '-' . $month_val;
-					$date        = new DateTime($date_string);
-	
-					$start_date = $date->format('Y-m-01 H:i:s') ;
-					$end_date   = $date->format('Y-m-t H:i:s');
-	
+					$date        = new DateTime( $date_string );
+					// Time boundaries.
+					$start_date = $date->format( 'Y-m-01 00:00:00' );
+					$end_date   = $date->format( 'Y-m-t 23:59:59' );
+
 					array_push( $where_columns, 'start_at >= %s', 'start_at <= %s' );
-					array_push($where_args, $start_date, $end_date);
+					array_push( $where_args, $start_date, $end_date );
 				}
 			}
-			
+
 			$where_query = '';
 			if ( ! empty( $where_columns ) ) {
 				$where_query = implode( ' AND ', $where_columns );
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $where_query is built entirely from literal %d/%s placeholders above and prepared here with $where_args before use.
 				$where_query = $wpbd->prepare( $where_query, $where_args );
 			}
-	
+
 			if ( ! empty( $where_query ) ) {
 				$sql             .= ' WHERE ' . $where_query;
 				$add_where_clause = false;
 			}
-	
+
 			if ( ! empty( $filter_reports_by_campaign_status ) || ( '0' === $filter_reports_by_campaign_status ) ) {
 				if ( ! $add_where_clause ) {
-					$sql .= $wpdb->prepare( ' AND status = %s', $filter_reports_by_campaign_status );
+					$sql .= $wpbd->prepare( ' AND status = %s', $filter_reports_by_campaign_status );
 				} else {
-					$sql             .= $wpdb->prepare( ' WHERE status = %s', $filter_reports_by_campaign_status );
+					$sql             .= $wpbd->prepare( ' WHERE status = %s', $filter_reports_by_campaign_status );
 					$add_where_clause = false;
 				}
 			}
-	
+
 			if ( ! empty( $filter_reports_by_campaign_type ) ) {
 				$type_map = array(
-				'Broadcast' => 'newsletter',
-				'Post Notification' => 'post_notification',
-				'Post Digest' => 'post_digest'
+					'Broadcast' => 'newsletter',
+					'Post Notification' => 'post_notification',
+					'Post Digest' => 'post_digest',
 				);
-			
+
 				$campaign_type = isset( $type_map[ $filter_reports_by_campaign_type ] ) ? $type_map[ $filter_reports_by_campaign_type ] : strtolower( str_replace( ' ', '_', $filter_reports_by_campaign_type ) );
-			
-				// All campaign types use the same filter logic - subquery to campaigns table
+
+				// All campaign types use the same filter logic - subquery to campaigns table.
 				if ( ! $add_where_clause ) {
-					$sql .= $wpdb->prepare( ' AND campaign_id IN (SELECT id FROM ' . IG_CAMPAIGNS_TABLE . ' WHERE type = %s)', $campaign_type );
+					$sql .= $wpbd->prepare( ' AND campaign_id IN (SELECT id FROM IG_CAMPAIGNS_TABLE WHERE type = %s)', $campaign_type );
 				} else {
-					$sql .= $wpdb->prepare( ' WHERE campaign_id IN (SELECT id FROM ' . IG_CAMPAIGNS_TABLE . ' WHERE type = %s)', $campaign_type );
+					$sql .= $wpbd->prepare( ' WHERE campaign_id IN (SELECT id FROM IG_CAMPAIGNS_TABLE WHERE type = %s)', $campaign_type );
 					$add_where_clause = false;
 				}
-			}			// Add search functionality
+			}           // Add search functionality
 			if ( ! empty( $search ) ) {
 				if ( ! $add_where_clause ) {
-					$sql .= $wpdb->prepare( ' AND subject LIKE %s', '%' . $wpdb->esc_like( $search ) . '%' );
+					$sql .= $wpbd->prepare( ' AND subject LIKE %s', '%' . $wpbd->esc_like( $search ) . '%' );
 				} else {
-					$sql .= $wpdb->prepare( ' WHERE subject LIKE %s', '%' . $wpdb->esc_like( $search ) . '%' );
+					$sql .= $wpbd->prepare( ' WHERE subject LIKE %s', '%' . $wpbd->esc_like( $search ) . '%' );
 					$add_where_clause = false;
 				}
 			}
-	
+
 			if ( ! $do_count_only ) {
-	
-				// Prepare Order by clause
+
+				// Prepare Order by clause.
 				$order = ! empty( $order ) ? strtolower( $order ) : 'desc';
-	
+
 				$expected_order_values = array( 'asc', 'desc' );
 				if ( ! in_array( $order, $expected_order_values ) ) {
 					$order = 'desc';
 				}
-	
+
 				$default_order_by = esc_sql( 'created_at' );
-	
+
 				$expected_order_by_values = array( 'subject', 'type', 'status', 'start_at', 'count', 'created_at' );
-	
+
 				if ( ! in_array( $order_by, $expected_order_by_values ) ) {
 					$order_by_clause = " ORDER BY {$default_order_by} DESC";
 				} else {
 					$order_by        = esc_sql( $order_by );
 					$order_by_clause = " ORDER BY {$order_by} {$order}, {$default_order_by} DESC";
 				}
-	
-			$sql   .= $order_by_clause;
-			$sql   .= " LIMIT $per_page";
-			$sql   .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
-			$result = $wpbd->get_results( $sql, 'ARRAY_A' );
-			
+
+				$sql   .= $order_by_clause;
+				$per_page    = absint( $per_page );
+				$page_number = max( 1, absint( $page_number ) );
+				$sql   .= " LIMIT $per_page";
+				$sql   .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql is assembled entirely from fragments already run through $wpbd->prepare(), plus absint()/whitelist-sanitised ORDER BY/LIMIT/OFFSET values.
+				$result = $wpbd->get_results( $sql, 'ARRAY_A' );
+
 				if ( ! empty( $result ) && is_array( $result ) ) {
 					$notification_ids = array_column( $result, 'id' );
 					$notification_ids = array_filter( array_unique( $notification_ids ) );
-				
+
 					$all_stats = array();
 					if ( ! empty( $notification_ids ) ) {
 						$all_stats = ES()->actions_db->get_bulk_notification_stats(
@@ -561,11 +652,11 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 							array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK, IG_CONTACT_UNSUBSCRIBE )
 						);
 					}
-				
+
 					foreach ( $result as $key => $notification ) {
 						$notification_id = $notification['id'];
 						$campaign_id = isset( $notification['campaign_id'] ) ? $notification['campaign_id'] : 0;
-					
+
 						if ( ! empty( $campaign_id ) ) {
 							$notification_type = ES()->campaigns_db->get_campaign_type_by_id( $campaign_id );
 							if ( ! empty( $notification_type ) ) {
@@ -578,34 +669,34 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 						} else {
 							$result[ $key ]['type'] = __( 'Post Notification', 'email-subscribers' );
 						}
-					
+
 						$stats = isset( $all_stats[ $notification_id ] ) ? $all_stats[ $notification_id ] : array(
 							'sent'         => 0,
 							'opened'       => 0,
 							'clicked'      => 0,
 							'unsubscribed' => 0,
 						);
-					
+
 						$total_sent = $stats['sent'];
 						$total_opened = $stats['opened'];
 						$total_clicked = $stats['clicked'];
 						$total_unsubscribed = $stats['unsubscribed'];
-					
+
 						$open_rate = ! empty( $total_sent ) ? number_format_i18n( ( ( $total_opened * 100 ) / $total_sent ), 2 ) : 0;
 						$click_rate = ! empty( $total_sent ) ? number_format_i18n( ( ( $total_clicked * 100 ) / $total_sent ), 2 ) : 0;
 						$unsubscribe_rate = ! empty( $total_sent ) ? number_format_i18n( ( ( $total_unsubscribed * 100 ) / $total_sent ), 2 ) : 0;
-					
+
 						$result[ $key ]['open_rate'] = $open_rate . '%';
 						$result[ $key ]['click_rate'] = $click_rate . '%';
 						$result[ $key ]['unsubscribe_rate'] = $unsubscribe_rate . '%';
 						$result[ $key ]['total_contacts'] = isset( $notification['count'] ) ? (int) $notification['count'] : 0;
 						$result[ $key ]['total_sent'] = $total_sent;
-					
+
 						$result[ $key ]['start_at'] = ! empty( $notification['start_at'] ) ? ig_es_format_date_time( $notification['start_at'] ) : '';
 						$result[ $key ]['finish_at'] = ! empty( $notification['finish_at'] ) ? ig_es_format_date_time( $notification['finish_at'] ) : '';
 						$result[ $key ]['created_at'] = ! empty( $notification['created_at'] ) ? ig_es_format_date_time( $notification['created_at'] ) : '';
-						
-						// Add cron URL for resending failed campaigns
+
+						// Add cron URL for resending failed campaigns.
 						$hash = ! empty( $notification['hash'] ) ? $notification['hash'] : '';
 						$cron_url = '';
 						if ( ! empty( $hash ) ) {
@@ -614,15 +705,24 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 						$result[ $key ]['cron_url'] = $cron_url;
 					}
 				}
-
 			} else {
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $sql is assembled entirely from fragments already run through $wpbd->prepare().
 				$result = $wpbd->get_var( $sql );
 			}
 
-		return $result;
-		}		public static function delete_notification( $args = array() ) {
+			return $result;
+		}
+
+		/**
+		 * Delete one or more notifications (reports).
+		 *
+		 * @param array $args Arguments, expects 'notification_ids'.
+		 *
+		 * @return bool
+		 */
+		public static function delete_notification( $args = array() ) {
 			$notification_ids = isset( $args['notification_ids'] ) ? (array) $args['notification_ids'] : array();
-		
+
 			if ( ! empty( $notification_ids ) ) {
 				ES_DB_Mailing_Queue::delete_notifications( $notification_ids );
 				ES_DB_Sending_Queue::delete_by_mailing_queue_id( $notification_ids );
@@ -632,27 +732,31 @@ if ( ! class_exists( 'ES_Reports_Controller' ) ) {
 
 
 		/**
-	 * Get view activity table data
-	 */
+		 * Get view activity table data.
+		 *
+		 * @param array $args Filter/sort/pagination arguments (hash, campaign_id, search, orderby, order, page_number, per_page, return_count, etc.).
+		 *
+		 * @return array|int Activity rows, or the count when 'return_count' is true.
+		 */
 		public static function get_activity_table_data( $args = array() ) {
 			$result = apply_filters( 'ig_es_get_activity_table_data', null, $args );
 			if ( null !== $result ) {
 				return $result;
 			}
 
-			global $wpbd;
+			global $wpdb, $wpbd;
 
-		$hash = isset($args['hash']) ? $args['hash'] : '';
-		$campaign_id = isset($args['campaign_id']) ? $args['campaign_id'] : '';
-		$filter_by_status = isset($args['filter_by_status']) ? $args['filter_by_status'] : '';
-		$filter_by_country = isset($args['filter_by_country']) ? $args['filter_by_country'] : '';
-		$search = isset($args['search']) ? $args['search'] : '';
-		$orderby = isset($args['orderby']) ? $args['orderby'] : '';
-		$order = isset($args['order']) ? $args['order'] : 'DESC';  // default DESC
-		$page_number = isset($args['page_number']) ? $args['page_number'] : 1;  // default 1
-		$per_page = isset($args['per_page']) ? intval($args['per_page']) : 100;  // default 100
-		$return_count = isset($args['return_count']) ? $args['return_count'] : false;
-$message_id            = 0;
+			$hash = isset( $args['hash'] ) ? $args['hash'] : '';
+			$campaign_id = isset( $args['campaign_id'] ) ? $args['campaign_id'] : '';
+			$filter_by_status = isset( $args['filter_by_status'] ) ? $args['filter_by_status'] : '';
+			$filter_by_country = isset( $args['filter_by_country'] ) ? $args['filter_by_country'] : '';
+			$search = isset( $args['search'] ) ? $args['search'] : '';
+			$orderby = isset( $args['orderby'] ) ? $args['orderby'] : '';
+			$order = isset( $args['order'] ) ? $args['order'] : 'DESC';  // Default DESC.
+			$page_number = isset( $args['page_number'] ) ? $args['page_number'] : 1;  // Default 1.
+			$per_page = isset( $args['per_page'] ) ? intval( $args['per_page'] ) : 100;  // Default 100.
+			$return_count = isset( $args['return_count'] ) ? $args['return_count'] : false;
+			$message_id   = 0;
 			$view_activity_data    = array();
 			$delivery_table_exists = false;
 			$selects               = array();
@@ -663,14 +767,14 @@ $message_id            = 0;
 					$campaign_id                 = $notification_data_from_hash['campaign_id'];
 					$message_id                  = $notification_data_from_hash['id'];
 				}
-				$delivery_table_exists       = ES()->campaigns_db->table_exists( $wpbd->prefix . 'es_deliverreport' );				// We are assigning NULL values to sent_at and opened_at columns as actions tables have NULL values for these columns when no data is present in the column.
+				$delivery_table_exists       = ES()->campaigns_db->table_exists( $wpdb->prefix . 'es_deliverreport' );              // We are assigning NULL values to sent_at and opened_at columns as actions tables have NULL values for these columns when no data is present in the column.
 				// Assigning NULL ensures sorting works as expected when both the tables are combined.
 				$queue_query = "SELECT queue.contact_id AS `contact_id`, queue.email AS `email`, 0 AS `type`, NULL AS `sent_at`, NULL AS `opened_at`, queue.status, '' AS `country`, '' AS `device`, '' AS `email_client`, '' AS `os`
-			FROM {$wpbd->prefix}ig_sending_queue AS queue
-			WHERE `mailing_queue_id` = %d AND `contact_id` NOT IN ( SELECT `contact_id` FROM {$wpbd->prefix}ig_actions WHERE campaign_id = %d AND message_id = %d )";
+			FROM {$wpdb->prefix}ig_sending_queue AS queue
+			WHERE `mailing_queue_id` = %d AND `contact_id` NOT IN ( SELECT `contact_id` FROM {$wpdb->prefix}ig_actions WHERE campaign_id = %d AND message_id = %d )";
 
 				$delivery_query = $wpbd->prepare(
-				"SELECT
+					"SELECT
 				es_deliver_emailid AS `contact_id`,
 				es_deliver_emailmail AS `email`,
 				0 AS `type`,
@@ -681,10 +785,11 @@ $message_id            = 0;
 				'' AS `device`,
 				'' AS `email_client`,
 				'' AS `os`
-				FROM {$wpbd->prefix}es_deliverreport WHERE es_deliver_sentguid = %s",
-				array( $hash )
-					);
+				FROM {$wpdb->prefix}es_deliverreport WHERE es_deliver_sentguid = %s",
+					array( $hash )
+				);
 
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $queue_query is a fixed literal string with %d placeholders, prepared here with $message_id/$campaign_id.
 					$selects[] = $wpbd->prepare( $queue_query, $message_id, $campaign_id, $message_id );
 			}
 
@@ -702,105 +807,109 @@ $message_id            = 0;
 	MAX(CASE WHEN actions.type = %d THEN actions.device END) AS `device`,
 	MAX(CASE WHEN actions.type = %d THEN actions.email_client END) AS `email_client`,
 	MAX(CASE WHEN actions.type = %d THEN actions.os END) AS `os`
-	FROM {$wpbd->prefix}ig_actions AS actions
-	LEFT JOIN {$wpbd->prefix}ig_contacts AS contacts ON actions.contact_id = contacts.id
+	FROM {$wpdb->prefix}ig_actions AS actions
+	LEFT JOIN {$wpdb->prefix}ig_contacts AS contacts ON actions.contact_id = contacts.id
 	WHERE actions.campaign_id = %d AND actions.message_id = %d AND actions.type IN (%d, %d)
 	GROUP BY email";
 			$query_args = array(
-			IG_MESSAGE_SENT,
-			IG_MESSAGE_OPEN,
-			IG_MESSAGE_SENT,
-			IG_MESSAGE_OPEN,
-			IG_MESSAGE_OPEN,
-			IG_MESSAGE_OPEN,
-			IG_MESSAGE_OPEN,
-			IG_MESSAGE_OPEN,
-			$campaign_id,
-			$message_id,
-			IG_MESSAGE_SENT,
-			IG_MESSAGE_OPEN,
-		);
-
-		$selects[] = $wpbd->prepare( $action_query, $query_args );
-
-	if ( $return_count ) {
-		$notification_query = 'SELECT count(*) FROM ( ';
-	} else {
-		$notification_query = 'SELECT * FROM ( ';
-	}
-	$notification_query .= implode( ' UNION ALL ', $selects );
-	$notification_query .= ') AS `activity`';
-
-	$notification       = ES()->campaigns_db->get( $campaign_id );
-		
-	// Check if notification exists before accessing array
-	if ( ! empty( $notification ) && is_array( $notification ) ) {
-		$total_email_sent   = ES()->actions_db->get_count_based_on_id_type( $notification['id'], $message_id, IG_MESSAGE_SENT );
-		$email_viewed_count = ES()->actions_db->get_count_based_on_id_type( $notification['id'], $message_id, IG_MESSAGE_OPEN );
-	} else {
-		$total_email_sent   = 0;
-		$email_viewed_count = 0;
-	}
-
-	$notification_query .= ' WHERE 1';
-
-	$search_query = '';
-	if ( ! empty( $search ) ) {
-		$search_query = $wpbd->prepare( ' AND email LIKE %s', '%' . $wpbd->esc_like( $search ) . '%' );
-	}
-
-	$status_query = '';
-	if ( ! empty( $filter_by_status ) ) {
-			$status_map = array(
-				'opened'     => 'Opened',
-				'not_opened' => 'Sent',
-				'failed'     => 'Failed',
-				'in_queue'   => 'In Queue',
-				'sending'    => 'Sending',
+				IG_MESSAGE_SENT,
+				IG_MESSAGE_OPEN,
+				IG_MESSAGE_SENT,
+				IG_MESSAGE_OPEN,
+				IG_MESSAGE_OPEN,
+				IG_MESSAGE_OPEN,
+				IG_MESSAGE_OPEN,
+				IG_MESSAGE_OPEN,
+				$campaign_id,
+				$message_id,
+				IG_MESSAGE_SENT,
+				IG_MESSAGE_OPEN,
 			);
-			$status       = isset( $status_map[ $filter_by_status ] ) ? $status_map[ $filter_by_status ] : 'Sent';
-			$status_query = $wpbd->prepare( ' AND `status` = %s', $status );
-		}
 
-		$country_query = '';
-		if ( ! empty( $filter_by_country ) ) {
-			$country_query = $wpbd->prepare( ' AND `country` = %s', $filter_by_country );
-		}
+			// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $action_query is a fixed literal string with %d placeholders, prepared here with $query_args.
+			$selects[] = $wpbd->prepare( $action_query, $query_args );
 
-		$order_by_query = '';
-		$offset         = 0;
-
-		if ( ! $return_count ) {
-
-			if ( empty( $orderby ) ) {
-				// By default sort by opened_at and sent_at columns.
-				$orderby = "`opened_at` {$order}, `sent_at` {$order}";
+			if ( $return_count ) {
+				$notification_query = 'SELECT count(*) FROM ( ';
 			} else {
-				$orderby = "{$orderby} {$order}";
+				$notification_query = 'SELECT * FROM ( ';
 			}
-			$orderby = sanitize_sql_orderby( $orderby );
-			if ( $orderby ) {
-				$offset   = $page_number > 1 ? ( $page_number - 1 ) * $per_page : 0;
+			$notification_query .= implode( ' UNION ALL ', $selects );
+			$notification_query .= ') AS `activity`';
 
-				$order_by_query = " ORDER BY {$orderby} LIMIT {$offset}, {$per_page}";
-			}			
-		}
+			$notification       = ES()->campaigns_db->get( $campaign_id );
 
-		$notification_query .= $search_query . $status_query . $country_query . $order_by_query;
-		if ( $return_count ) {
+			// Check if notification exists before accessing array.
+			if ( ! empty( $notification ) && is_array( $notification ) ) {
+				$total_email_sent   = ES()->actions_db->get_count_based_on_id_type( $notification['id'], $message_id, IG_MESSAGE_SENT );
+				$email_viewed_count = ES()->actions_db->get_count_based_on_id_type( $notification['id'], $message_id, IG_MESSAGE_OPEN );
+			} else {
+				$total_email_sent   = 0;
+				$email_viewed_count = 0;
+			}
+
+			$notification_query .= ' WHERE 1';
+
+			$search_query = '';
+			if ( ! empty( $search ) ) {
+				$search_query = $wpdb->prepare( ' AND email LIKE %s', '%' . $wpdb->esc_like( $search ) . '%' );
+			}
+
+			$status_query = '';
+			if ( ! empty( $filter_by_status ) ) {
+					$status_map = array(
+						'opened'     => 'Opened',
+						'not_opened' => 'Sent',
+						'failed'     => 'Failed',
+						'in_queue'   => 'In Queue',
+						'sending'    => 'Sending',
+					);
+					$status       = isset( $status_map[ $filter_by_status ] ) ? $status_map[ $filter_by_status ] : 'Sent';
+					$status_query = $wpdb->prepare( ' AND `status` = %s', $status );
+			}
+
+			$country_query = '';
+			if ( ! empty( $filter_by_country ) ) {
+				$country_query = $wpdb->prepare( ' AND `country` = %s', $filter_by_country );
+			}
+
+			$order_by_query = '';
+			$offset         = 0;
+
+			if ( ! $return_count ) {
+
+				if ( empty( $orderby ) ) {
+					// By default sort by opened_at and sent_at columns.
+					$orderby = "`opened_at` {$order}, `sent_at` {$order}";
+				} else {
+					$orderby = "{$orderby} {$order}";
+				}
+				$orderby = sanitize_sql_orderby( $orderby );
+				if ( $orderby ) {
+					$offset   = $page_number > 1 ? ( $page_number - 1 ) * $per_page : 0;
+
+					$order_by_query = " ORDER BY {$orderby} LIMIT {$offset}, {$per_page}";
+				}
+			}
+
+			$notification_query .= $search_query . $status_query . $country_query . $order_by_query;
+			if ( $return_count ) {
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $notification_query is assembled from UNION segments already run through $wpdb->prepare(), plus safe fragments below.
 				$count = $wpbd->get_var( $notification_query );
 				if ( empty( $count ) && $delivery_table_exists ) {
 					$count_query  = 'SELECT count(*) FROM ( ' . $delivery_query . ' ) AS delivery_report WHERE 1';
 					$count_query .= $search_query . $status_query . $country_query . $order_by_query;
 
 					// If no results exists then check data into es_deliverreport table as earlier version were using this table.
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $count_query is assembled from $delivery_query (already run through $wpdb->prepare()) plus safe fragments.
 					$count = $wpbd->get_var(
-					$count_query
+						$count_query
 					);
 				}
-				
+
 				return (int) $count;
 			} else {
+				// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $notification_query is assembled from UNION segments already run through $wpbd->prepare(), plus safe fragments below.
 				$results = $wpbd->get_results( $notification_query, ARRAY_A );
 
 				// If no results exists then check data into es_deliverreport table as earlier version were using this table.
@@ -809,9 +918,10 @@ $message_id            = 0;
 					$delivery_query  = 'SELECT * FROM ( ' . $delivery_query . ' ) AS delivery_report WHERE 1';
 					$delivery_query .= $search_query . $status_query . $country_query . $order_by_query;
 
+					// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- $delivery_query is assembled from a fragment already run through $wpbd->prepare(), plus safe fragments.
 					$results = $wpbd->get_results(
-					$delivery_query,
-					ARRAY_A
+						$delivery_query,
+						ARRAY_A
 					);
 				}
 
@@ -824,7 +934,7 @@ $message_id            = 0;
 					foreach ( $results as $notification_action ) {
 
 						$contact_id = $notification_action['contact_id'];
-						$sent_at 	= '';
+						$sent_at    = '';
 						if ( ! empty( $notification_action['sent_at'] ) ) {
 							$sent_timestamp  = (int) $notification_action['sent_at'];
 							$sent_timestamp += $gmt_offset;
@@ -839,16 +949,16 @@ $message_id            = 0;
 						}
 
 						$view_activity_data[ $contact_id ] = array(
-						'sr_no'        => $sr_no++,
-						'email'        => $notification_action['email'],
-						'opened_at'    => $opened_at,
-						'sent_at'      => $sent_at,
-						'status'       => $notification_action['status'],
-						'country'      => ! empty( $notification_action['country'] ) ? $notification_action['country'] : '',
-						'country_flag' => '',
-						'device'       => ! empty( $notification_action['device'] ) ? $notification_action['device'] : '',
-						'email_client' => ! empty( $notification_action['email_client'] ) ? $notification_action['email_client'] : '',
-						'os'           => ! empty( $notification_action['os'] ) ? $notification_action['os'] : '',
+							'sr_no'        => $sr_no++,
+							'email'        => $notification_action['email'],
+							'opened_at'    => $opened_at,
+							'sent_at'      => $sent_at,
+							'status'       => $notification_action['status'],
+							'country'      => ! empty( $notification_action['country'] ) ? $notification_action['country'] : '',
+							'country_flag' => '',
+							'device'       => ! empty( $notification_action['device'] ) ? $notification_action['device'] : '',
+							'email_client' => ! empty( $notification_action['email_client'] ) ? $notification_action['email_client'] : '',
+							'os'           => ! empty( $notification_action['os'] ) ? $notification_action['os'] : '',
 						);
 
 						$view_activity_data = apply_filters( 'additional_es_report_activity_data', $view_activity_data, $contact_id, $notification_action );
@@ -875,29 +985,33 @@ $message_id            = 0;
 				<span class="pt-3 pb-4 leading-5 tracking-wide text-gray-600"><?php echo esc_html( '(Viewed ' . number_format_i18n( $email_viewed_count ) . '/' . number_format_i18n( $total_email_sent ) . ')' ); ?>
 				</span>
 			</div>
-			<?php
+				<?php
 			}
 
 			return array_values( $view_activity_data );
 		}
 
-	/**
-	 * Get individual reports data
-	 *
-	 * @version 5.4.2
-	 */
+		/**
+		 * Get individual reports data.
+		 *
+		 * @param string $id Notification hash.
+		 *
+		 * @version 5.4.2
+		 */
 		public static function view_report_data_lite( $id ) {
 			global $wpdb;
 
 			$notification             = ES_DB_Mailing_Queue::get_notification_by_hash( $id );
 			$report_id                = $notification['id'];
 			$notification_campaign_id = $notification['campaign_id'];
-			// Aggregate KPI totals in a single DB call
-			$kpi_counts = ES()->actions_db->get_actions_count( array(
-				'campaign_id' => $notification_campaign_id,
-				'message_id'  => $report_id,
-				'types'       => array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK, IG_CONTACT_UNSUBSCRIBE ),
-			) );
+			// Aggregate KPI totals in a single DB call.
+			$kpi_counts = ES()->actions_db->get_actions_count(
+				array(
+					'campaign_id' => $notification_campaign_id,
+					'message_id'  => $report_id,
+					'types'       => array( IG_MESSAGE_SENT, IG_MESSAGE_OPEN, IG_LINK_CLICK, IG_CONTACT_UNSUBSCRIBE ),
+				)
+			);
 
 			$total_email_sent         = isset( $kpi_counts['sent'] ) ? (int) $kpi_counts['sent'] : 0;
 			$email_viewed_count       = isset( $kpi_counts['opened'] ) ? (int) $kpi_counts['opened'] : 0;
@@ -917,24 +1031,24 @@ $message_id            = 0;
 			}
 
 			$report_kpi_statistics = array(
-				'total_email_sent'			=> number_format_i18n( $total_email_sent ),
-				'email_viewed_count'		=> number_format_i18n( $email_viewed_count ),
-				'email_unsubscribed_count'	=> number_format_i18n( $email_unsubscribed_count ),
-				'email_click_count'			=> number_format_i18n( $email_click_count ),
-				'avg_open_rate'				=> $avg_open_rate,
-				'avg_click_rate'			=> $avg_click_rate,
-				'avg_unsubscribed_rate'		=> $avg_unsubscribed_rate,
+				'total_email_sent'          => number_format_i18n( $total_email_sent ),
+				'email_viewed_count'        => number_format_i18n( $email_viewed_count ),
+				'email_unsubscribed_count'  => number_format_i18n( $email_unsubscribed_count ),
+				'email_click_count'         => number_format_i18n( $email_click_count ),
+				'avg_open_rate'             => $avg_open_rate,
+				'avg_click_rate'            => $avg_click_rate,
+				'avg_unsubscribed_rate'     => $avg_unsubscribed_rate,
 			);
 
-			$notification['type']    		 = ucwords( str_replace( '_', ' ', $notification_type ) );
-			$notification_subject    		 = $notification['subject'];
-			$notification_campaign   	 	 = ES()->campaigns_db->get_campaign_by_id( $notification_campaign_id, - 1 );
-			$notification['from_email'] 	 = ! empty( $notification_campaign['from_email'] ) ? $notification_campaign['from_email'] : '';
-			$notification_lists_ids 	 	 = ! empty( $notification_campaign['list_ids'] ) ? explode( ',', $notification_campaign['list_ids'] ) : array();
-			$notification['list_name'] 		 = ES_Common::prepare_list_name_by_ids( $notification_lists_ids );
-			$total_contacts          		 = $notification['count'];
-			$notification_status     		 = $notification['status'];
-			$campaign_meta					 = ! empty( $notification_campaign['meta'] ) ? ig_es_maybe_unserialize( $notification_campaign['meta']) : '';
+			$notification['type']            = ucwords( str_replace( '_', ' ', $notification_type ) );
+			$notification_subject            = $notification['subject'];
+			$notification_campaign           = ES()->campaigns_db->get_campaign_by_id( $notification_campaign_id, - 1 );
+			$notification['from_email']      = ! empty( $notification_campaign['from_email'] ) ? $notification_campaign['from_email'] : '';
+			$notification_lists_ids          = ! empty( $notification_campaign['list_ids'] ) ? explode( ',', $notification_campaign['list_ids'] ) : array();
+			$notification['list_name']       = ES_Common::prepare_list_name_by_ids( $notification_lists_ids );
+			$total_contacts                  = $notification['count'];
+			$notification_status             = $notification['status'];
+			$campaign_meta                   = ! empty( $notification_campaign['meta'] ) ? ig_es_maybe_unserialize( $notification_campaign['meta'] ) : '';
 			$notification['list_conditions'] = ! empty( $campaign_meta['list_conditions'] ) ? $campaign_meta['list_conditions'] : '';
 
 			$where                = $wpdb->prepare( 'message_id = %d ORDER BY updated_at DESC', $report_id );
@@ -947,29 +1061,29 @@ $message_id            = 0;
 			$time_offset   = get_option( 'gmt_offset' ) * HOUR_IN_SECONDS;
 			$date_format   = get_option( 'date_format' );
 
-		$daily_unique_contacts = array();
+			$daily_unique_contacts = array();
 
 			if ( ! empty( $notification_actions ) ) {
 				foreach ( $notification_actions as $notification_action ) {
 					$action_type = (int) $notification_action['type'];
 					if ( in_array( $action_type, array( IG_MESSAGE_OPEN, IG_LINK_CLICK ), true ) ) {
 						$created_timestamp = $notification_action['created_at'];
-						//$created_date      = date_i18n( $date_format, $created_timestamp + $time_offset );
+						// $created_date      = date_i18n( $date_format, $created_timestamp + $time_offset );
 						$created_date = gmdate( 'Y-m-d', $created_timestamp + $time_offset );
 						$contact_id = isset( $notification_action['contact_id'] ) ? $notification_action['contact_id'] : 0;
-					
+
 						if ( ! isset( $activity_data[ $created_date ] ) ) {
 							$activity_data[ $created_date ] = array(
-							'opened'  => 0,
-							'clicked' => 0,
+								'opened'  => 0,
+								'clicked' => 0,
 							);
 							$daily_unique_contacts[ $created_date ] = array(
-							'opened' => array(),
-							'clicked' => array(),
+								'opened' => array(),
+								'clicked' => array(),
 							);
 						}
-					
-						// Count unique contacts per day, not total events
+
+						// Count unique contacts per day, not total events.
 						if ( IG_MESSAGE_OPEN === $action_type ) {
 							if ( ! in_array( $contact_id, $daily_unique_contacts[ $created_date ]['opened'], true ) ) {
 								$daily_unique_contacts[ $created_date ]['opened'][] = $contact_id;
@@ -988,14 +1102,18 @@ $message_id            = 0;
 				ksort( $activity_data );
 			}
 
-	// To display report header information and KPI values
-	do_action( 'ig_es_view_report_description_lite', $notification, $report_kpi_statistics );
+			// To display report header information and KPI values.
+			do_action( 'ig_es_view_report_description_lite', $notification, $report_kpi_statistics );
 
 		}
 
-/**
- * Method to preview email
- */
+		/**
+		 * Method to preview email.
+		 *
+		 * @param array $args Arguments, expects 'report_id' and optionally 'campaign_type'.
+		 *
+		 * @return array|null
+		 */
 		public static function preview_email_in_report( $args = array() ) {
 
 			$response      = array();
@@ -1021,4 +1139,3 @@ $message_id            = 0;
 }
 
 ES_Reports_Controller::get_instance();
-

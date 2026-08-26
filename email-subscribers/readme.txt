@@ -2,11 +2,11 @@
 Contributors: icegram, niravmehta, sandhyam, storeapps, Mansi Shah, kishanranawat, shubhanshukandani
 Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=BMFRMVXQ87JWA&source=url
 Author URI: https://www.icegram.com/
-Tags: email subscribers, WooCommerce emails, lead generation, email sending plugin, newsletter, subscription form, email marketing, email automation, post notifications
+Tags: email subscribers, WooCommerce emails, lead generation, newsletter, email marketing, subscription form, email automation, post notifications
 Requires at least: 3.9
 Tested up to: 7.0
 Requires PHP: 7.0
-Stable tag: 5.9.33
+Stable tag: 5.9.34
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -364,11 +364,17 @@ You can customize form and email styling using the built-in style editor, or add
 
 == Upgrade Notice ==
 
-= 5.9.33 =
+= 5.9.34 =
 
-* Improvement: Enhanced translation support for deactivation survey
+* Improvement: Optimized link-related queries on Reports page
+* Fix: Fixed site caching being disabled when form CAPTCHA security is on [PRO]
 
 == Changelog ==
+
+**5.9.34 (26.08.2026)**
+
+* Improvement: Optimized link-related queries on Reports page
+* Fix: Fixed site caching being disabled when form CAPTCHA security is on [PRO]
 
 **5.9.33 (06.08.2026)**
 
