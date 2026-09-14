@@ -302,6 +302,30 @@ class ES_Handle_Post_Notification {
 		$es_templ_body = str_replace( '{{POSTDESC}}', $post_description, $es_templ_body );
 		$es_templ_body = str_replace( '{{post.description}}', $post_description, $es_templ_body );
 
+		// Get post description while preserving basic HTML formatting.
+		// Unlike {{POSTDESC}} / {{post.description}} (which flatten to plain text via strip_tags()),
+		// this keeps <br>, <img> and other basic tags and trims to the word limit without
+		// splitting or unbalancing any tag.
+		$post_description_html_length  = (int) apply_filters( 'ig_es_post_description_html_length', $post_description_length );
+
+		// Tags kept in {{POSTDESCHTML}} / {{post.description_html}}: the shared formatting
+		// set plus an explicit whitelist of every tag used in rich post content. strip_tags()
+		// filters by tag only, so once a tag is allowed all of its attributes are preserved
+		// as-is - e.g. <p style>, <a href data-wpel-link>,
+		// <img src alt class style width height srcset sizes decoding>.
+		$description_html_allowed_tags = ig_es_get_strip_excluded_tags();
+
+		$postdeschtml_allowed_tags    = array( '<p>', '<a>', '<img>', '<br>', '<br/>' );
+		$description_html_allowed_tags = array_values( array_unique( array_merge( $description_html_allowed_tags, $postdeschtml_allowed_tags ) ) );
+
+		$description_html_allowed_tags = apply_filters( 'ig_es_post_description_html_allowed_tags', $description_html_allowed_tags );
+
+		$post_description_html = strip_tags( self::strip_shortcodes( $post->post_content ), implode( '', $description_html_allowed_tags ) );
+		$post_description_html = self::trim_words_preserving_html( $post_description_html, $post_description_html_length );
+
+		$es_templ_body = str_replace( '{{POSTDESCHTML}}', $post_description_html, $es_templ_body );
+		$es_templ_body = str_replace( '{{post.description_html}}', $post_description_html, $es_templ_body );
+
 		// Get post excerpt
 		$post_excerpt  = get_the_excerpt( $post );
 		$post_excerpt  = wpautop( $post_excerpt );
@@ -591,6 +615,111 @@ class ES_Handle_Post_Notification {
 	public static function strip_shortcodes( $content ) {
 		$content = preg_replace('/\[[^\[\]]*\]/', '', $content);
 		return $content;
+	}
+
+	/**
+	 * Trim an HTML string to a maximum number of visible words without splitting
+	 * a tag or leaving tags unbalanced.
+	 *
+	 * Markup tokens (including void elements such as <br> and <img>) are emitted
+	 * as-is and do not count towards the word limit. When the limit is reached the
+	 * text is cut, the $more string is appended and any tags left open are closed
+	 * in reverse order. The result is finally passed through force_balance_tags()
+	 * as a safety net.
+	 *
+	 * @param string $html      HTML string to trim.
+	 * @param int    $max_words Maximum number of visible words to keep.
+	 * @param string $more      String appended when the text gets truncated.
+	 *
+	 * @return string
+	 */
+	public static function trim_words_preserving_html( $html, $max_words = 50, $more = '&hellip;' ) {
+		$max_words = (int) $max_words;
+		$html      = (string) $html;
+
+		// Drop <script>/<style> blocks entirely so their contents never leak into the output.
+		$html = preg_replace( '@<(script|style)[^>]*?>.*?</\\1>@si', '', $html );
+
+		if ( $max_words <= 0 || '' === trim( $html ) ) {
+			return '';
+		}
+
+		$plain_words = preg_split( '/\s+/', trim( wp_strip_all_tags( $html ) ), -1, PREG_SPLIT_NO_EMPTY );
+
+		// Not enough words to need trimming - keep everything (just balance it).
+		if ( count( $plain_words ) <= $max_words ) {
+			return force_balance_tags( $html );
+		}
+
+		$void_elements = array( 'area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'link', 'meta', 'param', 'source', 'track', 'wbr' );
+
+		// Split into markup tokens and the text between them, keeping both.
+		$tokens = preg_split( '/(<[^>]+>)/', $html, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
+
+		$open_tags  = array();
+		$word_count = 0;
+		$output     = '';
+		$truncated  = false;
+
+		foreach ( (array) $tokens as $token ) {
+			if ( '' === $token ) {
+				continue;
+			}
+
+			// Markup token: emit it and track open/close tags for balancing.
+			if ( '<' === $token[0] && '>' === substr( $token, -1 ) ) {
+				$output .= $token;
+
+				if ( preg_match( '#^<\s*/\s*([a-zA-Z0-9]+)#', $token, $m ) ) {
+					$tag = strtolower( $m[1] );
+					$idx = array_search( $tag, $open_tags, true );
+					if ( false !== $idx ) {
+						array_splice( $open_tags, $idx, 1 );
+					}
+				} elseif ( preg_match( '#^<\s*([a-zA-Z0-9]+)([^>]*?)>$#', $token, $m ) ) {
+					$tag          = strtolower( $m[1] );
+					$self_closing = ( '/' === substr( rtrim( $m[2] ), -1 ) );
+					if ( ! $self_closing && ! in_array( $tag, $void_elements, true ) ) {
+						$open_tags[] = $tag;
+					}
+				}
+				continue;
+			}
+
+			// Text token: append words until the limit is hit.
+			$chunks = preg_split( '/(\s+)/', $token, -1, PREG_SPLIT_DELIM_CAPTURE | PREG_SPLIT_NO_EMPTY );
+
+			foreach ( (array) $chunks as $chunk ) {
+				if ( '' === trim( $chunk ) ) {
+					$output .= $chunk; // Preserve original whitespace.
+					continue;
+				}
+
+				if ( $word_count >= $max_words ) {
+					$truncated = true;
+					break;
+				}
+
+				$output .= $chunk;
+				$word_count++;
+			}
+
+			if ( $truncated ) {
+				break;
+			}
+		}
+
+		if ( $truncated ) {
+			$output = rtrim( $output );
+			if ( '' !== $more ) {
+				$output .= $more;
+			}
+			foreach ( array_reverse( $open_tags ) as $tag ) {
+				$output .= '</' . $tag . '>';
+			}
+		}
+
+		return force_balance_tags( $output );
 	}
 
 }

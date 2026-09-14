@@ -891,7 +891,7 @@ class ES_Service_Email_Sending extends ES_Services {
 		$optin_url      = admin_url('?page=es_dashboard&ess_optin=yes#sending-service-onboarding-tasks-list');
 		$learn_more_url = 'https://www.icegram.com/email-sending-service/?utm_source=in_app&utm_medium=ess_wp_php_mailer_notice&utm_campaign=ess_upsell';
 	
-		$heading      = esc_html__('Increase Your Email Campaign Efficiency with Our Email Sending Service!', 'email-subscribers');
+		$heading      = __('Increase Your Email Campaign Efficiency with Our Email Sending Service!', 'email-subscribers');
 		$allowedtags  = ig_es_allowed_html_tags_in_esc();
 		$tooltip_text = sprintf(
 			'Calculation based on your sending speed of %s and %s subscribers.',
@@ -902,7 +902,7 @@ class ES_Service_Email_Sending extends ES_Services {
 		
 		?>
 		<div id="ig_es_ess_promotion_mailer_message" class="text-gray-700 not-italic p-4 leading-relaxed">
-			<h2 class="text-xl font-bold mb-2"><?php echo $heading; ?></h2>
+			<h2 class="text-xl font-bold mb-2"><?php echo esc_html( $heading ); ?></h2>
 			<div class="mb-4">
 				<?php
 				printf(

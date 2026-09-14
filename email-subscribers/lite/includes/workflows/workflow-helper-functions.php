@@ -17,6 +17,12 @@
  *
  * @since 4.4.1
  */
+
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 function ig_es_validate_data_item( $type, $item ) {
 
 	if ( ! $type || ! $item ) {

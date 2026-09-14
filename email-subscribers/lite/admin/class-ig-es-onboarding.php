@@ -930,26 +930,31 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 
 			// Create Broadcast Campaign
 
-			$default_list = ES()->lists_db->get_list_by_name( IG_DEFAULT_LIST );
+			$default_list = ES()->lists_db->get_list_by_name( IG_MAIN_LIST );
+			if ( empty( $default_list ) ) {
+				$default_list = ES()->lists_db->get_list_by_name( IG_DEFAULT_LIST );
+			}
 
 			if ( ! empty( $default_list ) ) {
 				$list_id = $default_list['id'];
 
-				$data['slug']             = sanitize_title( $title );
-				$data['name']             = $title;
-				$data['subject']          = $subject;
-				$data['type']             = IG_CAMPAIGN_TYPE_NEWSLETTER;
-				$data['from_email']       = $from_email;
-				$data['reply_to_email']   = $from_email;
-				$data['from_name']        = $from_name;
-				$data['reply_to_name']    = $from_name;
-				$data['body']             = $sample;
-				$data['status']           = 1;
+				$data['slug']           = sanitize_title( $title );
+				$data['name']           = $title;
+				$data['subject']        = $subject;
+				$data['type']           = IG_CAMPAIGN_TYPE_NEWSLETTER;
+				$data['from_email']     = $from_email;
+				$data['reply_to_email'] = $from_email;
+				$data['from_name']      = $from_name;
+				$data['reply_to_name']  = $from_name;
+				$data['body']           = $sample;
+				$data['list_ids']       = $list_id;
+				$data['status']         = 1;
 
 				$meta = array(
+					'is_default'           => 1,
 					'enable_open_tracking' => ES()->mailer->can_track_open() ? 'yes' : 'no',
 					'enable_link_tracking' => ES()->mailer->can_track_clicks() ? 'yes' : 'no',
-					'list_conditions' => array(
+					'list_conditions'      => array(
 						array(
 							array(
 								'field'    => '_lists__in',
@@ -1190,10 +1195,6 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 
 			$title = esc_html__( 'New Post Published - {{post.title}}', 'email-subscribers' );
 
-			$default_list = ES()->lists_db->get_list_by_name( IG_DEFAULT_LIST );
-
-			$list_id = $default_list['id'];
-
 			$categories_objects = get_terms(
 				array(
 					'taxonomy'   => 'category',
@@ -1232,8 +1233,8 @@ if ( ! class_exists( 'IG_ES_Onboarding' ) ) {
 			$data['from_name']        = $from_email;
 			$data['reply_to_name']    = $from_email;
 			$data['categories']       = $categories_str;
-			$data['list_ids']         = $list_id;
 			$data['status']           = 0;
+			$meta['is_default']       = 1;
 			$data['meta']             = maybe_serialize( $meta );
 			$post_notification_id = ES()->campaigns_db->save_campaign( $data );
 		

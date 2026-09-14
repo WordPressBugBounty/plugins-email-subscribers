@@ -1,4 +1,8 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 
@@ -49,7 +53,9 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 			}
 
 			$order_by     = isset( $contact_args['order_by'] ) ? sanitize_text_field( $contact_args['order_by'] ) : 'created_at';
-			$order        = isset( $contact_args['order'] ) ? strtoupper( $contact_args['order'] ) : 'DESC';
+			$order        = isset( $contact_args['order'] ) ? strtoupper( $contact_args['order'] ) : 'DESC'; 
+			$order 		  = in_array( $order, array( 'ASC', 'DESC' ), true ) ? $order : 'DESC';
+
 			$search       = isset( $contact_args['search'] ) ? sanitize_text_field( $contact_args['search'] ) : '';
 			$per_page     = isset( $contact_args['per_page'] ) ? (int) $contact_args['per_page'] : 5;
 			$page_number  = isset( $contact_args['page_number'] ) ? (int) $contact_args['page_number'] : 1;

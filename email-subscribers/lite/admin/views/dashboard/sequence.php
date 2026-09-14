@@ -1,3 +1,9 @@
+<?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
 <p class="pb-3 text-lg font-medium leading-6 text-gray-400">
 	<span>
 	<?php

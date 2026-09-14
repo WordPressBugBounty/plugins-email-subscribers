@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $admin_name = wp_get_current_user();
 $admin_email = get_option( 'admin_email' );
 $trial_expiry_date           = ES()->trial->get_trial_expiry_date();

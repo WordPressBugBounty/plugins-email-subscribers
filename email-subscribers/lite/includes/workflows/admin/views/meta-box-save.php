@@ -7,6 +7,11 @@
  * @package     Email Subscribers
  */
 
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 ?>
 <div class="submitbox" id="submitpost">
 	<table class="ig-es-table">

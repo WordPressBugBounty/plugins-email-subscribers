@@ -1,4 +1,9 @@
-<?php 
+<?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $trial_block      = array();
 $show_trial_optin = !  ES()->trial->is_trial() && ! ES()->is_premium();
 $allowed_tags     = ig_es_allowed_html_tags_in_esc();

@@ -95,27 +95,25 @@ class ES_DB_Lists extends ES_DB {
 	public function get_lists( $args = array() ) {
 		if ( empty( $args ) ) {
 			return $this->get_all();
-		}
+		} 
 		
-		$allowed_columns = array( 'id', 'name', 'created_at', 'updated_at', 'slug', 'status' );
-		$order_by = ! empty( $args['order_by'] ) ? esc_sql( $args['order_by'] ) : 'id';
-		
-		if ( ! in_array( $order_by, $allowed_columns, true ) ) {
-			$order_by = 'id';
-		}
-		
-		$order = ! empty( $args['order'] ) ? esc_sql( strtoupper( $args['order'] ) ) : 'ASC';
-		
-		if ( ! in_array( $order, array( 'ASC', 'DESC' ), true ) ) {
-			$order = 'ASC';
-		}
+		$allowed_columns = array(
+			'id'         => 'id',
+			'name'       => 'name',
+			'created_at' => 'created_at',
+			'updated_at' => 'updated_at',
+			'slug'       => 'slug',
+			'status'     => 'status',
+		);
+		$order_by = ( ! empty( $args['order_by'] ) && isset( $allowed_columns[ $args['order_by'] ] ) ) ? $allowed_columns[ $args['order_by'] ] : 'id';
+		$order    = ( ! empty( $args['order'] ) && 'DESC' === strtoupper( $args['order'] ) ) ? 'DESC' : 'ASC';
 		
 		global $wpdb;
 		$query = "SELECT * FROM {$this->table_name} ORDER BY {$order_by} {$order}";
 		
 		// Support pagination with per_page and page_number
 		if ( ! empty( $args['per_page'] ) && ! empty( $args['page_number'] ) ) {
-			$per_page = intval( $args['per_page'] );
+			$per_page    = intval( $args['per_page'] );
 			$page_number = intval( $args['page_number'] );
 			
 			if ( $per_page > 0 ) {
@@ -127,9 +125,8 @@ class ES_DB_Lists extends ES_DB {
 			if ( $limit > 0 ) {
 				$query .= $wpdb->prepare( ' LIMIT %d', $limit );
 			}
-		}
-		
-		return $wpdb->get_results( $query, ARRAY_A );
+		} 
+		return $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 	}
 
 	/**

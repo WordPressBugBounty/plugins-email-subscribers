@@ -546,16 +546,17 @@ class ES_DB_Actions extends ES_DB {
 			WHERE message_id IN ($placeholders)";
 		
 		if ( ! empty( $types ) ) {
+			$types             = array_map( 'absint', $types );
 			$type_placeholders = implode( ',', array_fill( 0, count( $types ), '%d' ) );
-			$query .= " AND type IN ($type_placeholders)";
-			$query_params = array_merge( $message_ids, $types );
+			$query            .= " AND type IN ($type_placeholders)";
+			$query_params      = array_merge( $message_ids, $types );
 		} else {
 			$query_params = $message_ids;
 		}
 		
 		$query .= ' GROUP BY message_id, type';
 		
-		$results = $wpdb->get_results( $wpdb->prepare( $query, $query_params ), ARRAY_A );
+		$results = $wpdb->get_results( $wpdb->prepare( $query, $query_params ), ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Query is fully prepared via $wpdb->prepare() with %d placeholders; $message_ids and $types are sanitized with absint().
 		
 		$stats = array();
 		foreach ( $message_ids as $mid ) {

@@ -7,6 +7,11 @@
  * @package     Email Subscribers
  */
 
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 // Group triggers.
 $trigger_list = array();
 

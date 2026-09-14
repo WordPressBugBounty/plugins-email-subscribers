@@ -596,17 +596,42 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 				return array( 'status' => 'success' );
 			}
 
-			$from_name = get_option( 'ig_es_from_name', '' );
+			$from_name  = get_option( 'ig_es_from_name', '' );
 			$from_email = get_option( 'ig_es_from_email', '' );
+
+			$main_list    = ES()->lists_db->get_list_by_name( IG_MAIN_LIST );
+			$main_list_id = ! empty( $main_list['id'] ) ? intval( $main_list['id'] ) : 0;
+
+			if ( ! $main_list_id ) {
+				$tasks_data   = get_option( self::$onboarding_tasks_data_option, array() );
+				$main_list_id = isset( $tasks_data['create_default_lists']['main_list_id'] ) ? intval( $tasks_data['create_default_lists']['main_list_id'] ) : 0;
+			}
+
+			$meta = array(
+				'is_default'           => 1,
+				'enable_open_tracking' => ES()->mailer->can_track_open() ? 'yes' : 'no',
+				'enable_link_tracking' => ES()->mailer->can_track_clicks() ? 'yes' : 'no',
+				'list_conditions'      => array(
+					array(
+						array(
+							'field'    => '_lists__in',
+							'operator' => 'is',
+							'value'    => $main_list_id,
+						),
+					),
+				),
+			);
 
 			$campaign_data = array(
 				'name' => __( 'Sample Newsletter', 'email-subscribers' ),
-				'subject' => __( 'Welcome to our newsletter!', 'email-subscribers' ),
+				'subject' => __( 'Your test email worked. Now let\'s make it useful.', 'email-subscribers' ),
 				'body' => $this->get_default_newsletter_content(),
 				'from_name' => $from_name,
 				'from_email' => $from_email,
-				'type' => 'newsletter',
-				'status' => 'draft',
+				'type'       => 'newsletter',
+				'status'     => 'draft',
+				'list_ids'   => $main_list_id,
+				'meta'       => maybe_serialize( $meta ),
 			);
 
 			$campaign_id = ES()->campaigns_db->insert( $campaign_data );
@@ -633,17 +658,18 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 				return array( 'status' => 'success' );
 			}
 
-			$from_name = get_option( 'ig_es_from_name', '' );
+			$from_name  = get_option( 'ig_es_from_name', '' );
 			$from_email = get_option( 'ig_es_from_email', '' );
 
 			$notification_data = array(
-				'name' => __( 'New Post Notification', 'email-subscribers' ),
-				'subject' => __( 'New post: {{POSTTITLE}}', 'email-subscribers' ),
-				'body' => $this->get_default_post_notification_content(),
-				'from_name' => $from_name,
+				'name'       => __( 'New Post Notification', 'email-subscribers' ),
+				'subject'    => __( 'New post: {{POSTTITLE}}', 'email-subscribers' ),
+				'body'       => $this->get_default_post_notification_content(),
+				'from_name'  => $from_name,
 				'from_email' => $from_email,
-				'type' => 'post_notification',
-				'status' => 'active',
+				'type'       => 'post_notification',
+				'status'     => 'active',
+				'meta'       => maybe_serialize( $meta ),
 			);
 
 			$notification_id = ES()->campaigns_db->insert( $notification_data );
@@ -737,26 +763,27 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 			);
 
 			$settings = array(
-			'editor_type' => 'wysiwyg',
-			'form_version' => '1.0',
-			'lists' => $main_list_id ? array( $main_list_id ) : array(),
-			'desc' => '',
-			'show_in_popup' => 'no',
-			'popup_headline' => '',
-			'success_message' => __( 'Thank you for subscribing!', 'email-subscribers' ),
-			'redirect_url' => '',
-			'form_style' => 'inherit',
-			'gdpr' => array(
-				'consent' => $gdpr_enabled ? 'yes' : 'no',
+			'is_default'             => 1,
+			'editor_type'            => 'wysiwyg',
+			'form_version'           => '1.0',
+			'lists'                  => $main_list_id ? array( $main_list_id ) : array(),
+			'desc'                   => '',
+			'show_in_popup'          => 'no',
+			'popup_headline'         => '',
+			'success_message'        => __( 'Thank you for subscribing!', 'email-subscribers' ),
+			'redirect_url'           => '',
+			'form_style'             => 'inherit',
+			'gdpr'                   => array(
+				'consent'      => $gdpr_enabled ? 'yes' : 'no',
 				'consent_text' => 'I agree to the <a href="/privacy-policy">terms and conditions</a>'
 			),
-			'captcha' => 'no',
-			'action_after_submit' => 'show_success_message',
-			'redirect_to_url' => 'no',
-			'show_message' => 'no',
-			'is_embed_form_enabled' => 'no',
+			'captcha'                => 'no',
+			'action_after_submit'    => 'show_success_message',
+			'redirect_to_url'        => 'no',
+			'show_message'           => 'no',
+			'is_embed_form_enabled'  => 'no',
 			'embed_form_remote_urls' => array(),
-			'show_logo' => 'yes'
+			'show_logo'              => 'yes'
 			);
 
 			$styles = array(
@@ -765,11 +792,11 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 			);
 
 			$form_data = array(
-			'name' => __( 'Default Subscription Form', 'email-subscribers' ),
-			'body' => wp_json_encode( $form_body ), // JSON encode the body array
-			'settings' => serialize( $settings ), // PHP serialize the settings array
-			'styles' => serialize( $styles ), // PHP serialize the styles array
-			'lists' => $main_list_id ? array( $main_list_id ) : array(), // Add lists at top level too
+			'name'       => __( 'Default Subscription Form', 'email-subscribers' ),
+			'body'       => wp_json_encode( $form_body ), // JSON encode the body array
+			'settings'   => serialize( $settings ), // PHP serialize the settings array
+			'styles'     => serialize( $styles ), // PHP serialize the styles array
+			'lists'      => $main_list_id ? array( $main_list_id ) : array(), // Add lists at top level too
 			'created_at' => ig_get_current_date_time(),
 			'updated_at' => ig_get_current_date_time(),
 			);
@@ -864,8 +891,43 @@ if ( ! class_exists( 'ES_Onboarding_Controller' ) ) {
 		}
 
 		private function get_default_newsletter_content() {
-			return '<h2>' . __( 'Welcome to our newsletter!', 'email-subscribers' ) . '</h2>' .
-				   '<p>' . __( 'Thank you for subscribing to our newsletter. We will keep you updated with our latest news and offers.', 'email-subscribers' ) . '</p>';
+			$current_user = wp_get_current_user();
+			$admin_name   = ! empty( $current_user->display_name ) ? $current_user->display_name : ( ! empty( $current_user->first_name ) ? $current_user->first_name : __( 'Admin', 'email-subscribers' ) );
+
+			$forms_url     = esc_url( admin_url( 'admin.php?page=es_dashboard#forms' ) );
+			$campaigns_url = esc_url( admin_url( 'admin.php?page=es_dashboard#campaigns' ) );
+			$workflows_url = esc_url( admin_url( 'admin.php?page=es_workflows' ) );
+			$reports_url   = esc_url( admin_url( 'admin.php?page=es_dashboard#reports' ) );
+			$icegram_url   = 'https://www.icegram.com/express/';
+
+			$content  = '<p>' . sprintf( __( 'Dear %s,', 'email-subscribers' ), esc_html( $admin_name ) ) . '</p>';
+			$content .= '<p>' . __( 'That little test email just proved something important: <strong>Icegram Express is up and running on your WordPress site.</strong>', 'email-subscribers' ) . '</p>';
+			$content .= '<p>' . __( 'Now you can use it to grow your list, send emails and automate your email marketing, all from WordPress.', 'email-subscribers' ) . '</p>';
+			$content .= '<p>' . __( 'Not sure where to start? <strong>Here\'s your quick roadmap.</strong> And keep this email handy - you can always come back to it when you\'re wondering “What should I do next?”', 'email-subscribers' ) . '</p>';
+
+			$content .= '<p><strong>' . __( 'Grow your audience', 'email-subscribers' ) . '</strong><br/>';
+			$content .= sprintf( __( 'Create signup forms and organize subscribers with lists, tags and segments. <a href="%s">Create your first signup form</a>', 'email-subscribers' ), $forms_url ) . '</p>';
+
+			$content .= '<p><strong>' . __( 'Start sending', 'email-subscribers' ) . '</strong><br/>';
+			$content .= sprintf( __( 'Send newsletters, announcements or promotions or automatically notify subscribers when you publish a new post. <a href="%s">Create your first newsletter</a>', 'email-subscribers' ), $campaigns_url ) . '</p>';
+
+			$content .= '<p><strong>' . __( 'Welcome & nurture', 'email-subscribers' ) . '</strong><br/>';
+			$content .= sprintf( __( 'Automatically welcome new subscribers and follow up with email sequences as you build the relationship. <a href="%s">Create a welcome email</a>', 'email-subscribers' ), $workflows_url ) . '</p>';
+
+			$content .= '<p><strong>' . __( 'Put your emails on autopilot', 'email-subscribers' ) . '</strong><br/>';
+			$content .= sprintf( __( 'Set up workflows that respond to subscriber actions, from follow-ups and nurturing to WooCommerce automations. <a href="%s">Explore automations</a>', 'email-subscribers' ), $workflows_url ) . '</p>';
+
+			$content .= '<p><strong>' . __( 'Learn what works', 'email-subscribers' ) . '</strong><br/>';
+			$content .= sprintf( __( 'See opens, clicks and engagement so you can understand what your audience responds to. <a href="%s">View your reports</a>', 'email-subscribers' ), $reports_url ) . '</p>';
+
+			$content .= '<p>' . __( 'You don\'t need to set everything up today.', 'email-subscribers' ) . '</p>';
+			$content .= '<p>' . __( '<strong>Start with one thing.</strong> Once you\'ve got that working, come back here for your next step.', 'email-subscribers' ) . '</p>';
+			$content .= '<p>' . __( 'Your first test email is done.', 'email-subscribers' ) . '</p>';
+			$content .= '<p>' . __( '<strong>Now make your first real one.</strong>', 'email-subscribers' ) . '</p>';
+			$content .= '<p>' . __( 'P.S. <strong>Save this email.</strong> Think of it as your little Icegram Express roadmap whenever you need a hand getting started.', 'email-subscribers' ) . '</p>';
+			$content .= '<p>' . sprintf( __( '<strong>Hope you have a happy time using <a href="%s" target="_blank">Icegram Express</a>.</strong>', 'email-subscribers' ), esc_url( $icegram_url ) ) . '</p>';
+
+			return $content;
 		}
 
 		private function get_default_post_notification_content() {

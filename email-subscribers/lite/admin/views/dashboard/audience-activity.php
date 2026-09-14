@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 global $wpdb;
 $import_url = admin_url( 'admin.php?page=es_subscribers&action=import' );
 ?>

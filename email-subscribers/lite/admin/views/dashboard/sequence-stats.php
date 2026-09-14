@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if ( ! empty( $sequence_stats ) ) {
 	?>
 	<div id="sequence-stats" class="grid grid-cols-4 gap-4 py-4 text-gray-600 text-center" style="<?php echo ! empty( $upsell ) ? 'filter:blur(1px);' : ''; ?>">

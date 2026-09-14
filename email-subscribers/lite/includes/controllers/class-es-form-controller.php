@@ -1,4 +1,8 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 if ( ! class_exists( 'ES_Form_Controller' ) ) {
 
@@ -220,11 +224,31 @@ return $form_data;
 	
 	public static function prepare_form_data( $data ) {
 	
+			if ( ! empty( $data['settings'] ) && is_string( $data['settings'] ) ) {
+				$data['settings'] = ig_es_maybe_unserialize( $data['settings'] );
+			}
+
 			$form_data     = array();
 			$name          = ! empty( $data['name'] ) ? sanitize_text_field( $data['name'] ) : '';
 			$editor_type   = ! empty( $data['settings']['editor_type'] ) ? sanitize_text_field( $data['settings']['editor_type'] ) : 'wysiwyg';
 			$is_dnd_editor = IG_ES_DRAG_AND_DROP_EDITOR === $editor_type;
 			$is_wysiwyg_editor = 'wysiwyg' === $editor_type;
+
+			// Check if is_default is set in incoming data/settings or existing form DB record
+			$is_default = 0;
+			if ( ! empty( $data['settings']['is_default'] ) ) {
+				$is_default = (int) $data['settings']['is_default'];
+			} elseif ( ! empty( $data['is_default'] ) ) {
+				$is_default = (int) $data['is_default'];
+			} elseif ( ! empty( $data['id'] ) ) {
+				$existing_form = ES()->forms_db->get_form_by_id( $data['id'] );
+				if ( ! empty( $existing_form['settings'] ) ) {
+					$existing_settings = ig_es_maybe_unserialize( $existing_form['settings'] );
+					if ( is_array( $existing_settings ) && ! empty( $existing_settings['is_default'] ) ) {
+						$is_default = 1;
+					}
+				}
+			}
 	
 			// Handle popup settings
 			$es_form_popup = 'no';
@@ -263,6 +287,10 @@ return $form_data;
 					'redirect_url'  => ! empty( $data['settings']['redirect_url'] ) ? esc_url( $data['settings']['redirect_url'] ) : '',
 					'form_style'    => ! empty( $data['settings']['form_style'] ) ? sanitize_text_field( $data['settings']['form_style'] ) : 'inherit',
 				);
+
+				if ( $is_default ) {
+					$settings['is_default'] = 1;
+				}
 				
 				// Handle GDPR settings
 				if ( ! empty( $data['settings']['gdpr'] ) ) {
@@ -553,6 +581,10 @@ return $form_data;
 				
 				// Set styles to null for non-WYSIWYG editors
 				$form_data['styles'] = null;
+			}
+
+			if ( $is_default && is_array( $settings ) ) {
+				$settings['is_default'] = 1;
 			}
 
 			$af_id = ! empty( $data['af_id'] ) ? $data['af_id'] : 0;		

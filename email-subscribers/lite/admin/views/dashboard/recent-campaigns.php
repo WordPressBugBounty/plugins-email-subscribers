@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+} 
+
 global $wpdb;
 $campaign_url = admin_url( 'admin.php?page=es_campaigns' );
 if ( ! empty( $campaigns ) && count( $campaigns ) > 0 ) { ?>

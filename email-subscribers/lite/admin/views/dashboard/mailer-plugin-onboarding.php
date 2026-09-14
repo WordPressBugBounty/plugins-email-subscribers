@@ -1,3 +1,9 @@
+<?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+} ?>
+
 <div id="sending-service-benefits" class="pr-6 pl-6 w-full">
 	<p class="pb-3 text-lg font-medium leading-6 text-gray-400">
 		<span class="leading-7">

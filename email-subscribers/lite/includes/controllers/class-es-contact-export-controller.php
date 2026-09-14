@@ -1,4 +1,8 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 
@@ -265,11 +269,12 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 			if ( count( $results ) > 0 ) {
 				$contact_list_map = array();				
 				foreach ( $results as $result ) {
-					if ( ! in_array( $result['contact_id'], $contact_ids, true ) ) {
-						$contact_ids[] = $result['contact_id'];
+					$contact_id = (int) $result['contact_id'];
+					if ( ! in_array( $contact_id, $contact_ids, true ) ) {
+						$contact_ids[] = $contact_id;
 					}
 
-					$contact_list_map[ $result['contact_id'] ][] = array(
+					$contact_list_map[ $contact_id ][] = array(
 						'status'     => $result['status'],
 						'list_id'    => $result['list_id'],
 						'optin_type' => $result['optin_type'],
@@ -290,12 +295,13 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 					$custom_fields = ES()->custom_fields_db->get_custom_fields();
 					if ( ! empty( $custom_fields ) ) {
 						foreach ( $custom_fields as $field ) {
-							$select_columns[] = $field['slug'];
+							$select_columns[] = sanitize_key( $field['slug'] );
 						}
 					}
 
-					$query = 'SELECT ' . implode( ',', $select_columns ) . " FROM {$wpdb->prefix}ig_contacts WHERE id IN ({$contact_ids_str})";
-					$subscribers = $wpdb->get_results( $query, ARRAY_A );
+					$escaped_columns = implode( ',', $select_columns );
+					$query           = "SELECT {$escaped_columns} FROM {$wpdb->prefix}ig_contacts WHERE id IN ({$contact_ids_str})";
+					$subscribers     = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared -- Column names cannot be parameterized; inputs are sanitized via sanitize_key() and intval().
 				}
 			}
 			

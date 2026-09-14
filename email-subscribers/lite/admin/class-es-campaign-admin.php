@@ -259,6 +259,7 @@ if ( ! class_exists( 'ES_Campaign_Admin' ) ) {
 				'{{post.image}}',
 				'{{post.excerpt}}',
 				'{{post.description}}',
+				'{{post.description_html}}',
 				'{{post.author}}',
 				'{{post.link}}',
 				'{{post.link_with_title}}',
@@ -330,7 +331,7 @@ if ( ! class_exists( 'ES_Campaign_Admin' ) ) {
 					</svg>
 					',
 				),
-				array( 
+				array(
 					'keyword'  => 'post.description',
 					'label' => __( 'Post description', 'email-subscribers' ),
 					'icon' => '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -338,7 +339,16 @@ if ( ! class_exists( 'ES_Campaign_Admin' ) ) {
 					</svg>
 					',
 				),
-				array( 
+				array(
+					'keyword'  => 'post.description_html',
+					'label' => __( 'Post description (with HTML)', 'email-subscribers' ),
+					'icon' => '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+					<path d="M23 4H1M23 9.33333H1M23 14.6667H1M23 20H1" stroke="#575362" stroke-width="1.71429" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+					',
+					'description' => __( 'Show a post description keeping basic HTML formatting (line breaks, images, links)', 'email-subscribers' ),
+				),
+				array(
 					'keyword'  => 'post.author',
 					'label' => __( 'Post author', 'email-subscribers' ),
 					'icon' => '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1349,6 +1359,7 @@ if ( ! class_exists( 'ES_Campaign_Admin' ) ) {
 					<span class="ig-es-workflow-variable-outer inline-block px-2 py-2 mr-2 mb-2 text-xs font-bold bg-gray-100 hover:bg-gray-300 rounded-md ">{{post.image}}</span>
 					<span class="ig-es-workflow-variable-outer inline-block px-2 py-2 mr-2 mb-2 text-xs font-bold bg-gray-100 hover:bg-gray-300 rounded-md ">{{post.excerpt}}</span>
 					<span class="ig-es-workflow-variable-outer inline-block px-2 py-2 mr-2 mb-2 text-xs font-bold bg-gray-100 hover:bg-gray-300 rounded-md ">{{post.description}}</span>
+					<span class="ig-es-workflow-variable-outer inline-block px-2 py-2 mr-2 mb-2 text-xs font-bold bg-gray-100 hover:bg-gray-300 rounded-md ">{{post.description_html}}</span>
 					<span class="ig-es-workflow-variable-outer inline-block px-2 py-2 mr-2 mb-2 text-xs font-bold bg-gray-100 hover:bg-gray-300 rounded-md ">{{post.author}}</span>
 					<span class="ig-es-workflow-variable-outer inline-block px-2 py-2 mr-2 mb-2 text-xs font-bold bg-gray-100 hover:bg-gray-300 rounded-md ">{{post.author_avatar}}</span>
 					<span class="ig-es-workflow-variable-outer inline-block px-2 py-2 mr-2 mb-2 text-xs font-bold bg-gray-100 hover:bg-gray-300 rounded-md ">{{post.author_avatar_link}}</span>

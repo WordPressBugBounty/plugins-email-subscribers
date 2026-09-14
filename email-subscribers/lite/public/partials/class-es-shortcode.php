@@ -915,7 +915,7 @@ class ES_Shortcode {
 		
 		echo '<div class="es_form_wrapper es-form-' . esc_attr( $form_id ) . ' ig-es-form-wrapper" id="es_form_' . esc_attr( $form_identifier ) . '"';
 		if ( $wrapper_style ) {
-			echo ' style="' . $wrapper_style  . '"';
+			echo ' style="' . esc_attr( $wrapper_style ) . '"';
 		}
 		echo '>';
 		
@@ -951,7 +951,7 @@ class ES_Shortcode {
 		}
 		
 		$form_tag = '<form action="' . esc_url( $form_action_url ) . '#es_form_' . esc_attr( $form_identifier ) . '" method="post" class="' . esc_attr( $form_class . $extra_form_class ) . '" id="es_subscription_form_' . esc_attr( $unique_id ) . '" data-source="ig-es" data-form-id="' . esc_attr( $form_id ) . '">';
-		echo $form_tag;
+		echo wp_kses( $form_tag, ig_es_allowed_html_tags_in_esc() );
 		
 		$enabled_fields = array_filter( $body, function( $field ) {
 			return ! empty( $field['enabled'] );
@@ -1040,10 +1040,10 @@ class ES_Shortcode {
 			$form_fields_html .= self::render_new_form_field( $field, $settings, $submitted_data, $form_id, $custom_logo_html );
 		}
 	
-	// phpcs:disable-next-line WordPress.Security.EscapeOutput.OutputNotEscaped
-	echo $form_fields_html;
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+	echo $form_fields_html; 
 	
-	// phpcs:disable-next-line WordPress.Security.EscapeOutput.OutputNotEscaped
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 	echo self::get_hidden_form_fields( $form_id, $form_identifier, $unique_id, $settings );
 	
 	$spinner_image_path = ES_PLUGIN_URL . 'lite/public/images/spinner.gif';

@@ -1,4 +1,8 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 /**
  * Get additional system & plugin specific information for feedback
@@ -544,11 +548,208 @@ function ig_es_deactivation_thankyou( $text ) {
 add_filter( 'ig_es_deactivation_thankyou', 'ig_es_deactivation_thankyou' );
 
 /**
+ * Returns the deactivation achievement stats card HTML.
+ *
+ * The required CSS is embedded inline on the first call (via a static flag)
+ * so no separate hook or function is needed.
+ *
+ * Displays a stats-grid card showing subscribers added, campaigns created,
+ * and emails sent — along with a tenure-based headline and a closing note.
+ *
+ * @return string HTML string, or empty string if there is no activity to show.
+ */
+function ig_es_get_user_deactivation_achievement_message() {
+
+	$emails_sent_count = (int) ES()->actions_db->get_total_emails_sent();
+	$audience_count    = (int) ES()->contacts_db->count();
+	$campaigns_count   = (int) ES()->campaigns_db->count();
+
+	$installed_on        = get_option( 'ig_es_installed_on', 0 );
+	$installed_timestamp = ! empty( $installed_on ) ? strtotime( $installed_on ) : 0;
+
+	// Do not show the achievement card if the installation date is unavailable.
+	if ( empty( $installed_timestamp ) ) {
+		return '';
+	}
+
+	// Calculate plugin tenure in months.
+	$tenure_months = max(
+		1,
+		(int) round( ( time() - $installed_timestamp ) / MONTH_IN_SECONDS )
+	);
+
+	// Do not show the achievement card if the plugin has been installed
+	// for less than 3 months.
+	if ( $tenure_months < 3 ) {
+		return '';
+	}
+
+	// Do not show the achievement card if the plugin has been installed
+	// for less than 90 days.
+	if ( ( time() - $installed_timestamp ) < ( 90 * DAY_IN_SECONDS ) ) {
+		return '';
+	}
+
+	// activity threshold has been reached.
+	if (
+		$emails_sent_count <= 10000 &&
+		$audience_count <= 1000 &&
+		$campaigns_count < 50
+	) {
+		return '';
+	}
+
+	/* translators: %d: number of months the plugin has been installed */
+	$intro_headline = sprintf(
+		_n(
+			"Over the last month, you've made great use of Express.",
+			"Over the last %d months, you've made great use of Express.",
+			$tenure_months,
+			'email-subscribers'
+		),
+		$tenure_months
+	);
+
+	$closing_text = __(
+		'If you deactivate Express, these subscriber, campaigns and email features will no longer be available on your site.',
+		'email-subscribers'
+	);
+
+	$fmt_emails_counts    = number_format_i18n( $emails_sent_count );
+	$fmt_audience_counts  = number_format_i18n( $audience_count );
+	$fmt_campaigns_counts = number_format_i18n( $campaigns_count );
+
+	// SVG icons for each stat (inline, trusted hardcoded markup).
+	// phpcs:disable WordPress.Security.EscapeOutput.OutputNotEscaped
+	$icon_users = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+
+	$icon_send = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>';
+
+	$icon_email = '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>';
+	// phpcs:enable WordPress.Security.EscapeOutput.OutputNotEscaped
+
+	$stats = array(
+		array(
+			'icon'  => $icon_users,
+			'count' => $fmt_audience_counts,
+			'label' => __( 'subscribers added', 'email-subscribers' ),
+		),
+		array(
+			'icon'  => $icon_send,
+			'count' => $fmt_campaigns_counts,
+			'label' => __( 'campaigns created', 'email-subscribers' ),
+		),
+		array(
+			'icon'  => $icon_email,
+			'count' => $fmt_emails_counts,
+			'label' => __( 'emails sent', 'email-subscribers' ),
+		),
+	);
+
+	// Embed CSS only on the first call; subsequent calls reuse the already-printed styles.
+	static $css_printed = false;
+	$style = '';
+	if ( ! $css_printed ) {
+		$css_printed = true;
+		$style = '<style>
+			.ig-deactivation-achievement-card {
+				background: #eff6ff;
+				border: 1px solid #dbeafe;
+				border-radius: 12px;
+				padding: 18px 20px 16px;
+				margin: 0px 0 18px 0;
+				box-sizing: border-box;
+			}
+			.ig-deactivation-achievement-intro {
+				font-size: 14px;
+				font-weight: 700;
+				color: #1d4ed8;
+				line-height: 1.45;
+				margin-bottom: 5px;
+			}
+			.ig-deactivation-achievement-stats {
+				display: grid;
+				grid-template-columns: repeat(3, 1fr);
+				gap: 0;
+				margin-bottom: 14px;
+			}
+			.ig-deactivation-achievement-stat {
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				text-align: center;
+				padding: 10px 8px;
+				border-right: 1px solid #dbeafe;
+			}
+			.ig-deactivation-achievement-stat:last-child {
+				border-right: none;
+			}
+			.ig-deactivation-achievement-stat-icon {
+				width: 48px;
+				height: 48px;
+				background: #dbeafe;
+				border-radius: 50%;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				margin-bottom: 8px;
+			}
+			.ig-deactivation-achievement-stat-count {
+				font-size: 20px;
+				font-weight: 800;
+				color: #1d4ed8;
+				line-height: 1.2;
+				margin-bottom: 3px;
+			}
+			.ig-deactivation-achievement-stat-label {
+				font-size: 13px;
+				color: #6b7280;
+				line-height: 1.4;
+			}
+			.ig-deactivation-achievement-divider {
+				height: 1px;
+				background: #dbeafe;
+				margin-bottom: 12px;
+			}
+			.ig-deactivation-achievement-closing {
+				font-size: 13px;
+				line-height: 1.6;
+				color: #374151;
+			}
+		</style>';
+	}
+
+	$html  = $style;
+	$html .= '<div class="ig-deactivation-achievement-card">';
+	$html .= '<div class="ig-deactivation-achievement-intro">' . esc_html( $intro_headline ) . '</div>';
+
+	$html .= '<div class="ig-deactivation-achievement-stats">';
+	foreach ( $stats as $stat ) {
+		$html .= '<div class="ig-deactivation-achievement-stat">';
+		$html .= '<div class="ig-deactivation-achievement-stat-icon">' . $stat['icon'] . '</div>'; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+		$html .= '<div class="ig-deactivation-achievement-stat-count">' . esc_html( $stat['count'] ) . '</div>';
+		$html .= '<div class="ig-deactivation-achievement-stat-label">' . esc_html( $stat['label'] ) . '</div>';
+		$html .= '</div>';
+	}
+	$html .= '</div>';
+
+	$html .= '<div class="ig-deactivation-achievement-divider"></div>';
+	$html .= '<div class="ig-deactivation-achievement-closing">' . esc_html( $closing_text ) . '</div>';
+
+	$html .= '</div>';
+
+	return $html;
+}
+
+/**
  * Per-option follow-up configuration for Screen 2.
  * Each key maps to a deactivation reason slug and defines:
  *   heading, body, sub_options, has_textarea, textarea_placeholder, body2, buttons.
  */
 function ig_es_deactivation_followups( $followups ) {
+
+	$achievement_message = ig_es_get_user_deactivation_achievement_message();
+
 	return array(
 
 		// 1. Email not sending / delivery issues
@@ -605,6 +806,7 @@ function ig_es_deactivation_followups( $followups ) {
 		'switching-plugin' => array(
 			'heading'              => __( 'Which plugin are you switching to?', 'email-subscribers' ),
 			'body'                 => '',
+			'achievement_message'  => $achievement_message,
 			'sub_options'          => array(),
 			'has_textarea'         => true,
 			'textarea_placeholder' => __( 'Plugin name (optional)...', 'email-subscribers' ),
@@ -619,6 +821,7 @@ function ig_es_deactivation_followups( $followups ) {
 		'missing-feature' => array(
 			'heading'              => __( 'What are you looking for?', 'email-subscribers' ),
 			'body'                 => '',
+			'achievement_message'  => $achievement_message,
 			'sub_options'          => array(),
 			'has_textarea'         => true,
 			'textarea_placeholder' => __( 'Describe the feature or capability you were looking for...', 'email-subscribers' ),
@@ -633,6 +836,7 @@ function ig_es_deactivation_followups( $followups ) {
 		'other' => array(
 			'heading'              => __( 'Any details you share will help us improve.', 'email-subscribers' ),
 			'body'                 => '',
+			'achievement_message'  => $achievement_message,
 			'sub_options'          => array(),
 			'has_textarea'         => true,
 			'textarea_placeholder' => __( 'Tell us what went wrong or what we could do better...', 'email-subscribers' ),

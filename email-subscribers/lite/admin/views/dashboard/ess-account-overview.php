@@ -1,3 +1,10 @@
+<?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+?>
+
 <div id="ig-ess-account-overview-block" class="relative pl-6 w-full">
 	<p class="pb-3 text-lg font-medium leading-6 text-gray-400">
 		<span class="leading-7">

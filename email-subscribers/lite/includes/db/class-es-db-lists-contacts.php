@@ -1305,45 +1305,47 @@ class ES_DB_Lists_Contacts extends ES_DB {
 			return ES_Cache::get( $cache_key, 'query' );
 		}
 
-		$where_clause = '';
+		$sql          = "SELECT DISTINCT contact_id FROM {$this->table_name} WHERE 1=1";
 		$query_params = array();
 		
 		if ( ! empty( $args['list_id'] ) ) {
 			if ( is_array( $args['list_id'] ) ) {
-				$sanitized_ids = array_values( array_map( 'intval', $args['list_id'] ) );
+				$sanitized_ids = array_values( array_filter( array_map( 'absint', $args['list_id'] ) ) );
 				if ( ! empty( $sanitized_ids ) ) {
-					$placeholders = implode( ', ', array_fill( 0, count( $sanitized_ids ), '%d' ) );
-					$where_clause .= " AND list_id IN ( {$placeholders} )";
-					$query_params = array_merge( $query_params, $sanitized_ids );
+					$placeholders  = implode( ', ', array_fill( 0, count( $sanitized_ids ), '%d' ) );
+					$sql          .= " AND list_id IN ( {$placeholders} )";
+					$query_params  = array_merge( $query_params, $sanitized_ids );
 				}
 			} else {
-				$where_clause .= ' AND list_id = %d';
-				$query_params[] = intval( $args['list_id'] );
+				$sql           .= ' AND list_id = %d';
+				$query_params[] = absint( $args['list_id'] );
 			}
 		}
 		
 		if ( ! empty( $args['status'] ) ) {
-			$where_clause .= ' AND status = %s';
-			$query_params[] = sanitize_text_field( $args['status'] );
+			$allowed_statuses = array(
+				'subscribed'   => 'subscribed',
+				'unsubscribed' => 'unsubscribed',
+				'unconfirmed'  => 'unconfirmed',
+				'confirmed'    => 'confirmed',
+			);
+			$status_key       = is_string( $args['status'] ) ? sanitize_key( $args['status'] ) : '';
+			if ( isset( $allowed_statuses[ $status_key ] ) ) {
+				$sql           .= ' AND status = %s';
+				$query_params[] = $allowed_statuses[ $status_key ];
+			}
 		}
 		
 		if ( ! empty( $args['bounce_status'] ) ) {
-			$where_clause .= ' AND bounce_status = %d';
-			$query_params[] = intval( $args['bounce_status'] );
-		}
-		
-		$sql = "SELECT DISTINCT contact_id FROM {$this->table_name}";
-		
-		if ( ! empty( $where_clause ) ) {
-			$sql .= ' WHERE 1=1 ' . $where_clause;
+			$sql           .= ' AND bounce_status = %d';
+			$query_params[] = absint( $args['bounce_status'] );
 		}
 		
 		if ( ! empty( $query_params ) ) { 
-			$params = array_merge( array( $sql ), $query_params );
-			$sql = call_user_func_array( array( $wpdb, 'prepare' ), $params );
-		}
-
-		$ids = $wpdb->get_col( $sql );
+			$ids = $wpdb->get_col( $wpdb->prepare( $sql, $query_params ) ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		} else {
+			$ids = $wpdb->get_col( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		} 
 
 		$result = array_values( array_map( 'intval', array_filter( (array) $ids, 'is_numeric' ) ) );
 		
@@ -1377,45 +1379,49 @@ class ES_DB_Lists_Contacts extends ES_DB {
 			return ES_Cache::get( $cache_key, 'query' );
 		}
 
-		$status_values = array_map( 'sanitize_text_field', $status_values );
-		$status_count = count( $status_values );
-
-		$sql = "SELECT DISTINCT contact_id FROM {$this->table_name} WHERE 1=1";
-
-		if ( ! empty( $list_id ) ) {
-			$sql .= $wpdb->prepare( ' AND list_id = %d', intval( $list_id ) );
+		$allowed_statuses = array(
+			'subscribed'   => 'subscribed',
+			'unsubscribed' => 'unsubscribed',
+			'unconfirmed'  => 'unconfirmed',
+			'confirmed'    => 'confirmed',
+		);
+		$filtered_statuses = array();
+		foreach ( (array) $status_values as $val ) {
+			$val_key = is_string( $val ) ? sanitize_key( $val ) : '';
+			if ( isset( $allowed_statuses[ $val_key ] ) ) {
+				$filtered_statuses[] = $allowed_statuses[ $val_key ];
+			}
 		}
 
-		switch ( $operator ) {
-			case 'is equal to':
-				$placeholders = implode( ', ', array_fill( 0, $status_count, '%s' ) );
-				$sql .= " AND status IN ($placeholders)";
-				break;
-
-			case 'is not equal to':
-				$placeholders = implode( ', ', array_fill( 0, $status_count, '%s' ) );
-				$sql .= " AND status NOT IN ($placeholders)";
-				break;
-
-			case 'contains':
-				$placeholders = implode( ', ', array_fill( 0, $status_count, '%s' ) );
-				$sql .= " AND status IN ($placeholders)";
-				break;
-
-			case 'does not contain':
-				$placeholders = implode( ', ', array_fill( 0, $status_count, '%s' ) );
-				$sql .= " AND status NOT IN ($placeholders)";
-				break;
-
-			default:
-				$placeholders = implode( ', ', array_fill( 0, $status_count, '%s' ) );
-				$sql .= " AND status IN ($placeholders)";
-				break;
+		if ( empty( $filtered_statuses ) ) {
+			return array();
 		}
 
-		$params = array_merge( array( $sql ), $status_values );
-		$prepared_sql = call_user_func_array( array( $wpdb, 'prepare' ), $params );
-		$ids = $wpdb->get_col( $prepared_sql );
+		$status_values = array_values( array_unique( $filtered_statuses ) );
+		$status_count  = count( $status_values );
+
+		$query_params = array();
+		$sql          = "SELECT DISTINCT contact_id FROM {$this->table_name} WHERE 1=1";
+
+		$list_id = absint( $list_id );
+		if ( $list_id > 0 ) {
+			$sql           .= ' AND list_id = %d';
+			$query_params[] = $list_id;
+		}
+
+		$placeholders = implode( ', ', array_fill( 0, $status_count, '%s' ) );
+
+		if ( in_array( $operator, array( 'is not equal to', 'does not contain' ), true ) ) {
+			$sql .= " AND status NOT IN ($placeholders)";
+		} else {
+			$sql .= " AND status IN ($placeholders)";
+		}
+
+		foreach ( $status_values as $status_val ) {
+			$query_params[] = $status_val;
+		}
+
+		$ids = $wpdb->get_col( $wpdb->prepare( $sql, $query_params ) );
 
 		$result = array_values( array_map( 'intval', array_filter( (array) $ids, 'is_numeric' ) ) );
 		
@@ -1446,8 +1452,12 @@ class ES_DB_Lists_Contacts extends ES_DB {
 			return ES_Cache::get( $cache_key, 'query' );
 		}
 
-		$list_values = array_map( 'intval', $list_values );
-		$list_count = count( $list_values );
+		$list_values = array_values( array_filter( array_map( 'absint', $list_values ) ) );
+		$list_count  = count( $list_values );
+
+		if ( empty( $list_count ) ) {
+			return array();
+		}
 
 		$sql = "SELECT DISTINCT contact_id FROM {$this->table_name} WHERE 1=1";
 
@@ -1473,9 +1483,7 @@ class ES_DB_Lists_Contacts extends ES_DB {
 				break;
 		}
 
-		$params = array_merge( array( $sql ), $list_values );
-		$prepared_sql = call_user_func_array( array( $wpdb, 'prepare' ), $params );
-		$ids = $wpdb->get_col( $prepared_sql );
+		$ids = $wpdb->get_col( $wpdb->prepare( $sql, $list_values ) );
 
 		$result = array_values( array_map( 'intval', array_filter( (array) $ids, 'is_numeric' ) ) );
 		

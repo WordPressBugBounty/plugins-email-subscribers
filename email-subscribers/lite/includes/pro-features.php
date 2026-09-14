@@ -1,4 +1,8 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 add_filter( 'ig_es_settings_tabs', 'ig_es_add_settings_tabs', 10, 1 );
 add_filter( 'ig_es_registered_settings', 'ig_es_add_upsale', 10, 2 );
@@ -1337,8 +1341,8 @@ function ig_es_view_additional_reports_data() {
 					<header>
 						<nav aria-label="Global" class="pb-5 w-full pt-2">
 							<div class="brand-logo">
-								<span>
-									<img src="<?php echo ES_PLUGIN_URL . 'lite/admin/images/new/brand-logo/IG LOGO 192X192.svg'; ?>" alt="brand logo" />
+								<span> 
+									<img src="<?php echo esc_url( ES_PLUGIN_URL . 'lite/admin/images/new/brand-logo/IG LOGO 192X192.svg' ); ?>" alt="brand logo" />
 									<div class="divide"></div>
 									<h1><?php echo esc_html__( 'Report', 'email-subscribers' ); ?></h1>
 								</span>
@@ -1350,9 +1354,9 @@ function ig_es_view_additional_reports_data() {
 					<div class="campaign-info">
 						<div class="campaign-title">
 							<div class="title">
-								<?php esc_html_e( 'Take a look into Icegram' ); ?>
+								<?php esc_html_e( 'Take a look into Icegram', 'email-subscribers' ); ?>
 								<svg class="inline-block mt-1 ml-1 h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-									<title><?php echo esc_attr_e( 'Sent', 'email-subscribers' ); ?></title>
+									<title><?php esc_attr_e( 'Sent', 'email-subscribers' ); ?></title>
 								<path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
 								</svg>
 							</div>
@@ -1362,7 +1366,7 @@ function ig_es_view_additional_reports_data() {
 								<span><?php esc_html_e( 'Broadcast', 'email-subscribers' ); ?></span>
 							</p>
 							<p class="from"><?php esc_html_e( 'From: ', 'email-subscribers' ); ?>
-								<span><?php echo esc_html( 'hello@icegram.com', 'email-subscribers' ); ?>,</span>
+								<span><?php echo esc_html( 'hello@icegram.com' ); ?>,</span>
 							</p>
 							<p class="pl-6 pt-2 truncate"><?php esc_html_e( 'List(s): ', 'email-subscribers' ); ?>
 								<span class="pl-1 font-normal not-italic text-gray-900 "><?php esc_html_e( 'Test, Main ', 'email-subscribers' ); ?></span>

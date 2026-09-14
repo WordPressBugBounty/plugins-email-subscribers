@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if (empty($dashboard_kpi) || !is_array($dashboard_kpi)) {
 	return;
 }

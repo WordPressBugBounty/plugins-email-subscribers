@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $allowed_html_tags  = ig_es_allowed_html_tags_in_esc();
 $total_subscribed   = isset( $reports_data['total_subscribed'] ) ? $reports_data['total_subscribed'] : 0;
 $total_email_opens  = isset( $reports_data['total_email_opens'] ) ? $reports_data['total_email_opens'] : 0;

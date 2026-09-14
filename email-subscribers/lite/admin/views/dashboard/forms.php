@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 global $wpdb;
 $form_url = admin_url( 'admin.php?page=es_forms&action=new' );
 ?>

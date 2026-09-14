@@ -484,6 +484,7 @@ class Email_Subscribers_Admin {
 				'baseUrl' => ES_PLUGIN_URL . 'lite/admin/shadcn-frontend/dist/',
 				'siteUrl' => home_url(),
 				'adminUrl' => admin_url(),
+				'siteLocale' => str_replace( '_', '-', get_user_locale() ),
 				'onboardingdata' => get_option('ig_es_onboarding_complete', 'no'),
 				'security'    => wp_create_nonce( 'ig-es-admin-ajax-nonce' ),
 				'plan' => ES()->get_plan(),
@@ -506,11 +507,24 @@ class Email_Subscribers_Admin {
 					'fromName' => get_option( 'ig_es_from_name', '' ),
 					'fromEmail' => get_option( 'ig_es_from_email', '' ),
 				),
+				'activeMailer' => ( function() {
+					$mailer_settings = get_option( 'ig_es_mailer_settings', array() );
+					return ! empty( $mailer_settings['mailer'] ) ? $mailer_settings['mailer'] : 'wpmail';
+				} )(),
 				'post_categories' => $post_categories,
 				'post_types_name' => $post_types_name,
 				'custom_post_types_categories' => $custom_post_types_categories,
 				'isIGMailerPluginActive' => $is_ig_mailer_plugin_active,
 				'isOptedForESS' => $is_opted_for_ess,
+				'widgetsUrl' => ( function() {
+					if ( current_theme_supports( 'widgets' ) ) {
+						return admin_url( 'widgets.php' );
+					}
+					if ( function_exists( 'wp_is_block_theme' ) && wp_is_block_theme() ) {
+						return admin_url( 'site-editor.php' );
+					}
+					return admin_url( 'customize.php' );
+				} )(),
 				'tracking_details' => array(
 					'is_track_email_opens' => get_option( 'ig_es_track_email_opens', 'yes' ),
 					'ig_es_track_link_clicks' => get_option( 'ig_es_track_link_click', 'no' ),
@@ -2119,8 +2133,8 @@ class Email_Subscribers_Admin {
 
 		$flow = isset( $_POST['flow'] ) ? sanitize_text_field( wp_unslash( $_POST['flow'] ) ) : '';
 
-		if ( in_array( $flow, array( 'pricing', 'direct' ), true ) ) {
-			update_option( 'ig_es_upsell_flow', $flow );
+		if ( in_array( $flow, array( 'pricing', 'direct', 'form_upsell' ), true ) ) {
+			update_option( 'ig_es_upsell_flow', $flow, false );
 			wp_send_json_success();
 		}
 

@@ -64,7 +64,7 @@ class ES_Templates_Table {
 		<p id="post_notification">
 			<a href="https://www.icegram.com/documentation/what-keywords-can-be-used-while-designing-the-campaign/?utm_source=es&amp;utm_medium=in_app&amp;utm_campaign=view_docs_help_page" target="_blank"><?php esc_html_e( 'Available Keywords', 'email-subscribers' ); ?></a> <?php esc_html_e( 'for Post Notification: ', 'email-subsribers' ); ?> {{subscriber.first_name | fallback:'there'}},
 			{{subscriber.last_name}}, {{subscriber.name}}, {{subscriber.email}},
-			{{post.date}}, {{post.title}}, {{post.image}}, {{post.excerpt}}, {{post.description}},
+			{{post.date}}, {{post.title}}, {{post.image}}, {{post.excerpt}}, {{post.description}}, {{post.description_html}},
 			{{post.author}}, {{post.author_avatar}}, {{post.author_avatar_url}}, {{post.link}}, {{post.link_with_title}}, {{post.link_only}}, {{post.full}} </p>
 		<!-- End-IG-Code -->
 		<p id="newsletter">

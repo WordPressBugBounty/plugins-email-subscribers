@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $allowed_html_tags = ig_es_allowed_html_tags_in_esc();
 ?>
 <span class="stats">

@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 if ( ES()->is_pro() ) {
 	$reason='Reason:{{subscriber.unsubscriber_reason}}';
 } else {

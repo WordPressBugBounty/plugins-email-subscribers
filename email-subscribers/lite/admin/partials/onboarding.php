@@ -1,4 +1,9 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 global $ig_es_tracker;
 $onboarding_step           = IG_ES_Onboarding::get_onboarding_step();
 $current_year              = gmdate( 'Y' );

@@ -111,6 +111,39 @@ class ES_DB_Campaigns extends ES_DB {
 	}
 
 	/**
+	 * Get default campaign by type or all default campaigns.
+	 * The "default" flag is stored as 'is_default' => 1 inside the serialized `meta` column.
+	 *
+	 * @param string $type Campaign type (newsletter, post_notification, etc.)
+	 *
+	 * @return array|object|null
+	 *
+	 * @since 5.9.34
+	 */
+	public function get_default_campaign( $type = '' ) {
+		global $wpdb;
+
+		if ( ! empty( $type ) ) {
+			return $wpdb->get_row(
+				$wpdb->prepare(
+					"SELECT * FROM {$this->table_name} WHERE meta LIKE %s AND type = %s LIMIT 1",
+					'%"is_default";i:1%',
+					$type
+				),
+				ARRAY_A
+			);
+		}
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$this->table_name} WHERE meta LIKE %s",
+				'%"is_default";i:1%'
+			),
+			ARRAY_A
+		);
+	}
+
+	/**
 	 * Get template id by campaign id
 	 *
 	 * @param $id
@@ -147,6 +180,23 @@ class ES_DB_Campaigns extends ES_DB {
 		} else {
 			// Set updated_at if not set
 			$data['updated_at'] = ! empty( $data['updated_at'] ) ? $data['updated_at'] : ig_get_current_date_time();
+
+			// Preserve the is_default flag in meta when updating a campaign.
+			// The flag is stored inside the serialized meta column. If incoming
+			// data doesn't carry it, we must not lose it.
+			if ( isset( $data['meta'] ) ) {
+				$incoming_meta = ig_es_maybe_unserialize( $data['meta'] );
+				if ( is_array( $incoming_meta ) && ! isset( $incoming_meta['is_default'] ) ) {
+					$existing_meta_raw = $this->get_column( 'meta', $id );
+					if ( ! empty( $existing_meta_raw ) ) {
+						$existing_meta = ig_es_maybe_unserialize( $existing_meta_raw );
+						if ( is_array( $existing_meta ) && isset( $existing_meta['is_default'] ) ) {
+							$incoming_meta['is_default'] = $existing_meta['is_default'];
+							$data['meta']                = maybe_serialize( $incoming_meta );
+						}
+					}
+				}
+			}
 
 			$result = $this->update( $id, $data );
 		}
@@ -1115,12 +1165,14 @@ class ES_DB_Campaigns extends ES_DB {
 			}
 	
 			$sql .= $order_by_clause;
+			$per_page    = absint( $per_page );
+			$page_number = absint( $page_number );
 			$sql .= " LIMIT $per_page";
 			$sql .= ' OFFSET ' . ( $page_number - 1 ) * $per_page;
 	
-			$result = $wpdb->get_results($sql, 'ARRAY_A');
+			$result = $wpdb->get_results( $sql, 'ARRAY_A' ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		} else {
-			$result = $wpdb->get_var($sql);
+			$result = $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		}
 	
 		return $result;

@@ -425,4 +425,25 @@ class ES_DB_Forms extends ES_DB {
 		);
 	}
 
+	/**
+	 * Get default form.
+	 * The "default" flag is stored as 'is_default' => 1 inside the serialized `settings` column.
+	 *
+	 * @return array|object|null
+	 *
+	 * @since 5.9.34
+	 */
+	public function get_default_form() {
+		
+		global $wpdb;
+
+		return $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT * FROM {$this->table_name} WHERE settings LIKE %s",
+				'%"is_default";i:1%'
+			),
+			ARRAY_A
+		);
+	}
+
 }

@@ -1,4 +1,9 @@
 <?php 
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
 $language_array = array( 
 /* Plugin Name of the plugin */
 __( 'Icegram Express - Email Subscribers, Newsletters and Marketing Automation Plugin', 'email-subscribers' ),

@@ -1,4 +1,8 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 if ( ! class_exists( 'ES_Campaign_Controller' ) ) {
 
@@ -1369,17 +1373,14 @@ $admin_email = ES_Common::get_admin_email();
 					);
 				
 					$query                  = new IG_ES_Subscribers_Query();
-					$response_data['total'] = $query->run( $args );
+					$response_data['total'] = (int) $query->run( $args );
 					
 				} else {
 					$response_data['total'] = 0;
 				}
 		
 			} else {
-				$response_data['total'] = ES()->lists_contacts_db->get_total_count_by_list($status );
-			}
-			if ( ! empty( $response_data['total'] ) ) {
-				$response_data['total'] = number_format_i18n( $response_data['total'] );
+				$response_data['total'] = (int) ES()->lists_contacts_db->get_total_count_by_list($status );
 			}
 		
 			return $response_data;

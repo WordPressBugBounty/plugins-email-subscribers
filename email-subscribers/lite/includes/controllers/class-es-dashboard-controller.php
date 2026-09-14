@@ -1,4 +1,8 @@
 <?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
 
 if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 
@@ -154,18 +158,110 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 			$workflows_count = ES()->workflows_db->get_workflows_count();
 
 			
+			$is_form_shortcode_used = self::is_form_shortcode_used();
+
 			$onboarding_tasks_status = array(
-				'sendFirstCampaign' => ! empty( $campaigns ) ? 'yes' : 'no',
+				'sendFirstCampaign' => self::has_sent_first_campaign() ? 'yes' : 'no',
 				'importContacts' => ! empty( $dashboard_kpi['total_subscribers'] ) && $dashboard_kpi['total_subscribers'] > 0 ? 'yes' : 'no',
 				'createSubscriptionFormDone' => ! empty( $forms ) ? 'yes' : 'no',
+				'isFormShortcodeUsed' => $is_form_shortcode_used ? 'yes' : 'no',
 				'createWorkflowDone' => $workflows_count > 0 ? 'yes' : 'no'
 			);
 			
 			$icegram_plugins = self::get_icegram_plugins_info();
-			
+
+			$default_campaign_data = null;
+			$default_campaign      = ES()->campaigns_db->get_default_campaign( 'newsletter' );
+
+			if ( empty( $default_campaign ) ) {
+				$campaign_args       = array(
+					'type'            => IG_CAMPAIGN_TYPE_NEWSLETTER,
+					'order_by_column' => 'id',
+					'limit'           => '1',
+					'order'           => 'ASC',
+				);
+				$newsletter_campaigns = ES()->campaigns_db->get_campaigns( $campaign_args );
+				if ( ! empty( $newsletter_campaigns ) && is_array( $newsletter_campaigns ) ) {
+					$default_campaign = reset( $newsletter_campaigns );
+				}
+			}
+
+			if ( ! empty( $default_campaign ) ) {
+				$list_name         = __( 'Main list', 'email-subscribers' );
+				$subscribers_count = 0;
+
+				$first_list_id = 0;
+				if ( ! empty( $default_campaign['list_ids'] ) ) {
+					$list_ids      = is_array( $default_campaign['list_ids'] ) ? $default_campaign['list_ids'] : explode( ',', $default_campaign['list_ids'] );
+					$first_list_id = reset( $list_ids );
+				}
+
+				if ( ! $first_list_id ) {
+					$main_list = ES()->lists_db->get_list_by_name( IG_MAIN_LIST );
+					if ( ! empty( $main_list['id'] ) ) {
+						$first_list_id = intval( $main_list['id'] );
+						$default_campaign['list_ids'] = $first_list_id;
+						ES()->campaigns_db->save_campaign( array( 'list_ids' => $first_list_id ), $default_campaign['id'] );
+					}
+				}
+
+				if ( $first_list_id ) {
+					$list_names = ES()->lists_db->get_list_name_by_ids( array( $first_list_id ) );
+					if ( ! empty( $list_names[ $first_list_id ] ) ) {
+						$list_name = $list_names[ $first_list_id ];
+					}
+					$subscribers_count = ES()->lists_contacts_db->get_total_count_by_list( $first_list_id, 'subscribed' );
+				}
+
+				if ( ! $subscribers_count ) {
+					$subscribers_count = ES()->contacts_db->get_total_contacts();
+				}
+
+				$default_campaign_data = array(
+					'id'                => intval( $default_campaign['id'] ),
+					'name'              => $default_campaign['name'],
+					'subject'           => ! empty( $default_campaign['subject'] ) ? $default_campaign['subject'] : __( 'Welcome to Icegram Express', 'email-subscribers' ),
+					'type'              => $default_campaign['type'],
+					'status'            => $default_campaign['status'],
+					'list_name'         => $list_name,
+					'subscribers_count' => intval( $subscribers_count ),
+					'sending_to'        => sprintf( '%s (%d %s)', $list_name, $subscribers_count, _n( 'subscriber', 'subscribers', $subscribers_count, 'email-subscribers' ) ),
+					'edit_url'          => admin_url( 'admin.php?page=es_campaigns#!/campaign/edit/' . $default_campaign['id'] ),
+				);
+			}
+
+			$default_form_data = null;
+			$default_forms     = method_exists( ES()->forms_db, 'get_default_form' ) ? ES()->forms_db->get_default_form() : array();
+
+			$default_form = null;
+			if ( ! empty( $default_forms ) && is_array( $default_forms ) ) {
+				$default_form = reset( $default_forms );
+			}
+
+			if ( empty( $default_form ) ) {
+				$forms_args  = array(
+					'order_by_column' => 'id',
+					'limit'           => '1',
+					'order'           => 'ASC',
+				);
+				$first_forms = ES()->forms_db->get_forms( $forms_args );
+				if ( ! empty( $first_forms ) && is_array( $first_forms ) ) {
+					$default_form = reset( $first_forms );
+				}
+			}
+
+			if ( ! empty( $default_form ) ) {
+				$default_form_data = array(
+					'id'   => intval( $default_form['id'] ),
+					'name' => ! empty( $default_form['name'] ) ? $default_form['name'] : __( 'Default Subscription Form', 'email-subscribers' ),
+				);
+			}
+
 			$plan = ES()->get_plan();
 			return array(	
 				'campaigns'         => $campaigns,
+				'default_campaign'  => $default_campaign_data,
+				'default_form'      => $default_form_data,
 				'audience_activity' => $audience_activity,
 				'forms'             => $forms,
 				'lists'             => $lists,
@@ -550,7 +646,7 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 			$imported_contacts_count = ES()->contacts_db->get_contacts_count_by_source( 'import' );
 
 			return array(
-			'sendFirstCampaign' => ! empty( $campaigns ),
+			'sendFirstCampaign' => self::has_sent_first_campaign(),
 			'importContacts' => $imported_contacts_count > 0,
 			'createSubscriptionForm' => ! empty( $forms ),
 			'createWorkflow' => $workflows_count > 0
@@ -697,6 +793,88 @@ if ( ! class_exists( 'ES_Dashboard_Controller' ) ) {
 				'dashboard'   => $dashboard_data,
 				'onboarding'  => $onboarding_steps
 			);
+		}
+
+		/**
+		 * Check if any campaign has been sent or queued to send
+		 *
+		 * @return bool
+		 */
+		public static function has_sent_first_campaign() {
+			global $wpdb;
+
+			// Check if any campaign has entries in mailing queue
+			$mailing_queue_count = (int) $wpdb->get_var(
+				"SELECT COUNT(*) FROM {$wpdb->prefix}ig_mailing_queue"
+			);
+
+			if ( $mailing_queue_count > 0 ) {
+				return true;
+			}
+
+			// Check if any campaign status is SCHEDULED (2), QUEUED (3), or FINISHED (5)
+			$sent_campaign_count = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*) FROM {$wpdb->prefix}ig_campaigns WHERE status IN (%d, %d, %d)",
+					IG_ES_CAMPAIGN_STATUS_SCHEDULED,
+					IG_ES_CAMPAIGN_STATUS_QUEUED,
+					IG_ES_CAMPAIGN_STATUS_FINISHED
+				)
+			);
+
+			return $sent_campaign_count > 0;
+		}
+
+		/**
+		 * Check if form shortcode or widget is used in any published post, page, or active sidebar
+		 *
+		 * @return bool
+		 */
+		public static function is_form_shortcode_used() {
+			global $wpdb;
+
+			// phpcs:disable
+			$shortcode_count = (int) $wpdb->get_var(
+				"SELECT COUNT(*) FROM {$wpdb->posts} 
+				 WHERE post_type IN ('post', 'page') 
+				 AND post_status = 'publish' 
+				 AND (post_content LIKE '%[email-subscribers-form%' OR post_content LIKE '%[email-subscribers%')"
+			);
+			// phpcs:enable
+
+			if ( $shortcode_count > 0 ) {
+				return true;
+			}
+
+			// 2. Check active sidebars for active widgets containing form shortcode
+			$sidebars_widgets = get_option( 'sidebars_widgets', array() );
+			if ( is_array( $sidebars_widgets ) ) {
+				foreach ( $sidebars_widgets as $sidebar_id => $widget_ids ) {
+					// Ignore inactive widgets area and metadata keys
+					if ( 'wp_inactive_widgets' === $sidebar_id || 'array_version' === $sidebar_id || empty( $widget_ids ) || ! is_array( $widget_ids ) ) {
+						continue;
+					}
+
+					foreach ( $widget_ids as $widget_id ) {
+						// Extract widget base name and index (e.g. 'text-2' -> base='text', number=2)
+						$id_parts = explode( '-', $widget_id );
+						$number   = array_pop( $id_parts );
+						$base     = implode( '-', $id_parts );
+
+						$widget_option_name = 'widget_' . $base;
+						$widget_instances   = get_option( $widget_option_name );
+
+						if ( is_array( $widget_instances ) && isset( $widget_instances[ $number ] ) ) {
+							$instance_data = maybe_serialize( $widget_instances[ $number ] );
+							if ( strpos( $instance_data, '[email-subscribers' ) !== false || strpos( $instance_data, 'wp:email-subscribers' ) !== false ) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+
+			return false;
 		}
 	}
 

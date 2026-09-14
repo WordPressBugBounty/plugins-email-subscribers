@@ -10,7 +10,7 @@
 
     const esForms     = window.es_forms;
     registerBlockType( 'email-subscribers/subscription-form-block', {
-        apiVersion: 2,
+        apiVersion: 3,
         title: 'Icegram Express Form',
         icon: 'feedback',
         category: 'common',

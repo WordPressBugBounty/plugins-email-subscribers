@@ -117,11 +117,13 @@ class ES_DB_Import_Utils extends ES_DB {
 			WHERE " . $where_clause . '
 			ORDER BY lc.contact_id ASC';
 
-		if ( ! empty( $params ) ) {
-			$results = $wpdb->get_results( $wpdb->prepare( $query, $params ), ARRAY_A );
-		} else {
-			$results = $wpdb->get_results( $query, ARRAY_A );
+		$query_params = ! empty( $params ) && is_array( $params ) ? $params : array();
+
+		if ( ! empty( $query_params ) ) {
+			$query = $wpdb->prepare( $query, $query_params );
 		}
+
+		$results = $wpdb->get_results( $query, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 
 		return ! empty( $results ) ? $results : array();
 	}
@@ -167,13 +169,14 @@ class ES_DB_Import_Utils extends ES_DB {
 			$custom_fields = ES()->custom_fields_db->get_custom_fields();
 			if ( ! empty( $custom_fields ) ) {
 				foreach ( $custom_fields as $field ) {
-					$select_columns[] = $field['slug'];
+					$select_columns[] = sanitize_key( $field['slug'] );
 				}
 			}
 		}
 
-		$contact_ids_str = implode( ',', $contact_ids );
-		$query = 'SELECT ' . implode( ',', $select_columns ) . " FROM {$wpdb->prefix}ig_contacts WHERE id IN ({$contact_ids_str})";
+		$escaped_columns = implode( ',', array_map( 'esc_sql', $select_columns ) );
+		$contact_ids_str = implode( ',', array_map( 'intval', $contact_ids ) );
+		$query           = "SELECT {$escaped_columns} FROM {$wpdb->prefix}ig_contacts WHERE id IN ({$contact_ids_str})";
 		
 		$results = $wpdb->get_results( $query, ARRAY_A );
 		return ! empty( $results ) ? $results : array();

@@ -165,11 +165,21 @@ class Email_Subscribers_Public {
 		if ( ! empty( $option ) ) {
 			$email = sanitize_email( $email );
 			$email = str_replace( ' ', '+', $email );
+
+			// Security: verify the per-subscriber token before mutating any state or processing action.
+			$stored_contact_hash = ES()->contacts_db->get_contact_hash_by_id( $db_id );
+			if ( empty( $stored_contact_hash ) || empty( $guid ) || ! hash_equals( $stored_contact_hash, $guid ) ) {
+				wp_die(
+					esc_html__( 'This link is invalid or has expired.', 'email-subscribers' )
+				); 
+			}
+
 			if ( ( 'optin' === $option || 'unsubscribe' === $option ) && ! empty( $db_id ) ) {
 				//check if contact exist with id and email
 				$is_contact_exists = ES()->contacts_db->is_contact_exists( $db_id, $email );
 
 				if ( $is_contact_exists ) {
+
 					$ids                       = array( $db_id );
 					$status                    = '';
 					$subject                   = '';
@@ -204,6 +214,7 @@ class Email_Subscribers_Public {
 
 						} elseif ( 'unsubscribe' === $option ) {
 							$unsubscribed = 1;
+							error_log( __FILE__ . " " . __LINE__ . ' $_POST:' . print_r( $_POST, true ) );
 
 							$submitted         = '';
 							$unsubscribe_lists = array();
@@ -242,10 +253,12 @@ class Email_Subscribers_Public {
 								}
 
 								$unsubscribe_lists = ES()->lists_contacts_db->get_list_ids_by_contact( $db_id, 'subscribed' );
+								error_log( __FILE__ . " " . __LINE__ . ' $unsubscribe_lists:' . print_r( $unsubscribe_lists, true ) );
 							}
 
 							// Confirm if there are lists to unsubscribe before we unsubscribe the contact.
 							if ( ! empty( $unsubscribe_lists ) ) {
+								error_log( __FILE__ . " " . __LINE__ . ' time():' . print_r( time(), true ) );
 								//update list status
 								ES()->contacts_db->edit_list_contact_status( array( $db_id ), $unsubscribe_lists, 'unsubscribed' );
 							}

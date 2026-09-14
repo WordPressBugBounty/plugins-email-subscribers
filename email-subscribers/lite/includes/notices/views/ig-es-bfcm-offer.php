@@ -1,3 +1,10 @@
+<?php
+// Exit if accessed directly
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
+}
+
+?>
 <style type="text/css">
 	.ig_es_offer {	
 		width:70%;

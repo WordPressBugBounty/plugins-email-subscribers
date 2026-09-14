@@ -1415,10 +1415,13 @@ class ES_DB_Contacts extends ES_DB {
 		}
 		$sql .= ' GROUP BY c.id';
 
-		$order_by = esc_sql( $args['order_by'] );
-		$order    = in_array( strtoupper( $args['order'] ), array( 'ASC', 'DESC' ), true )
-			? strtoupper( $args['order'] )
-			: 'DESC';
+		$allowed_columns   = array_keys( $this->get_columns() );
+		$allowed_columns[] = 'last_opened_at';
+		$allowed_order_by  = array_combine( $allowed_columns, $allowed_columns );
+
+		$raw_order_by = ! empty( $args['order_by'] ) ? sanitize_key( $args['order_by'] ) : 'created_at';
+		$order_by     = isset( $allowed_order_by[ $raw_order_by ] ) ? $allowed_order_by[ $raw_order_by ] : 'created_at';
+		$order        = ( ! empty( $args['order'] ) && 'ASC' === strtoupper( $args['order'] ) ) ? 'ASC' : 'DESC';
 
 		if ( 'last_opened_at' === $order_by ) {
 			$sql .= " ORDER BY last_opened_at {$order}";
@@ -1439,7 +1442,7 @@ class ES_DB_Contacts extends ES_DB {
 			$sql = $wpdb->prepare( $sql, $query_params );
 		}
 
-		$results = $wpdb->get_results( $sql, ARRAY_A );
+		$results = $wpdb->get_results( $sql, ARRAY_A ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		
 		ES_Cache::set( $cache_key, $results, 'query' );
 		
@@ -1512,7 +1515,7 @@ class ES_DB_Contacts extends ES_DB {
 			$sql = $wpdb->prepare( $sql, $query_params );
 		}
 
-		$count = (int) $wpdb->get_var( $sql );
+		$count = (int) $wpdb->get_var( $sql ); // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		
 		ES_Cache::set( $cache_key, $count, 'query' );
 		
@@ -1591,7 +1594,7 @@ class ES_DB_Contacts extends ES_DB {
 		$where_sql = implode( ' OR ', $where_conditions );
 		$sql = "SELECT id FROM {$contacts_table} WHERE {$where_sql}";
 		
-		$results = $wpdb->get_col( $sql ); 
+		$results = $wpdb->get_col( $sql );  // phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		
 		return $results ? array_map( 'intval', $results ) : array();
 	}

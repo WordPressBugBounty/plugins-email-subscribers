@@ -4,7 +4,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
+if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 	/**
 	 * IG Feedback
 	 *
@@ -17,7 +17,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 	 * @license     https://opensource.org/licenses/gpl-license GNU Public License
 	 * @package     feedback
 	 */
-	class IG_Feedback_V_1_2_12 {
+	class IG_Feedback_V_1_2_13 {
 
 		/**
 		 * Version of Feedback Library
@@ -25,7 +25,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 		 * @since 1.0.13
 		 * @var string
 		 */
-		public $version = '1.2.12';
+		public $version = '1.2.13';
 		/**
 		 * The API URL where we will send feedback data.
 		 *
@@ -1151,7 +1151,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 			jQuery(document).ready(function ($) {
 			
 				Swal.mixin({
-					footer: '<i><?php echo !empty($params['after_button_text']) ? $params['after_button_text'] : ''; ?></i>',
+					footer: '<i><?php echo !empty($params['after_button_text']) ? esc_html( $params['after_button_text'] ) : ''; ?></i>',
 					position: '<?php echo esc_js( $params['position'] ); ?>',
 					width: <?php echo esc_js( $params['width'] ); ?>,
 					animation: false,
@@ -1284,7 +1284,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 					foreach ($field['options'] as $key => $value) {
 						?>
 						<label>
-						<input type="<?php echo $field['type']; ?>" name="feedback_data[poll_options][<?php echo $field_slug; ?>]" data-slug="<?php echo esc_attr( $field_slug ); ?>" value="<?php echo $key; ?>" class="<?php echo !empty($field['additional']) ? 'other_reason_option' : ''; ?>" <?php echo $field_required ? 'required' : ''; ?>><span><?php echo $value; ?></span>
+						<input type="<?php echo esc_attr( $field['type'] ); ?>" name="feedback_data[poll_options][<?php echo esc_attr( $field_slug ); ?>]" data-slug="<?php echo esc_attr( $field_slug ); ?>" value="<?php echo esc_attr( $key ); ?>" class="<?php echo !empty($field['additional']) ? esc_attr( 'other_reason_option' ) : ''; ?>" <?php echo $field_required ? esc_attr( 'required' ) : ''; ?>><span><?php echo esc_html( $value ); ?></span>
 						</label>
 						<br/>
 						<?php
@@ -1397,19 +1397,20 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 			$title = 'Why are you deactivating ' . $this->name . '?';
 			$slug  = sanitize_title( $title );
 			$event = $this->event_prefix . 'plugin.deactivation';
-			$plugin_js = esc_js( $this->plugin );
+			$plugin_js = $this->plugin;
 
 			?>
 			<script type="text/javascript">
 			jQuery(function($){
-				var pluginSlug  = '<?php echo $plugin_js; ?>';
+				var pluginSlug  = '<?php echo esc_js( $plugin_js ); ?>';
 				var $deactivateLink = $('#the-list').find('[data-slug="' + pluginSlug + '"] span.deactivate a');
 				var $modal      = $('#ig-deactivation-modal-' + pluginSlug);
 				var $screen1    = $modal.find('.ig-deactivation-screen1');
-				var $screen2    = $modal.find('.ig-deactivation-screen2');
-				var $s2Label    = $('#ig-deactivation-s2-label-' + pluginSlug);
-				var $s2Content  = $('#ig-deactivation-s2-content-' + pluginSlug);
-				var $s2Footer   = $('#ig-deactivation-s2-footer-' + pluginSlug);
+				var $screen2       = $modal.find('.ig-deactivation-screen2');
+				var $s2Label       = $('#ig-deactivation-s2-label-' + pluginSlug);
+				var $s2Achievement = $('#ig-deactivation-s2-achievement-' + pluginSlug);
+				var $s2Content     = $('#ig-deactivation-s2-content-' + pluginSlug);
+				var $s2Footer      = $('#ig-deactivation-s2-footer-' + pluginSlug);
 				var selectedSlug = '';
 				var selectedTitle = '';
 
@@ -1419,6 +1420,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 				function resetModal() {
 					$screen2.hide();
 					$screen1.show();
+					$s2Achievement.empty();
 					$s2Content.empty();
 					$s2Footer.empty();
 					$s2Label.text('');
@@ -1476,12 +1478,19 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 					if (!cfg) { deactivate(); return; }
 					var html = '';
 
+					// Achievement card goes into its own dedicated div (above the label).
+					if (cfg.achievement_message) {
+						$s2Achievement.html(cfg.achievement_message);
+					} else {
+						$s2Achievement.empty();
+					}
+
 					if (cfg.heading) {
 						html += '<h3 class="ig-deactivation-s2-heading">' + cfg.heading + '</h3>';
 					}
 					if (cfg.body) {
 						html += '<p class="ig-deactivation-s2-body">' + cfg.body.replace(/\n/g,'<br>') + '</p>';
-					}
+					}					
 					if (cfg.sub_options && cfg.sub_options.length) {
 						html += '<ul class="ig-deactivation-sub-options">';
 						$.each(cfg.sub_options, function(i, opt){
@@ -1563,8 +1572,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 					$modal.find('.ig-deactivation-option').removeClass('selected');
 					$row.addClass('selected');
 					selectedSlug  = $row.data('slug');
-					selectedTitle = $row.data('title');
-
+					selectedTitle = $row.data('title'); 
 					$s2Label.text(selectedTitle);
 					buildScreen2(selectedSlug);
 
@@ -1723,9 +1731,9 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 
 			$options = apply_filters( $this->plugin_abbr . '_deactivation_reasons', array() );
 
-			$plugin_js = esc_js( $this->plugin );
+			$plugin_js = $this->plugin;
 			?>
-			<div class="ig-deactivation-modal" id="ig-deactivation-modal-<?php echo $plugin_js; ?>">
+			<div class="ig-deactivation-modal" id="ig-deactivation-modal-<?php echo esc_attr( $plugin_js ); ?>">
 				<div class="ig-deactivation-card">
 
 					<!-- Screen 1: Options -->
@@ -1746,11 +1754,12 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_12' ) ) {
 					</div>
 
 					<!-- Screen 2: Follow-up (populated by JS) -->
-					<div class="ig-deactivation-screen2" id="ig-deactivation-screen2-<?php echo $plugin_js; ?>">
+					<div class="ig-deactivation-screen2" id="ig-deactivation-screen2-<?php echo esc_attr( $plugin_js ); ?>">
 						<button type="button" class="ig-deactivation-back ig-deactivation-back">&#8592; Back</button>
-						<div class="ig-deactivation-s2-selected-label" id="ig-deactivation-s2-label-<?php echo $plugin_js; ?>"></div>
-						<div id="ig-deactivation-s2-content-<?php echo $plugin_js; ?>"></div>
-						<div class="ig-deactivation-s2-footer" id="ig-deactivation-s2-footer-<?php echo $plugin_js; ?>"></div>
+						<div id="ig-deactivation-s2-achievement-<?php echo esc_attr( $plugin_js ); ?>"></div>
+						<div class="ig-deactivation-s2-selected-label" id="ig-deactivation-s2-label-<?php echo esc_attr( $plugin_js ); ?>"></div>
+						<div id="ig-deactivation-s2-content-<?php echo esc_attr( $plugin_js ); ?>"></div>
+						<div class="ig-deactivation-s2-footer" id="ig-deactivation-s2-footer-<?php echo esc_attr( $plugin_js ); ?>"></div>
 						<p class="ig-deactivation-thank-you"><?php echo wp_kses_post( apply_filters( $this->plugin_abbr . '_deactivation_thankyou', '' ) ); ?></p>
 					</div>
 
