@@ -6,7 +6,7 @@ Tags: email subscribers, WooCommerce emails, lead generation, newsletter, email 
 Requires at least: 3.9
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 5.9.36
+Stable tag: 5.9.36.1
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -364,13 +364,13 @@ You can customize form and email styling using the built-in style editor, or add
 
 == Upgrade Notice ==
 
-= 5.9.36 =
+= 5.9.36.1 =
 
 * Fix: Fixed "This link is invalid or has expired." error when subscribing
 
 == Changelog ==
 
-**5.9.36 (16.09.2026)**
+**5.9.36.1 (16.09.2026)**
 
 * Fix: Fixed "This link is invalid or has expired." error when subscribing
 
