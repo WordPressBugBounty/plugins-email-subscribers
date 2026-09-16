@@ -464,19 +464,16 @@ if ( ! class_exists( 'ES_Campaigns_Controller' ) ) {
 
 			$original_campaign = ES()->campaigns_db->get( $campaign_id );
 			if ( empty( $original_campaign ) ) {
-				error_log( 'ES Duplicate Campaign: Original campaign not found - ID: ' . $campaign_id );
 				return array( 'error' => 'Original campaign not found' );
 			}
 
 			$duplicated_campaign_id = ES()->campaigns_db->duplicate_campaign( $campaign_id );
 			if ( empty( $duplicated_campaign_id ) ) {
-				error_log( 'ES Duplicate Campaign: Database duplicate failed for ID: ' . $campaign_id );
 				return array( 'error' => 'Failed to create duplicate campaign in database' );
 			}
 
 			$duplicated_campaign = ES()->campaigns_db->get( $duplicated_campaign_id );
 			if ( empty( $duplicated_campaign ) ) {
-				error_log( 'ES Duplicate Campaign: Could not retrieve duplicated campaign - ID: ' . $duplicated_campaign_id );
 				return array( 'error' => 'Failed to retrieve duplicated campaign' );
 			}
 

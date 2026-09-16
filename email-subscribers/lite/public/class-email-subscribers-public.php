@@ -214,7 +214,6 @@ class Email_Subscribers_Public {
 
 						} elseif ( 'unsubscribe' === $option ) {
 							$unsubscribed = 1;
-							error_log( __FILE__ . " " . __LINE__ . ' $_POST:' . print_r( $_POST, true ) );
 
 							$submitted         = '';
 							$unsubscribe_lists = array();
@@ -253,12 +252,10 @@ class Email_Subscribers_Public {
 								}
 
 								$unsubscribe_lists = ES()->lists_contacts_db->get_list_ids_by_contact( $db_id, 'subscribed' );
-								error_log( __FILE__ . " " . __LINE__ . ' $unsubscribe_lists:' . print_r( $unsubscribe_lists, true ) );
 							}
 
 							// Confirm if there are lists to unsubscribe before we unsubscribe the contact.
 							if ( ! empty( $unsubscribe_lists ) ) {
-								error_log( __FILE__ . " " . __LINE__ . ' time():' . print_r( time(), true ) );
 								//update list status
 								ES()->contacts_db->edit_list_contact_status( array( $db_id ), $unsubscribe_lists, 'unsubscribed' );
 							}
