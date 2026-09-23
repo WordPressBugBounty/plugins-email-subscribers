@@ -161,24 +161,19 @@ class Email_Subscribers_Public {
 			$campaign_id = 0;
 		}
 
-		
 		if ( ! empty( $option ) ) {
 			$email = sanitize_email( $email );
 			$email = str_replace( ' ', '+', $email );
-
-			// Security: for all email link actions (where $db_id is present), verify the
-			// per-subscriber token before processing any action. Fresh form submissions
-			// (no $db_id) are exempt since they don't have a guid token.
-			if ( ! empty( $db_id ) ) {
+ 
+			if ( ( 'optin' === $option || 'unsubscribe' === $option ) && ! empty( $db_id ) ) {
 				$stored_contact_hash = ES()->contacts_db->get_contact_hash_by_id( $db_id );
-				if ( empty( $stored_contact_hash ) || empty( $guid ) || ! hash_equals( $stored_contact_hash, $guid ) ) {
+
+				if ( empty( $stored_contact_hash ) || ! hash_equals( $stored_contact_hash, $guid ) ) {
 					wp_die(
 						esc_html__( 'This link is invalid or has expired.', 'email-subscribers' )
 					);
 				}
-			}
 
-			if ( ( 'optin' === $option || 'unsubscribe' === $option ) && ! empty( $db_id ) ) {
 				//check if contact exist with id and email
 				$is_contact_exists = ES()->contacts_db->is_contact_exists( $db_id, $email );
 
@@ -295,7 +290,11 @@ class Email_Subscribers_Public {
 				if ( ! empty( $guid ) && ! empty( $email ) ) {
 
 					if ( $campaign_id > 0 && $db_id > 0 ) {
-						do_action( 'ig_es_message_open', $db_id, $message_id, $campaign_id );
+						$stored_contact_hash = ES()->contacts_db->get_contact_hash_by_id( $db_id );
+
+						if ( ! empty( $stored_contact_hash ) && hash_equals( $stored_contact_hash, $guid ) ) {
+							do_action( 'ig_es_message_open', $db_id, $message_id, $campaign_id );
+						}
 					}
 
 					header('Content-Type: image/png');
