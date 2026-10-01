@@ -6,7 +6,7 @@ Tags: email subscribers, WooCommerce emails, lead generation, newsletter, email 
 Requires at least: 3.9
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 5.9.37
+Stable tag: 5.9.38
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -364,11 +364,19 @@ You can customize form and email styling using the built-in style editor, or add
 
 == Upgrade Notice ==
 
-= 5.9.37 =
+= 5.9.38 =
 
-* Fix: Fixed an issue with email link tracking
+* Improvement: Optimized Reports page analytics queries for better performance
+* Fix: Fixed subscription form widget compatibility with "Page Builder by SiteOrigin"
+* Fix: Resolved an issue where editing a form created a new form
 
 == Changelog ==
+
+**5.9.38 (01.10.2026)**
+
+* Improvement: Optimized Reports page analytics queries for better performance
+* Fix: Fixed subscription form widget compatibility with "Page Builder by SiteOrigin"
+* Fix: Resolved an issue where editing a form created a new form
 
 **5.9.37 (23.09.2026)**
 

@@ -30,7 +30,20 @@ class ES_Form_Widget extends WP_Widget {
 
 			$form = ES()->forms_db->get_form_by_id( $form_id );
 			if ( $form ) {
-				$form_data = ES_Forms_Table::get_form_data_from_body( $form );
+				$settings = ig_es_maybe_unserialize( $form['settings'] );
+				$editor_type = ! empty( $settings['editor_type'] ) ? $settings['editor_type'] : '';
+
+				if ( 'wysiwyg' === $editor_type ) {
+					$form_data = array(
+						'form_id'  => $form['id'],
+						'name'     => ! empty( $form['name'] ) ? $form['name'] : '',
+						'body'     => $form['body'],
+						'settings' => $settings,
+						'styles'   => ig_es_maybe_unserialize( $form['styles'] ),
+					);
+				} else {
+					$form_data = ES_Forms_Table::get_form_data_from_body( $form );
+				}
 			}
 		}
 
@@ -60,9 +73,11 @@ class ES_Form_Widget extends WP_Widget {
 		}
 
 		if ( ! empty( $form_data['settings'] ) ) {
-			$data['settings']['editor_type']    = ! empty( $form_data['settings']['editor_type'] ) ? $form_data['settings']['editor_type'] : array();
-			$data['settings']['dnd_editor_css'] = ! empty( $form_data['settings']['dnd_editor_css'] ) ? $form_data['settings']['dnd_editor_css'] : array();
-			$data['settings']['lists']          = ! empty( $form_data['settings']['lists'] ) ? $form_data['settings']['lists'] : array();
+			$data['settings'] = $form_data['settings'];
+		}
+
+		if ( ! empty( $form_data['styles'] ) ) {
+			$data['styles'] = $form_data['styles'];
 		}
 
 		if ( ! empty( $form_data['body'] ) ) {

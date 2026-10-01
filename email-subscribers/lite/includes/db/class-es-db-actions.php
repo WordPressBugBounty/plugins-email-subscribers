@@ -1006,6 +1006,131 @@ class ES_DB_Actions extends ES_DB {
 		}
 	}
 
+	/**
+	 * Get device opens, country opens, and top clicked links in a single combined query batch.
+	 *
+	 * Replaces three separate calls (get_device_open_counts, get_country_open_counts,
+	 * get_top_clicked_links) with two targeted queries that share the same date-range
+	 * filter, reducing ig_actions table scans from 3 to 2.
+	 *
+	 * @param int $days  Number of days to look back (0 = all time).
+	 * @param int $country_limit  Max number of countries to return (default 10).
+	 * @param int $link_limit     Max number of links to return (default 5).
+	 * @return array {
+	 *     @type array $device_opens   device => count pairs (desktop/mobile/tablet)
+	 *     @type array $country_opens  country_code => count pairs
+	 *     @type array $top_links      list of ['link' => string, 'clicks' => int]
+	 * }
+	 *
+	 * @since 5.9.15
+	 */
+	public function get_dashboard_analytics_data( $days = 0, $country_limit = 10, $link_limit = 5 ) {
+		global $wpdb;
+
+		$actions_table = $this->table_name;
+		$links_table   = $wpdb->prefix . 'ig_links';
+
+		$date_condition_opens = '';
+		$date_condition_clicks = '';
+		$query_params_opens  = array( IG_MESSAGE_OPEN );
+		$query_params_clicks = array( IG_LINK_CLICK );
+
+		if ( $days > 0 ) {
+			$start_epoch          = time() - ( $days * DAY_IN_SECONDS );
+			$start_datetime       = gmdate( 'Y-m-d H:i:s', $start_epoch );
+			$date_condition_opens  = ' AND a.created_at >= %d';
+			$date_condition_clicks = ' AND a.created_at >= %d';
+			$query_params_opens[]  = $start_epoch;
+			$query_params_clicks[] = $start_epoch;
+			$query_params_clicks[] = $start_datetime;
+		}
+
+		$query_params_device = $query_params_opens;
+
+		// phpcs:disable
+		$device_rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT LOWER(a.device) AS device, COUNT(*) AS cnt
+				FROM {$actions_table} a
+				WHERE a.type = %d" . $date_condition_opens . "
+				  AND a.device IS NOT NULL AND a.device != ''
+				GROUP BY LOWER(a.device)",
+				$query_params_device
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
+
+		$device_opens = array();
+		if ( ! empty( $device_rows ) ) {
+			foreach ( $device_rows as $row ) {
+				$device_opens[ $row['device'] ] = (int) $row['cnt'];
+			}
+		}
+
+		
+		$query_params_country   = $query_params_opens;
+		$query_params_country[] = (int) $country_limit;
+
+		// phpcs:disable
+		$country_rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT a.country, COUNT(*) AS cnt
+				FROM {$actions_table} a
+				WHERE a.type = %d" . $date_condition_opens . "
+				  AND a.country IS NOT NULL AND a.country != ''
+				GROUP BY a.country
+				ORDER BY cnt DESC
+				LIMIT %d",
+				$query_params_country
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
+
+		$country_opens = array();
+		if ( ! empty( $country_rows ) ) {
+			foreach ( $country_rows as $row ) {
+				$country_opens[ $row['country'] ] = (int) $row['cnt'];
+			}
+		}
+
+		
+		$query_params_clicks[] = (int) $link_limit;
+		
+		// phpcs:disable
+		$link_rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT a.link_id, MAX(l.link) AS link, COUNT(*) AS clicks
+				FROM {$actions_table} a
+				INNER JOIN {$links_table} l ON l.id = a.link_id
+				WHERE a.type = %d" . $date_condition_clicks . "
+				GROUP BY a.link_id
+				ORDER BY clicks DESC
+				LIMIT %d",
+				$query_params_clicks
+			),
+			ARRAY_A
+		);
+		// phpcs:enable
+
+		$top_links = array();
+		if ( ! empty( $link_rows ) ) {
+			foreach ( $link_rows as $row ) {
+				$top_links[] = array(
+					'link'   => $row['link'],
+					'clicks' => (int) $row['clicks'],
+				);
+			}
+		}
+
+		return array(
+			'device_opens'  => $device_opens,
+			'country_opens' => $country_opens,
+			'top_links'     => $top_links,
+		);
+	}
+
 	public function get_link_cliked_subscribers( $campaign_id = '', $link_id = '' ) {
 		global $wpdb;
 		$result = array();

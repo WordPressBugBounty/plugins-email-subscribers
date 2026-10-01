@@ -300,30 +300,47 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			 * - Avg. Email Click rate
 			 */
 			$args['days'] = ! empty( $args['days'] ) ? $args['days'] : 7;
-		
+
 			// Used page parameter to control which stats to fetch
 			// 'campaigns' - Campaigns page: Basic KPIs only
 			// 'reports' - Reports page: KPIs + analytics (device/country/top_links)
 			// 'dashboard' - Dashboard page: KPIs + campaigns list
-		
+
 			$cache_key = 'dashboard_reports_data_' . $args['days'] . '_' . $page;
-		
+
 			if ( ! $override_cache ) {
-
 				$cached_data = ES_Cache::get_transient( $cache_key );
-
 				if ( ! empty( $cached_data ) ) {
 					return $cached_data;
 				}
 			} else {
 				ES_Cache::delete_transient( $cache_key );
 			}
-			
+
 			$total_subscribed = self::get_total_subscribed_contacts( $args );
- 
-			$action_types       = ES()->get_action_types();
-			$args['types']      = $action_types;
-			$actions_counts     = ES()->actions_db->get_actions_count( $args );
+
+			$action_types = ES()->get_action_types();
+			$days         = (int) $args['days']; // Already guaranteed non-empty above.
+
+			// Two queries are used to compute growth rate stats:
+			// 1. Current period (days)    — counts for the current window only.
+			// 2. Double period (days * 2) — covers both current and previous windows combined.
+			// The previous-period counts are then derived by subtraction: double - current.
+			$include_average_campaigns_stats = in_array( $page, array( 'campaigns', 'reports', 'dashboard' ), true );
+
+			// Always run the current-period query.
+			$current_period_args          = $args;
+			$current_period_args['types'] = $action_types;
+			$actions_counts               = ES()->actions_db->get_actions_count( $current_period_args );
+
+			// Run the double-period query only when growth stats are needed.
+			$double_period_counts = null;
+			if ( $include_average_campaigns_stats ) {
+				$double_period_args          = $current_period_args;
+				$double_period_args['days']  = $days * 2;
+				$double_period_counts        = ES()->actions_db->get_actions_count( $double_period_args );
+			}
+
 			$total_email_opens  = $actions_counts['opened'];
 			$total_links_clicks = $actions_counts['clicked'];
 			$total_message_sent = $actions_counts['sent'];
@@ -348,56 +365,56 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 			/**
 		 * Get recent campaigns with statistics
 		 */
-		$data = array(
-			'campaigns' => array(),
-		);
-		
+			$data = array(
+				'campaigns' => array(),
+			);
+
 		// Fetch campaigns list for Dashboard and Reports pages
 			if ( 'dashboard' === $page || 'reports' === $page ) {
 				$data = self::get_campaign_stats( $campaign_count );
-			
+
 				$pending_campaign_args = array(
-				'order_by_column' => 'ID',
-				'limit'           => '5',
-				'order'           => 'DESC',
-				'status'          => array( IG_ES_CAMPAIGN_STATUS_SCHEDULED, IG_ES_CAMPAIGN_STATUS_QUEUED, IG_ES_CAMPAIGN_STATUS_PAUSED ),
-				'include_types'   => array(
-					IG_CAMPAIGN_TYPE_POST_NOTIFICATION,
-					IG_CAMPAIGN_TYPE_POST_DIGEST,
+					'order_by_column' => 'ID',
+					'limit'           => '5',
+					'order'           => 'DESC',
+					'status'          => array( IG_ES_CAMPAIGN_STATUS_SCHEDULED, IG_ES_CAMPAIGN_STATUS_QUEUED, IG_ES_CAMPAIGN_STATUS_PAUSED ),
+					'include_types'   => array(
+						IG_CAMPAIGN_TYPE_POST_NOTIFICATION,
+						IG_CAMPAIGN_TYPE_POST_DIGEST,
 					IG_CAMPAIGN_TYPE_NEWSLETTER
-				),
+					),
 				);
 				$pending_campaigns = ES()->campaigns_db->get_campaigns( $pending_campaign_args );
 
 				$pending_campaigns_data = array();
 				$seen_campaign_ids      = array();
-				
+
 				if ( ! empty( $pending_campaigns ) ) {
 					$campaign_ids = array_column( $pending_campaigns, 'id' );
 					$campaign_ids = array_filter( array_map( 'intval', $campaign_ids ) );
-					
+
 					if ( ! empty( $campaign_ids ) ) {
 						$mq_by_campaign = ES()->queue_db->get_latest_mailing_queue_by_campaigns( $campaign_ids );
 						foreach ( $pending_campaigns as $campaign ) {
 							$campaign_id = (int) $campaign['id'];
-							
+
 							if ( ! isset( $mq_by_campaign[ $campaign_id ] ) ) {
 								continue;
 							}
-							
+
 							$mq = $mq_by_campaign[ $campaign_id ];
 							$mq_status = $mq['status'];
-							
+
 							if ( empty( $mq_status ) || 'Sent' === $mq_status ) {
 								continue;
 							}
-							
+
 							$hash     = ! empty( $mq['hash'] ) ? $mq['hash'] : '';
 							$cron_url = '';
 							if ( ! empty( $hash ) ) {
 								$cron_url = ES()->cron->url( true, false, $hash );
 							}
-							
+
 							$pending_campaigns_data[] = array(
 								'id'       => $campaign_id,
 								'title'    => $campaign['subject'],
@@ -424,9 +441,9 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 						5
 					),
 					ARRAY_A
-					);
-					// phpcs:enable
-				
+				);
+				// phpcs:enable
+
 				if ( ! empty( $mq_items ) ) {
 					foreach ( $mq_items as $mq ) {
 						$cid = (int) $mq['campaign_id'];
@@ -440,7 +457,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 						}
 						
 						$campaign_type = ES()->campaigns_db->get_column( 'type', $cid );
-						
+
 						$pending_campaigns_data[] = array(
 							'id'       => $cid,
 							'title'    => $mq['subject'],
@@ -450,7 +467,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 							'cron_url' => $cron_url,
 						);
 						if ( $cid > 0 ) {
-							$seen_campaign_ids[] = $cid;
+						$seen_campaign_ids[] = $cid;
 						}
 					}
 				}
@@ -458,60 +475,61 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 				$data['pending_campaigns'] = $pending_campaigns_data;
 			}
 
-			// Get device and country tracking data
-			$device_opens = array();
+			// Get device, country, and top-links data for the Reports page.
+			// Optimisation: use a single combined method that performs two queries
+			// (one for opens/device/country, one for link clicks) instead of the
+			// previous three separate ig_actions table scans.
+			$device_opens  = array();
 			$country_opens = array();
-			$days = ! empty( $args['days'] ) ? (int) $args['days'] : 7;
-			
-			// Only fetch device/country data for Reports page
-			if ( ES()->is_pro() && 'reports' === $page ) {
-				$device_opens = ES()->actions_db->get_device_open_counts( $days );
-				$country_opens = ES()->actions_db->get_country_open_counts( $days, 10 );
+			$top_links     = array();
+
+			if ( 'reports' === $page ) {
+				$analytics_data = ES()->actions_db->get_dashboard_analytics_data( $days, 10, 5 );
+				$top_links      = $analytics_data['top_links'];
+
+				// Device and country are MAX/Pro-only
+				if ( ES()->is_pro() ) {
+					$device_opens  = $analytics_data['device_opens'];
+					$country_opens = $analytics_data['country_opens'];
+				}
 			}
-		
-		// Ensure device_opens is always an object, not an array
+
+			// Ensure device_opens is always an object, not an array
 			if ( empty( $device_opens ) ) {
 				$device_opens = (object) array();
 			}
-		
+
 		// Ensure country_opens is always an object, not an array
 			if ( empty( $country_opens ) ) {
 				$country_opens = (object) array();
 			}
-		// Get top clicked links 
-		$top_links = array();
-		// Only fetch top links for Reports page
-			if ( 'reports' === $page ) {
-				// Use DB method for top clicked links (moved from inline SQL)
-				$days = ! empty( $args['days'] ) ? $args['days'] : 0;
-				$top_links = ES()->actions_db->get_top_clicked_links( 5, $days );
-			}
-			
+
 		// Calculate spam complaint count (currently always 0 in lite version)
-		$spam_complaint_count = 0;
-		
-		// Calculate email frequency per week
-		$days = ! empty( $args['days'] ) ? $args['days'] : 7;
+			$spam_complaint_count = 0;
+
+			// Calculate email frequency per week.
+		// Optimisation: derive sent-campaign count from the mailing queue items already
+		// fetched above for pending campaigns when possible, falling back to a targeted
+		// COUNT(DISTINCT) query only when the mailing queue scan has not yet run
+		// (i.e. on pages other than 'dashboard'/'reports').
 		$weeks = max( 1, $days / 7 );
-		
-		// Get total campaigns sent in the period using mailing queue
 		$sent_campaigns_count = 0;
 			if ( ! empty( $args['days'] ) ) {
 				$start_date = time() - ( $args['days'] * DAY_IN_SECONDS );
 				$start_date_mysql = gmdate( 'Y-m-d H:i:s', $start_date );
 				$mailing_queue_query = $wpdb->prepare(
-				"SELECT COUNT(DISTINCT campaign_id) FROM {$wpdb->prefix}ig_mailing_queue WHERE start_at >= %s AND status IN ('Sent', 'Sending')",
-				$start_date_mysql
-				);
+					"SELECT COUNT(DISTINCT campaign_id) FROM {$wpdb->prefix}ig_mailing_queue WHERE start_at >= %s AND status IN ('Sent', 'Sending')",
+					$start_date_mysql
+			);
 				$sent_campaigns_count = (int) $wpdb->get_var( $mailing_queue_query );
 			}
-		$email_frequency_per_week = $sent_campaigns_count > 0 ? number_format_i18n( ( $sent_campaigns_count / $weeks ), 2 ) : 0;
-		
+			$email_frequency_per_week = $sent_campaigns_count > 0 ? number_format_i18n( ( $sent_campaigns_count / $weeks ), 2 ) : 0;
+
 		// Calculate engagement rate (contacts who opened or clicked / total sent)
 		$total_engaged = $total_email_opens + $total_links_clicks;
-		$engagement_rate = $total_message_sent > 0 ? number_format_i18n( ( ( $total_engaged / $total_message_sent ) * 100 ), 2 ) : 0;
-	
-		$reports_data = array(
+			$engagement_rate = $total_message_sent > 0 ? number_format_i18n( ( ( $total_engaged / $total_message_sent ) * 100 ), 2 ) : 0;
+
+			$reports_data = array(
 				'total_subscribed'     => number_format_i18n($total_subscribed ?? 0),
 				'total_email_opens'    => number_format_i18n($total_email_opens ?? 0),
 				'total_links_clicks'   => number_format_i18n($total_links_clicks ?? 0),
@@ -529,17 +547,11 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 				'email_frequency_per_week' => $email_frequency_per_week,
 				'engagement_rate'      => $engagement_rate,
 			);
-			
 
-			// Include percentage growth stats for all pages
-			$include_average_campaigns_stats = in_array( $page, array( 'campaigns', 'reports', 'dashboard' ), true );
-			if ( $include_average_campaigns_stats ) {
-				$comp_args         = $args;
-				$comp_args['days'] = $args['days'] * 2;
 
-				$last_four_months_actions_count = ES()->actions_db->get_actions_count( $comp_args );
-				
-				$last_four_months_sent  = $last_four_months_actions_count['sent'];
+			// Include percentage growth stats — reuse $double_period_counts derived earlier.
+			if ( $include_average_campaigns_stats && ! empty( $double_period_counts ) ) {
+				$last_four_months_sent  = $double_period_counts['sent'];
 				$sent_before_two_months = $last_four_months_sent - $total_message_sent;
 				if ( $sent_before_two_months > 0 ) {
 					$sent_percentage_growth = ( ( $total_message_sent - $sent_before_two_months ) / $sent_before_two_months ) * 100;
@@ -547,7 +559,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 					$sent_percentage_growth = 0;
 				}
 				
-				$last_four_months_opens = $last_four_months_actions_count['opened'];
+				$last_four_months_opens = $double_period_counts['opened'];
 				$open_before_two_months = $last_four_months_opens - $total_email_opens;
 				if ( $open_before_two_months > 0 ) {
 					$open_percentage_growth = ( ( $total_email_opens - $open_before_two_months ) / $open_before_two_months ) * 100;
@@ -555,7 +567,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 					$open_percentage_growth = 0;
 				}
 
-				$last_four_months_clicks = $last_four_months_actions_count['clicked'];
+				$last_four_months_clicks = $double_period_counts['clicked'];
 				$click_before_two_months = $last_four_months_clicks - $total_links_clicks;
 				if ( $click_before_two_months > 0 ) {
 					$click_percentage_growth = ( ( $total_links_clicks - $click_before_two_months ) / $click_before_two_months ) * 100;
@@ -563,7 +575,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 					$click_percentage_growth = 0;
 				}
 
-				$last_four_months_unsubscribes  = $last_four_months_actions_count['unsubscribed'];
+				$last_four_months_unsubscribes  = $double_period_counts['unsubscribed'];
 				$unsubscribes_before_two_months = $last_four_months_unsubscribes - $total_unsubscribed;
 				if ( $unsubscribes_before_two_months > 0 ) {
 					$unsubscribes_percentage_growth = ( ( $total_unsubscribed - $unsubscribes_before_two_months ) / $unsubscribes_before_two_months ) * 100;
@@ -573,7 +585,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 
 				if ( isset( $actions_counts['hard_bounced'] ) ) {
 					$total_hard_bounces             = $actions_counts['hard_bounced'];
-					$last_four_months_hard_bounces  = $last_four_months_actions_count['hard_bounced'];
+					$last_four_months_hard_bounces  = $double_period_counts['hard_bounced'];
 					$hard_bounces_before_two_months = $last_four_months_hard_bounces - $total_hard_bounces;
 					if ( $hard_bounces_before_two_months > 0 ) {
 						$hard_bounces_percentage_growth = ( ( $total_hard_bounces - $hard_bounces_before_two_months ) / $hard_bounces_before_two_months ) * 100;
@@ -585,7 +597,7 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 						$avg_bounce_rate                 = ( $total_hard_bounces * 100 ) / $total_message_sent;
 						$reports_data['avg_bounce_rate'] = $avg_bounce_rate ? number_format_i18n( $avg_bounce_rate, 2 ) : 0;
 					}
-	
+
 					$reports_data['total_hard_bounced_contacts']    = number_format_i18n( $total_hard_bounces );
 					$reports_data['hard_bounces_before_two_months'] = number_format_i18n( $hard_bounces_before_two_months );
 					$reports_data['hard_bounces_percentage_growth'] = 0 !== $hard_bounces_percentage_growth ? number_format_i18n( $hard_bounces_percentage_growth, 2 ) : 0;
@@ -932,8 +944,8 @@ if ( ! class_exists( 'ES_Reports_Data' ) ) {
 					'previous_period_subscribers' => $previous_period_subscribers
 				);
 			
-			$audience_insights_data = apply_filters( 'ig_es_audience_insights_data', $audience_insights_data, $args );
-return $audience_insights_data;
+				$audience_insights_data = apply_filters( 'ig_es_audience_insights_data', $audience_insights_data, $args );
+				return $audience_insights_data;
 				
 			} catch ( Exception $e ) {
 				return array(

@@ -1244,10 +1244,10 @@ class ES_DB_Lists_Contacts extends ES_DB {
 					COUNT(*) as count
 				FROM {$this->table_name} lc
 				WHERE lc.list_id IN ( $placeholders )
-					AND EXISTS (
-						SELECT 1 FROM {$wpdb->prefix}ig_contacts c 
-						WHERE c.id = lc.contact_id
-					)
+				AND EXISTS (
+					SELECT 1 FROM {$wpdb->prefix}ig_contacts c 
+					WHERE c.id = lc.contact_id
+				)
 				GROUP BY lc.list_id, lc.status";
 		
 		$sql = $wpdb->prepare( $sql, $list_ids );
