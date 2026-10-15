@@ -1,0 +1,462 @@
+/*
+ * Contact Us Modal — Icegram Express
+ * Handle: ig-feedback-contact-us_{version}
+ * Depends on: sweetalert_{version}
+ *
+ * Palette (extracted from plugin tailwind dist + wp-admin core):
+ *   #5850EC  indigo-600 (accent / primary)
+ *   #6875F5  indigo-500 (hover)
+ *   #EEF0FD  indigo tint at ~6% on white (focus bg)
+ *   #DCDDE1  wp-admin input border
+ *   #1D2327  wp-admin body text
+ *   #646970  wp-admin secondary / muted
+ *   #D63638  wp-admin error red
+ *   #F6F7F7  wp-admin pre / code background
+ *
+ * Typography: exact wp-admin stack from wp-admin/css/common.min.css
+ * No web-font imports.
+ */
+
+/* ================================================================
+   Design tokens & custom properties
+   ================================================================ */
+
+:root {
+	--igcu-accent: #5850EC;
+	--igcu-accent-hover: #6875F5;
+	--igcu-accent-focus-bg: #EEF0FD;
+	--igcu-border: #DCDDE1;
+	--igcu-text: #1D2327;
+	--igcu-muted: #646970;
+	--igcu-error: #D63638;
+}
+
+/* ================================================================
+   Reset helpers — suppress Swal defaults that break the design
+   ================================================================ */
+
+/*
+ * Swal v8 adds a focus outline (.swal2-close:focus, .swal2-styled:focus)
+ * that fires on mouse click too (auto-focus when popup opens + click).
+ * We suppress the ring for mouse/touch interactions via :focus:not(:focus-visible).
+ * Browsers that don't support :focus-visible fall back to no outline — acceptable
+ * because wp-admin users are primarily mouse-driven.
+ */
+
+/* ================================================================
+   Base modal shell
+   ================================================================ */
+
+.ig-cu-popup.swal2-popup {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+	             Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+	font-size: 13px;
+	color: #1D2327;
+	border-radius: 6px;
+	/* Swal default is 1.25em all sides; we use it for the popup shell padding
+	   so we DON'T zero it out — that keeps the close button positioned correctly. */
+	box-shadow: 0 4px 24px rgba(0, 0, 0, .12), 0 1px 4px rgba(0, 0, 0, .08);
+}
+
+/* Remove extra top padding from the header — we control spacing via progress-wrap */
+.ig-cu-popup .swal2-header {
+	padding: 0;
+	margin: 0;
+}
+
+.ig-cu-popup .swal2-content {
+	padding: 0;
+	text-align: left;
+}
+
+.ig-cu-popup .swal2-footer {
+	margin: 0;
+	padding: 8px 20px;
+	border-top: 1px solid #DCDDE1;
+	font-size: 12px;
+	color: #646970;
+	justify-content: center;
+}
+
+/* ================================================================
+   Close button (×) — always on top, no ring on mouse click
+   ================================================================ */
+
+.ig-cu-popup button.swal2-close {
+	/* Ensure the button is always above form content */
+	position: absolute;
+	top: 10px;
+	right: 10px;
+	z-index: 20;
+	width: 28px;
+	height: 28px;
+	line-height: 28px;
+	border-radius: 4px;
+	background: transparent;
+	border: none;
+	color: #646970;
+	font-size: 20px;
+	cursor: pointer;
+	transition: color 120ms, background 120ms;
+	/* Override Swal's default outline on open (it auto-focuses the close button
+	   when focusConfirm:false is set) */
+	outline: none;
+	box-shadow: none;
+}
+
+.ig-cu-popup button.swal2-close:hover {
+	color: #1D2327;
+	background: #F0F0F1;
+}
+
+/* Only show a ring when navigating by keyboard (:focus-visible) */
+.ig-cu-popup button.swal2-close:focus-visible {
+	outline: 2px solid #5850EC;
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+/* ================================================================
+   Modal title — single-step modal has no progress bar
+   ================================================================ */
+
+.ig-cu-popup .ig-cu-modal-title {
+	padding: 18px 20px 0;
+	font-size: 15px;
+	font-weight: 600;
+	color: #1D2327;
+	margin: 0 0 4px;
+	line-height: 1.3;
+}
+
+/* ================================================================
+   Form inputs — shared between step 1 and step 2
+   ================================================================ */
+
+.ig-cu-form-body {
+	padding: 0 20px 4px;
+}
+
+.ig-cu-field {
+	margin-bottom: 12px;
+}
+
+.ig-cu-label {
+	display: block;
+	font-size: 12px;
+	font-weight: 600;
+	color: #1D2327;
+	margin-bottom: 4px;
+}
+
+.ig-cu-label .ig-cu-req {
+	color: #D63638;
+	margin-left: 2px;
+}
+
+.ig-cu-input,
+.ig-cu-select,
+.ig-cu-textarea {
+	display: block;
+	width: 100%;
+	box-sizing: border-box;
+	font-family: inherit;
+	font-size: 13px;
+	color: #1D2327;
+	background: #fff;
+	border: 1px solid #DCDDE1;
+	border-radius: 4px;
+	padding: 6px 9px;
+	line-height: 1.5;
+	transition: border-color 120ms;
+	appearance: none;
+	-webkit-appearance: none;
+	/* No outline at all — the border-color change provides the focus cue */
+	outline: none;
+}
+
+.ig-cu-input:hover,
+.ig-cu-select:hover,
+.ig-cu-textarea:hover {
+	border-color: #8C8F94;
+}
+
+.ig-cu-popup input.ig-cu-input:focus,
+.ig-cu-popup select.ig-cu-select:focus,
+.ig-cu-popup textarea.ig-cu-textarea:focus {
+	border-color: #5850EC;
+	box-shadow: 0 0 0 1px rgba(88, 80, 236, .2);
+	outline: none;
+}
+
+/* Remove the box-shadow on click (mouse) but keep for keyboard */
+.ig-cu-popup input.ig-cu-input:focus:not(:focus-visible),
+.ig-cu-popup select.ig-cu-select:focus:not(:focus-visible),
+.ig-cu-popup textarea.ig-cu-textarea:focus:not(:focus-visible) {
+	box-shadow: none;
+	border-color: #5850EC;
+	outline: none;
+}
+
+.ig-cu-textarea {
+	height: 100px;
+	resize: vertical;
+}
+
+/* Native select: custom chevron */
+.ig-cu-select-wrap {
+	position: relative;
+}
+
+.ig-cu-select {
+	padding-right: 30px;
+	cursor: pointer;
+}
+
+.ig-cu-select-wrap::after {
+	content: '';
+	position: absolute;
+	right: 10px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 0;
+	height: 0;
+	border-left: 4px solid transparent;
+	border-right: 4px solid transparent;
+	border-top: 5px solid #646970;
+	pointer-events: none;
+}
+
+/* Two-column row (name + email) */
+.ig-cu-row {
+	display: flex;
+	gap: 10px;
+}
+
+.ig-cu-row .ig-cu-field {
+	flex: 1;
+	min-width: 0;
+}
+
+/* Documentation link */
+.ig-cu-docs-link {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--igcu-accent, #5850EC);
+	text-decoration: none;
+	font-size: 12px;
+	font-weight: 500;
+	margin-top: 6px;
+	line-height: 1.4;
+	transition: color 120ms;
+}
+
+.ig-cu-docs-link:hover {
+	color: var(--igcu-accent-hover, #6875F5);
+	text-decoration: underline;
+}
+
+.ig-cu-docs-link:focus-visible {
+	outline: 2px solid var(--igcu-accent, #5850EC);
+	outline-offset: 2px;
+	border-radius: 2px;
+}
+
+.ig-cu-docs-link .dashicons {
+	font-size: 16px;
+	width: 16px;
+	height: 16px;
+	line-height: 16px;
+	color: inherit;
+}
+
+/* ================================================================
+   Action buttons — padding NOT margin, so they stay inside the popup
+   ================================================================ */
+
+.ig-cu-popup.ig-cu-popup .swal2-actions {
+	/* width: 100% comes from Swal; we use padding to create side-gutters.
+	   Using margin-left/right would widen the element beyond 100% in some
+	   flex contexts, causing the button to spill outside the modal. */
+	width: 100%;
+	box-sizing: border-box;
+	padding: 10px 20px 14px;
+	margin: 0;
+	justify-content: flex-end;
+	gap: 8px;
+	flex-wrap: nowrap;
+}
+
+/* Confirm / primary button */
+.ig-cu-popup.ig-cu-popup button.swal2-confirm.swal2-styled {
+	font-family: inherit;
+	font-size: 13px;
+	font-weight: 600;
+	padding: 6px 16px;
+	border-radius: 4px;
+	background: #5850EC;
+	background-image: none;  /* override Swal hover gradient */
+	color: #fff;
+	border: none;
+	box-shadow: none;
+	text-shadow: none;
+	cursor: pointer;
+	outline: none;
+	transition: background 120ms;
+}
+
+.ig-cu-popup.ig-cu-popup button.swal2-confirm.swal2-styled:hover:not(:disabled) {
+	background: #6875F5;
+	background-image: none;
+}
+
+.ig-cu-popup.ig-cu-popup button.swal2-confirm.swal2-styled:active:not(:disabled) {
+	background: #4338CA;
+	background-image: none;
+}
+
+/* Keyboard-only focus ring */
+.ig-cu-popup.ig-cu-popup button.swal2-confirm.swal2-styled:focus-visible {
+	outline: 2px solid #5850EC;
+	outline-offset: 2px;
+	box-shadow: none;
+}
+
+.ig-cu-popup.ig-cu-popup button.swal2-confirm.swal2-styled:focus:not(:focus-visible) {
+	outline: none;
+	box-shadow: none;
+}
+
+/* Swal-injected hover gradient must be neutralised */
+.ig-cu-popup.ig-cu-popup .swal2-actions:not(.swal2-loading) .swal2-styled:hover {
+	background-image: none;
+}
+.ig-cu-popup.ig-cu-popup .swal2-actions:not(.swal2-loading) .swal2-styled:active {
+	background-image: none;
+}
+
+/* ================================================================
+   Validation message
+   ================================================================ */
+
+.ig-cu-popup .swal2-validation-message {
+	font-size: 12px;
+	background: #FCF0F1;
+	border: 1px solid #F8D7DA;
+	color: #D63638;
+	border-radius: 3px;
+	padding: 5px 10px;
+	margin: 0 20px 6px;
+	justify-content: flex-start;
+	box-sizing: border-box;
+}
+
+.ig-cu-popup .swal2-validation-message::before {
+	color: #D63638;
+}
+
+/* ================================================================
+   System info block
+   ================================================================ */
+
+.ig-cu-sysinfo-card {
+	margin-top: 10px;
+	border: 1px solid #DCDDE1;
+	border-radius: 4px;
+	background: #F6F7F7;
+	overflow: hidden;
+}
+
+.ig-cu-sysinfo-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 6px 10px;
+	border-bottom: 1px solid #DCDDE1;
+	background: #F0F0F1;
+}
+
+.ig-cu-sysinfo-title {
+	font-size: 11px;
+	font-weight: 600;
+	color: #50575E;
+	text-transform: uppercase;
+	letter-spacing: .4px;
+}
+
+.ig-cu-copy-btn {
+	font-size: 11px;
+	font-family: inherit;
+	padding: 2px 8px;
+	cursor: pointer;
+	background: #fff;
+	border: 1px solid #DCDDE1;
+	border-radius: 3px;
+	color: #1D2327;
+	line-height: 1.6;
+	outline: none;
+	transition: background 100ms;
+}
+
+.ig-cu-copy-btn:hover {
+	background: #F0F0F1;
+	border-color: #8C8F94;
+}
+
+.ig-cu-copy-btn:focus-visible {
+	outline: 2px solid #5850EC;
+	outline-offset: 1px;
+}
+
+#ig-cu-sysinfo {
+	font-family: Consolas, Monaco, monospace;
+	font-size: 11px;
+	line-height: 1.65;
+	color: #3C434A;
+	white-space: pre;
+	overflow-x: auto;
+	overflow-y: auto;
+	max-height: 90px;
+	margin: 0;
+	padding: 8px 10px;
+	background: transparent;
+	scrollbar-width: thin;
+	scrollbar-color: #DCDDE1 transparent;
+}
+
+#ig-cu-sysinfo::-webkit-scrollbar { height: 4px; width: 4px; }
+#ig-cu-sysinfo::-webkit-scrollbar-thumb { background: #DCDDE1; border-radius: 2px; }
+
+/* ================================================================
+   Include-sysinfo checkbox row
+   ================================================================ */
+
+.ig-cu-opt-row {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-top: 8px;
+}
+
+.ig-cu-opt-row input[type="checkbox"] {
+	margin: 0;
+	width: 14px;
+	height: 14px;
+	flex-shrink: 0;
+	accent-color: #5850EC;
+	cursor: pointer;
+	outline: none;
+}
+
+.ig-cu-opt-row input[type="checkbox"]:focus-visible {
+	outline: 2px solid #5850EC;
+	outline-offset: 1px;
+}
+
+.ig-cu-opt-row label {
+	font-size: 12px;
+	color: #3C434A;
+	cursor: pointer;
+	line-height: 1.4;
+}

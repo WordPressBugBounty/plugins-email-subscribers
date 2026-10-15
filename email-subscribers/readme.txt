@@ -6,7 +6,7 @@ Tags: email subscribers, WooCommerce emails, lead generation, newsletter, email 
 Requires at least: 3.9
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 5.9.38
+Stable tag: 5.9.39
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -364,13 +364,18 @@ You can customize form and email styling using the built-in style editor, or add
 
 == Upgrade Notice ==
 
-= 5.9.38 =
+= 5.9.39 =
 
-* Improvement: Optimized Reports page analytics queries for better performance
-* Fix: Fixed subscription form widget compatibility with "Page Builder by SiteOrigin"
-* Fix: Resolved an issue where editing a form created a new form
+* Improvement: Show subscriber IP addresses when Track IP Address setting is enabled [MAX]
+* Fix: Fixed an issue where <title> tag was missing when viewing archived campaign [MAX]
 
 == Changelog ==
+
+**5.9.39 (14.10.2026)**
+
+* Improvement: Show subscriber IP addresses when Track IP Address setting is enabled [MAX]
+* Improvement: Added pause/resume controls for campaigns on the Reports page
+* Fix: Fixed an issue where <title> tag was missing when viewing archived campaign [MAX]
 
 **5.9.38 (01.10.2026)**
 

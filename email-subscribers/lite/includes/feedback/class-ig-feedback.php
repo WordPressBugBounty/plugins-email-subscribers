@@ -109,6 +109,10 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 
 			add_action( 'wp_ajax_' . $this->ajax_action, array( $this, 'submit_feedback' ) );
 
+			// Contact Us enhanced flow — system info fetch and multipart submission.
+			add_action( 'wp_ajax_' . $this->plugin_abbr . '_get_contact_system_info', array( $this, 'handle_contact_system_info_ajax' ) );
+			add_action( 'wp_ajax_' . $this->plugin_abbr . '_contact_us_submit', array( $this, 'handle_contact_us_feedback' ) );
+
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_styles' ) );
 			add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_scripts' ) );
 
@@ -392,6 +396,16 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 	
 				wp_register_style( "ig-feedback_{$this->version}", plugin_dir_url( __FILE__ ) . 'assets/css/feedback.min.css', array(), $this->version );
 				wp_enqueue_style( "ig-feedback_{$this->version}" );
+
+				// Contact Us enhanced modal styles — registered separately so they only add
+				// to the existing Swal CSS, never replacing it.
+				wp_register_style(
+					"ig-feedback-contact-us_{$this->version}",
+					plugin_dir_url( __FILE__ ) . 'assets/css/contact-us-modal.css',
+					array( "sweetalert_{$this->version}" ),
+					$this->version
+				);
+				wp_enqueue_style( "ig-feedback-contact-us_{$this->version}" );
 			}
 		}
 
@@ -637,44 +651,25 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 
 			$params = $this->prepare_widget_params( $params );
 
-			ob_start();
-
-			?>
-
-			<div class="ig-general-feedback" id="ig-general-feedback-<?php echo esc_attr( $this->plugin ); ?>">
-				<form class="ig-general-feedback" id="ig-general-feedback">
-					<p class="ig-feedback-data-name">
-						<label class="ig-label">Name</label><br/>
-						<input type="text" name="feedback_data[name]" id="ig-feedback-data-name" value="<?php echo esc_attr( $params['name'] ); ?>"/>
-					</p>
-					<p class="ig-feedback-data-email">
-						<label class="ig-label"">Email</label><br/>
-						<input type="email" name="feedback_data[email]" id="ig-feedback-data-email" value="<?php echo esc_attr( $params['email'] ); ?>"/>
-					</p>
-					<p class="ig-feedback-data-message">
-						<label class="ig-label"">Feedback</label><br/>
-						<textarea name="feedback_data[details]" id="ig-feedback-data-message"></textarea>
-					</p>
-					<?php if ( isset( $params['consent'] ) && true === $params['consent'] ) { ?>
-						<p>
-							<input type="checkbox" name="feedback_data[collect_system_info]" checked="checked" id="ig-feedback-data-consent"/><?php echo esc_html( $params['consent_text'] ); ?>
-						</p>
-					<?php } ?>
-				</form>
-			</div>
-
-			<?php
-
-			$html = str_replace( array( "\r", "\n" ), '', trim( ob_get_clean() ) );
-
-			$params['html'] = $html;
-
-			$title = $params['title'];
-			$slug  = sanitize_title( $title );
-			$event = $this->event_prefix . $params['event'];
-			$html  = ! empty( $params['html'] ) ? $params['html'] : '';
-
+			$title               = $params['title'];
+			$slug                = sanitize_title( $title );
+			$event               = $this->event_prefix . $params['event'];
 			$escape_allowed_tags = $this->get_escape_allowed_tags();
+
+			// Logged-in WordPress user info for Contact Us form autofill
+			$current_user = wp_get_current_user();
+			$cu_name      = '';
+			$cu_email     = '';
+			if ( $current_user instanceof WP_User && $current_user->exists() ) {
+				$cu_name = trim( (string) $current_user->display_name );
+				if ( empty( $cu_name ) ) {
+					$cu_name = trim( (string) $current_user->first_name . ' ' . (string) $current_user->last_name );
+				}
+				if ( empty( $cu_name ) ) {
+					$cu_name = trim( (string) $current_user->user_login );
+				}
+				$cu_email = trim( (string) $current_user->user_email );
+			}
 
 			ob_start();
 			?>
@@ -682,6 +677,8 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 			<script type="text/javascript">
 
 				jQuery(document).ready(function ($) {
+
+					// ---- Original send/validate helpers (Feedback tab, unchanged) ----
 
 					function doSend(details, meta, system_info) {
 
@@ -724,82 +721,238 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 
 					$('#wpwrap').append('<div class="ig-es-feedback-button ' + feedbackButtonClass + '">Feedback</div>');
 
+					// ---- Contact Us configuration (resolved at PHP render time) ----
+
+					var igCuConfig = {
+						nonce:         '<?php echo esc_js( wp_create_nonce( $this->plugin_abbr . '-admin-ajax-nonce' ) ); ?>',
+						ajaxAction:    '<?php echo esc_js( $this->plugin_abbr ); ?>_contact_us_submit',
+						sysInfoAction: '<?php echo esc_js( $this->plugin_abbr ); ?>_get_contact_system_info',
+						event:         '<?php echo esc_js( $event ); ?>',
+						slug:          '<?php echo esc_js( $slug ); ?>',
+						feedbackTitle: '<?php echo esc_js( $title ); ?>',
+						pluginName:    '<?php echo esc_js( $this->plugin ); ?>',
+						pluginAbbr:    '<?php echo esc_js( $this->plugin_abbr ); ?>',
+						isDevMode:     '<?php echo esc_js( $this->is_dev_mode ); ?>',
+						setTransient:  '<?php echo esc_js( $params['set_transient'] ); ?>'
+					};
+
+					// ---- Click handler — branches on data-entry="contact-us" ----
+
 					$('.' + feedbackButtonClass).on('click', function () {
-						Swal.mixin({
-							footer: '<?php echo wp_kses_post( $this->footer ); ?>',
-							position: '<?php echo esc_js( $params['position'] ); ?>',
-							width: <?php echo esc_js( $params['width'] ); ?>,
-							animation: false,
-							focusConfirm: false,
-							allowEscapeKey: true,
-							showCloseButton: '<?php echo esc_js( $params['showCloseButton'] ); ?>',
-							allowOutsideClick: '<?php echo esc_js( $params['allowOutsideClick'] ); ?>',
+						var $btn = $(this);
+						var isContactUs = $btn.data('entry') === 'contact-us';
+						var preselectedPlugin = ''; // not used in single-step mode
+
+						if (isContactUs) {
+							igShowContactUs();
+							return;
+						}
+
+						// ---- Feedback tab — redesigned with ig-cu-popup CSS (same as Contact Us modal) ----
+
+						var fbFormHtml =
+							'<p class="ig-cu-modal-title">Feedback</p>'
+							+ '<div class="ig-cu-form-body">'
+							+ '<div class="ig-cu-row">'
+							+   '<div class="ig-cu-field">'
+							+     '<label class="ig-cu-label" for="ig-feedback-data-name">Name</label>'
+							+     '<input type="text" id="ig-feedback-data-name" class="ig-cu-input" placeholder="Your name" value="<?php echo esc_js( $params['name'] ); ?>">'
+							+   '</div>'
+							+   '<div class="ig-cu-field">'
+							+     '<label class="ig-cu-label" for="ig-feedback-data-email">Email</label>'
+							+     '<input type="email" id="ig-feedback-data-email" class="ig-cu-input" placeholder="you@example.com" value="<?php echo esc_js( $params['email'] ); ?>">'
+							+   '</div>'
+							+ '</div>'
+							+ '<div class="ig-cu-field">'
+							+   '<label class="ig-cu-label" for="ig-feedback-data-message">Message <span class="ig-cu-req" aria-hidden="true">*</span></label>'
+							+   '<textarea id="ig-feedback-data-message" class="ig-cu-textarea" placeholder="Tell us what you think..."></textarea>'
+							+ '</div>'
+							+ '</div>';
+
+						Swal.fire({
+							customClass:         { popup: 'ig-cu-popup' },
+							html:                fbFormHtml,
+							confirmButtonText:   '<?php echo esc_js( wp_strip_all_tags( $params['confirmButtonText'] ) ); ?>',
+							showCancelButton:    false,
+							allowOutsideClick:   false,
+							allowEscapeKey:      true,
+							showCloseButton:     true,
 							showLoaderOnConfirm: true,
-							confirmButtonText: '<?php echo wp_kses_post( $params['confirmButtonText'] ); ?>',
-							backdrop: '<?php echo (int) $params['backdrop']; ?>'
-						}).queue([
-							{
-								title: '<p class="ig-feedback-title"><?php echo esc_js( $params['title'] ); ?></p>',
-								html: '<?php echo wp_kses( $html, $escape_allowed_tags ); ?>',
-								customClass: {
-									popup: 'animated fadeInUpBig'
-								},
-								onOpen: () => {
+							footer:              '<?php echo wp_kses_post( $this->footer ); ?>',
+							position:            '<?php echo esc_js( $params['position'] ); ?>',
+							width:               <?php echo esc_js( $params['width'] ); ?>,
+							animation:           false,
+							focusConfirm:        false,
 
-
-								},
-								preConfirm: () => {
-									var $overlay = $('#ig-general-feedback-<?php echo esc_js( $this->plugin ); ?>');
-									var $form = $overlay.find('form');
-
-									var email = $form.find('#ig-feedback-data-email').val();
-									var name = $form.find('#ig-feedback-data-name').val();
-									var message = $form.find('#ig-feedback-data-message').val();
-									var consent = $form.find('#ig-feedback-data-consent').attr('checked');
-
-									if (email !== '' && !validateEmail(email)) {
-										Swal.showValidationMessage('Please enter valid email');
-										return;
-									}
-
-									if (message === '') {
-										Swal.showValidationMessage('Please enter your message');
-										return;
-									}
-
-									var system_info = true;
-									if (consent === 'checked') {
-										system_info = true;
-									}
-
-									var meta = {
-										name: name,
-										email: email
-									};
-
-									return doSend(message, meta, system_info);
-								}
+							onOpen: function () {
+								// Bind close button (same safety-net as Contact Us modal)
+								$(document).off('click.igfbclose')
+									.on('click.igfbclose', '.ig-cu-popup .swal2-close', function (e) {
+										e.stopPropagation();
+										Swal.close();
+									});
+								// Reset validation message on input
+								$(document).off('.igfb2')
+									.on('input.igfb2', '#ig-feedback-data-message, #ig-feedback-data-email', function () {
+										Swal.resetValidationMessage();
+									});
 							},
 
-						]).then(response => {
+							preConfirm: function () {
+								var email   = $('#ig-feedback-data-email').val();
+								var name    = $('#ig-feedback-data-name').val();
+								var message = $('#ig-feedback-data-message').val();
 
+								if (email !== '' && !validateEmail(email)) {
+									Swal.showValidationMessage('Please enter a valid email address.');
+									return false;
+								}
+
+								if (message === '') {
+									Swal.showValidationMessage('Please enter your message.');
+									return false;
+								}
+
+								var meta = { name: name, email: email };
+								return doSend(message, meta, false);
+							}
+						}).then(function (response) {
 							if (response.hasOwnProperty('value')) {
-
 								Swal.fire({
-									type: 'success',
-									width: <?php echo esc_js( $params['width'] ); ?>,
-									title: '<?php echo esc_attr__( 'Thank You!', $this->plugin ); ?>',
+									type:              'success',
+									customClass:       { popup: 'ig-cu-popup' },
+									width:              <?php echo esc_js( $params['width'] ); ?>,
+									title:             '<?php echo esc_attr__( 'Thank You!', $this->plugin ); ?>',
 									showConfirmButton: false,
-									position: '<?php echo esc_js( $params['position'] ); ?>',
-									timer: 1500,
-									animation: false
+									position:          '<?php echo esc_js( $params['position'] ); ?>',
+									timer:             1500,
+									animation:         false
 								});
-
 							}
 						});
 
-
 					});
+
+					// ================================================================
+					// Contact Us — Step 1: plugin dropdown + subject
+					// ================================================================
+
+
+					// ================================================================
+					// Contact Us — single-step form
+					// ================================================================
+
+					function igShowContactUs() {
+
+						var formHtml =
+							'<p class="ig-cu-modal-title">Contact Us</p>'
+							+ '<div class="ig-cu-form-body">'
+							+ '<div class="ig-cu-row">'
+							+   '<div class="ig-cu-field">'
+							+     '<label class="ig-cu-label" for="ig-feedback-data-name">Name</label>'
+							+     '<input type="text" id="ig-feedback-data-name" class="ig-cu-input" placeholder="Your name" value="<?php echo esc_attr( $cu_name ); ?>">'
+							+   '</div>'
+							+   '<div class="ig-cu-field">'
+							+     '<label class="ig-cu-label" for="ig-feedback-data-email">Email</label>'
+							+     '<input type="email" id="ig-feedback-data-email" class="ig-cu-input" placeholder="you@example.com" value="<?php echo esc_attr( $cu_email ); ?>">'
+							+   '</div>'
+							+ '</div>'
+							+ '<div class="ig-cu-field">'
+							+   '<label class="ig-cu-label" for="ig-feedback-data-message">Message <span class="ig-cu-req" aria-hidden="true">*</span></label>'
+							+   '<textarea id="ig-feedback-data-message" class="ig-cu-textarea" placeholder="Describe your question or issue"></textarea>'
+							+   '<a href="https://www.icegram.com/docs/express/" target="_blank" rel="noopener" class="ig-cu-docs-link"><span class="dashicons dashicons-book" aria-hidden="true"></span> Documentation</a>'
+							+ '</div>'
+							+ '<div class="ig-cu-opt-row">'
+							+   '<input type="checkbox" id="ig-cu-include-sysinfo" checked>'
+							+   '<label for="ig-cu-include-sysinfo">Include system info \u2014 helps us diagnose your issue faster</label>'
+							+ '</div>'
+							+ '</div>';
+
+						Swal.fire({
+							customClass:         { popup: 'ig-cu-popup' },
+							html:                formHtml,
+							confirmButtonText:   '<?php echo esc_js( wp_strip_all_tags( $params['confirmButtonText'] ) ); ?>',
+							showCancelButton:    false,
+							allowOutsideClick:   false,
+							allowEscapeKey:      true,
+							showCloseButton:     true,
+							showLoaderOnConfirm: true,
+							focusConfirm:        false,
+							width:               <?php echo esc_js( $params['width'] ); ?>,
+							footer:              '<?php echo wp_kses_post( $this->footer ); ?>',
+							animation:           false,
+
+							onOpen: function () {
+								// Close button safety net
+								$(document).off('click.igcuclose')
+									.on('click.igcuclose', '.ig-cu-popup .swal2-close', function (e) {
+										e.stopPropagation();
+										Swal.close();
+									});
+
+								// Reset validation message when message/email changes
+								$(document).off('.igcu2')
+									.on('input.igcu2', '#ig-feedback-data-message, #ig-feedback-data-email', function () {
+										Swal.resetValidationMessage();
+									});
+							},
+
+							onClose: function () {
+								$(document).off('.igcu2 .igcuclose');
+							},
+
+							preConfirm: function () {
+								var email   = (document.getElementById('ig-feedback-data-email').value  || '').trim();
+								var name    = (document.getElementById('ig-feedback-data-name').value   || '').trim();
+								var message = (document.getElementById('ig-feedback-data-message').value || '').trim();
+								var inclEl  = document.getElementById('ig-cu-include-sysinfo');
+								var inclSys = (inclEl && inclEl.checked) ? '1' : '0';
+
+								if (email && !validateEmail(email)) {
+									Swal.showValidationMessage('Please enter a valid email address.');
+									return false;
+								}
+								if (!message) {
+									Swal.showValidationMessage('Please enter your message.');
+									return false;
+								}
+
+								var fd = new FormData();
+								fd.append('action',              igCuConfig.ajaxAction);
+								fd.append('security',            igCuConfig.nonce);
+								fd.append('event',               igCuConfig.event);
+								fd.append('contact_plugin',      'email-subscribers');
+								fd.append('contact_subject',     igCuConfig.feedbackTitle || 'Contact Us');
+								fd.append('include_system_info', inclSys);
+								fd.append('feedback[type]',      'feedback');
+								fd.append('feedback[slug]',      igCuConfig.slug);
+								fd.append('feedback[title]',     igCuConfig.feedbackTitle);
+								fd.append('feedback[details]',   message);
+								fd.append('misc[plugin]',        igCuConfig.pluginName);
+								fd.append('misc[plugin_abbr]',   igCuConfig.pluginAbbr);
+								fd.append('misc[is_dev_mode]',   igCuConfig.isDevMode);
+								fd.append('misc[set_transient]', igCuConfig.setTransient);
+								fd.append('misc[meta_info][name]',  name);
+								fd.append('misc[meta_info][email]', email);
+
+								return jQuery.ajax({ url: ajaxurl, method: 'POST', data: fd, processData: false, contentType: false });
+							}
+
+						}).then(function (result) {
+							if (result && result.value) {
+								Swal.fire({
+									type:              'success',
+									customClass:       { popup: 'ig-cu-popup' },
+									title:             '<?php echo esc_attr__( 'Thank You!', $this->plugin ); ?>',
+									text:              'We\u2019ll get back to you as soon as possible.',
+									showConfirmButton: false,
+									timer:             2000,
+									animation:         false
+								});
+							}
+						});
+					}
+
 				});
 
 			</script>
@@ -1494,9 +1647,13 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 					if (cfg.sub_options && cfg.sub_options.length) {
 						html += '<ul class="ig-deactivation-sub-options">';
 						$.each(cfg.sub_options, function(i, opt){
-							html += '<li class="ig-deactivation-sub-option"><input type="radio" name="ig_deactivation_sub" value="' + opt + '" id="ig-deactivation-sub-' + i + '"><label for="ig-deactivation-sub-' + i + '">' + opt + '</label></li>';
+							var optLabel = (typeof opt === 'object' && opt !== null) ? opt.label : opt;
+							var optValue = (typeof opt === 'object' && opt !== null) ? (opt.value || opt.label) : opt;
+							var safeVal  = optValue ? String(optValue).replace(/"/g, '&quot;') : '';
+							html += '<li class="ig-deactivation-sub-option" data-value="' + safeVal + '"><input type="radio" name="ig_deactivation_sub" value="' + safeVal + '" id="ig-deactivation-sub-' + i + '"><label for="ig-deactivation-sub-' + i + '">' + optLabel + '</label></li>';
 						});
 						html += '</ul>';
+						html += '<div class="ig-deactivation-sub-option-notice-container" id="ig-deactivation-sub-option-notice-' + pluginSlug + '" style="display:none;"></div>';
 					}
 					if (cfg.has_textarea) {
 						html += '<textarea class="ig-deactivation-textarea" placeholder="' + (cfg.textarea_placeholder || '') + '"></textarea>';
@@ -1506,9 +1663,41 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 					}
 					$s2Content.html(html);
 
+					function updateSubOptionNotice(selectedVal) {
+						var matchingNotice = '';
+						if (cfg.sub_options && cfg.sub_options.length) {
+							$.each(cfg.sub_options, function(i, opt){
+								if (typeof opt === 'object' && opt !== null) {
+									var optVal = opt.value || opt.label;
+									if (optVal === selectedVal && opt.notice) {
+										matchingNotice = opt.notice;
+									}
+								}
+							});
+						}
+						var $noticeContainer = $s2Content.find('.ig-deactivation-sub-option-notice-container');
+						if (matchingNotice) {
+							$noticeContainer.html(matchingNotice).show();
+						} else {
+							$noticeContainer.empty().hide();
+						}
+					}
+
 					// Sub-option click handler
 					$s2Content.find('.ig-deactivation-sub-option').on('click', function(){
-						$(this).find('input[type=radio]').prop('checked', true);
+						var $row = $(this);
+						$row.find('input[type=radio]').prop('checked', true);
+						$s2Content.find('.ig-deactivation-sub-option').removeClass('selected');
+						$row.addClass('selected');
+						updateSubOptionNotice($row.find('input[type=radio]').val());
+					});
+
+					$s2Content.find('input[name="ig_deactivation_sub"]').on('change', function(){
+						var $radio = $(this);
+						var $row = $radio.closest('.ig-deactivation-sub-option');
+						$s2Content.find('.ig-deactivation-sub-option').removeClass('selected');
+						$row.addClass('selected');
+						updateSubOptionNotice($radio.val());
 					});
 
 					// Build footer buttons
@@ -1596,6 +1785,8 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 						$modal.removeClass('is-open');
 					}
 				});
+
+
 			});
 			</script>
 			<?php
@@ -1677,7 +1868,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 					margin-bottom: 6px; cursor: pointer; font-size: 13px; color: #1d2327;
 					transition: border-color .15s, background .15s;
 				}
-				.ig-deactivation-sub-option:hover { border-color: #2271b1; background: #f0f6fc; }
+				.ig-deactivation-sub-option:hover, .ig-deactivation-sub-option.selected { border-color: #2271b1; background: #f0f6fc; }
 				.ig-deactivation-sub-option input[type=radio] { accent-color: #2271b1; flex-shrink: 0; }
 				.ig-deactivation-textarea {
 					width: 100%; min-height: 72px; resize: vertical;
@@ -1691,6 +1882,7 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 					padding: 12px 16px; font-size: 14px; color: #1d2327;
 					margin-bottom: 20px; border-radius: 4px; line-height: 1.5;
 				}
+
 				.ig-deactivation-s2-footer {
 					display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
 					padding-top: 16px; border-top: 1px solid #eee; margin-top: 4px;
@@ -2000,6 +2192,136 @@ if ( ! class_exists( 'IG_Feedback_V_1_2_13' ) ) {
 			}
 
 			return $email;
+		}
+
+		/**
+		 * AJAX handler — returns system info block for the Contact Us modal.
+		 * Verifies the same nonce used by all feedback AJAX calls.
+		 *
+		 * @since 1.2.14
+		 */
+		public function handle_contact_system_info_ajax() {
+
+			check_ajax_referer( $this->plugin_abbr . '-admin-ajax-nonce', 'security' );
+
+			if ( ! current_user_can( 'manage_options' ) ) {
+				wp_send_json_error( array( 'message' => 'Insufficient permissions.' ) );
+				return;
+			}
+
+			wp_send_json_success( $this->get_system_info_for_feedback() );
+		}
+
+		/**
+		 * Build a read-only system-info array for the Contact Us modal.
+		 * Excludes secrets (API keys, passwords, full email lists).
+		 *
+		 * @since 1.2.14
+		 * @return array
+		 */
+		public function get_system_info_for_feedback() {
+			return apply_filters( $this->plugin_abbr . '_contact_us_system_info', array() );
+		}
+
+		/**
+		 * AJAX handler for the enhanced Contact Us form submission.
+		 *
+		 * Validates plugin slug (allowlist) and subject.
+		 * Assembles $data with contact_plugin, contact_subject, and contact_system_info,
+		 * then calls wp_remote_post to the same API endpoint as submit_feedback() —
+		 * without modifying submit_feedback() itself.
+		 *
+		 * @since 1.2.14
+		 */
+		public function handle_contact_us_feedback() {
+
+			check_ajax_referer( $this->plugin_abbr . '-admin-ajax-nonce', 'security' );
+
+			if ( ! current_user_can( 'manage_options' ) ) {
+				wp_send_json_error( array( 'message' => 'Insufficient permissions.' ) );
+				return;
+			}
+
+			/* ---- Plugin slug: allowlist ---- */
+			$allowed_plugins = array(
+				'email-subscribers',
+				'icegram',
+				'icegram-mailer',
+				'icegram-rainmaker',
+				'icegram-cookie-manager',
+			);
+
+			$raw_plugin  = isset( $_POST['contact_plugin'] ) ? sanitize_key( wp_unslash( $_POST['contact_plugin'] ) ) : '';
+			$plugin_slug = in_array( $raw_plugin, $allowed_plugins, true ) ? $raw_plugin : 'email-subscribers';
+
+			/* ---- Subject ---- */
+			$subject = isset( $_POST['contact_subject'] ) ? sanitize_text_field( wp_unslash( $_POST['contact_subject'] ) ) : '';
+			if ( empty( $subject ) && ! empty( $_POST['feedback']['title'] ) ) {
+				$subject = sanitize_text_field( wp_unslash( $_POST['feedback']['title'] ) );
+			}
+			if ( empty( $subject ) ) {
+				$subject = 'Contact Us';
+			}
+			$subject = mb_substr( $subject, 0, 100 );
+
+			/* ---- Misc / meta — mirrors submit_feedback() ---- */
+			$plugin        = ! empty( $_POST['misc']['plugin'] )      ? sanitize_text_field( wp_unslash( $_POST['misc']['plugin'] ) )      : $this->plugin;
+			$plugin_abbr   = ! empty( $_POST['misc']['plugin_abbr'] ) ? sanitize_text_field( wp_unslash( $_POST['misc']['plugin_abbr'] ) ) : $this->plugin_abbr;
+			$is_dev_mode   = ! empty( $_POST['misc']['is_dev_mode'] );
+			$set_transient = ! empty( $_POST['misc']['set_transient'] );
+			$meta_info_raw = ! empty( $_POST['misc']['meta_info'] ) && is_array( $_POST['misc']['meta_info'] )
+							? $_POST['misc']['meta_info'] : array();
+
+			$default_meta = array(
+				'plugin'      => sanitize_key( $plugin ),
+				'locale'      => get_locale(),
+				'wp_version'  => get_bloginfo( 'version' ),
+				'php_version' => PHP_VERSION,
+			);
+
+			$meta_info       = wp_parse_args( array_map( 'sanitize_text_field', wp_unslash( $meta_info_raw ) ), $default_meta );
+			$include_sysinfo = isset( $_POST['include_system_info'] ) && '1' === $_POST['include_system_info'];
+
+			$additional_info = apply_filters( $plugin_abbr . '_additional_feedback_meta_info', array(), $include_sysinfo );
+			if ( is_array( $additional_info ) && count( $additional_info ) > 0 ) {
+				$meta_info = array_merge( $meta_info, $additional_info );
+			}
+
+			/* ---- Assemble $data (extends the existing pattern from submit_feedback) ---- */
+			$event    = ! empty( $_POST['event'] ) ? sanitize_text_field( wp_unslash( $_POST['event'] ) ) : $this->event_prefix . 'feedback';
+			$feedback = ! empty( $_POST['feedback'] ) && is_array( $_POST['feedback'] )
+						? array_map( 'sanitize_text_field', wp_unslash( (array) $_POST['feedback'] ) )
+						: array();
+
+			$data = array(
+				'action'              => $this->ajax_action,
+				'event'               => $event,
+				'feedback'            => $feedback,
+				'site'                => esc_url( home_url() ),
+				'meta'                => $meta_info,
+				'contact_plugin'      => $plugin_slug,
+				'contact_subject'     => $subject,
+				'contact_system_info' => $include_sysinfo ? $this->get_system_info_for_feedback() : array(),
+			);
+
+			$args = array(
+				'timeout'   => 15,
+				'sslverify' => false,
+				'body'      => $data,
+				'blocking'  => false,
+			);
+
+			$this->set_feedback_data( $plugin_abbr, $event, $data['feedback'] );
+
+			if ( $set_transient ) {
+				$this->set_event_transient( $event );
+			}
+
+			wp_remote_post( $this->get_api_url( $is_dev_mode ), $args );
+
+			do_action( $this->plugin_abbr . '_contact_us_feedback_submitted', $data );
+
+			wp_send_json_success( array( 'status' => 'success' ) );
 		}
 
 		/**

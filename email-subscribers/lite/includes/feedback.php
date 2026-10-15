@@ -43,6 +43,47 @@ if ( ! function_exists( 'ig_es_get_additional_info' ) ) {
 add_filter( 'ig_es_additional_feedback_meta_info', 'ig_es_get_additional_info', 10, 2 );
 
 /**
+ * Supply Icegram Express-specific system info for the Contact Us modal.
+ * Hooked to '{plugin_abbr}_contact_us_system_info' so the common library stays plugin-agnostic.
+ *
+ * @param  array $info Base array (empty from the library).
+ * @return array
+ */
+if ( ! function_exists( 'ig_es_get_contact_us_system_info' ) ) {
+
+	function ig_es_get_contact_us_system_info( $info ) {
+
+		global $wpdb;
+
+		$theme           = wp_get_theme();
+		$mailer_settings = get_option( 'ig_es_mailer_settings', array() );
+		$active_mailer   = ! empty( $mailer_settings['mailer'] ) ? sanitize_key( $mailer_settings['mailer'] ) : 'unknown';
+
+		$cron_last_hit_data = get_option( 'ig_es_cron_last_hit', array() );
+		$cron_last_hit_ts   = ! empty( $cron_last_hit_data['timestamp'] ) ? (int) $cron_last_hit_data['timestamp'] : 0;
+		$cron_last_hit      = $cron_last_hit_ts > 0 ? wp_date( 'Y-m-d H:i:s', $cron_last_hit_ts ) : 'Never';
+
+		$es_disable_wp_cron = ( 'yes' === get_option( 'ig_es_disable_wp_cron', 'no' ) ) ? 'Yes' : 'No';
+
+		return array_merge( $info, array(
+			'es_version'         => defined( 'ES_PLUGIN_VERSION' ) ? sanitize_text_field( ES_PLUGIN_VERSION ) : 'n/a',
+			'wp_version'         => sanitize_text_field( get_bloginfo( 'version' ) ),
+			'php_version'        => sanitize_text_field( PHP_VERSION ),
+			'db_version'         => sanitize_text_field( $wpdb->db_version() ),
+			'memory_limit'       => sanitize_text_field( ini_get( 'memory_limit' ) ),
+			'multisite'          => is_multisite() ? 'Yes' : 'No',
+			'disable_wp_cron'    => ( defined( 'DISABLE_WP_CRON' ) && DISABLE_WP_CRON ) ? 'Yes' : 'No',
+			'active_theme'       => sanitize_text_field( $theme->get( 'Name' ) ),
+			'active_mailer'      => $active_mailer,
+			'es_disable_wp_cron' => $es_disable_wp_cron,
+			'cron_last_hit'      => $cron_last_hit,
+		) );
+	}
+}
+
+add_filter( 'ig_es_contact_us_system_info', 'ig_es_get_contact_us_system_info', 10, 1 );
+
+/**
  * Render general feedback on click of "Feedback" button from ES sidebar
  */
 function ig_es_render_general_feedback_widget() {
@@ -742,6 +783,336 @@ function ig_es_get_user_deactivation_achievement_message() {
 }
 
 /**
+ * Returns the Icegram Mailer promotion notice HTML shown on deactivation follow-up.
+ *
+ * @param string $context The reason context: 'not_sending', 'going_to_spam', or 'service_setup'.
+ *
+ * @return string HTML content.
+ */
+function ig_es_get_mailer_promote_card_html( $context = 'not_sending' ) {
+
+	global $ig_es_tracker;
+	$plugin_file = 'icegram-mailer/icegram-mailer.php';
+
+	if ( ! function_exists( 'is_plugin_active' ) ) {
+		require_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+
+	// Do not show the mailer promotion card if Icegram Mailer is already active.
+	if ( is_plugin_active( $plugin_file ) || ( isset( $ig_es_tracker ) && $ig_es_tracker::is_plugin_activated( $plugin_file ) ) ) {
+		return '';
+	}
+
+	$badge_text = __( 'RECOMMENDED SOLUTION', 'email-subscribers' );
+
+	if ( 'going_to_spam' === $context ) {
+		$title    = __( 'Want to improve email deliverability?', 'email-subscribers' );
+		$subtitle = __( 'Send your emails through a dedicated sending service with Icegram Mailer.', 'email-subscribers' );
+		$features = array(
+			__( 'Authenticated email sending', 'email-subscribers' ),
+			__( 'Separate from your website’s hosting mail server', 'email-subscribers' ),
+			__( 'Easy setup with no SMTP credentials', 'email-subscribers' ),
+		);
+		$btn_text = __( 'Try Icegram Mailer — Free to start', 'email-subscribers' );
+	} elseif ( 'service_setup' === $context ) {
+		$title    = __( 'Email setup shouldn’t be this hard', 'email-subscribers' );
+		$subtitle = __( 'Skip complex SMTP setup and send emails from Icegram Express with Icegram Mailer.', 'email-subscribers' );
+		$features = array(
+			__( 'No SMTP host, port or password to configure', 'email-subscribers' ),
+			__( 'Set up directly from your WordPress dashboard', 'email-subscribers' ),
+			__( 'Reliable email sending without server limitations', 'email-subscribers' ),
+		);
+		$btn_text = __( 'Set up Icegram Mailer — Free to start', 'email-subscribers' );
+	} else {
+		$title    = __( 'Having trouble sending your emails?', 'email-subscribers' );
+		$subtitle = __( 'Use Icegram Mailer to send your Express campaigns reliably.', 'email-subscribers' );
+		$features = array(
+			__( 'Reliable and consistent email sending', 'email-subscribers' ),
+			__( 'No SMTP credentials to configure', 'email-subscribers' ),
+			__( 'Easy setup with just a few clicks', 'email-subscribers' ),
+		);
+		$btn_text = __( 'Try Icegram Mailer — Free to start', 'email-subscribers' );
+	}
+
+	$install_nonce = wp_create_nonce( 'ig_es_install_mailer_nonce' );
+	$link_text     = __( 'See how it works &rarr;', 'email-subscribers' );
+	$link_url      = 'https://www.icegram.com/mailer/?utm_source=in-app&utm_medium=deactivation&utm_campaign=ig-es';
+
+	// Inline SVG for the green checkmark
+	$check_icon = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>';
+
+	$html  = '<div class="ig-mailer-promote-card">';
+	$html .= '<div class="ig-mailer-promote-badge">' . esc_html( $badge_text ) . '</div>';
+	$html .= '<h4 class="ig-mailer-promote-title">' . esc_html( $title ) . '</h4>';
+	$html .= '<p class="ig-mailer-promote-desc">' . esc_html( $subtitle ) . '</p>';
+
+	$html .= '<ul class="ig-mailer-promote-features">';
+	foreach ( $features as $feature ) {
+		$html .= '<li class="ig-mailer-promote-feature-item">';
+		$html .= '<span class="ig-mailer-promote-feature-icon">' . $check_icon . '</span>';
+		$html .= '<span class="ig-mailer-promote-feature-text">' . esc_html( $feature ) . '</span>';
+		$html .= '</li>';
+	}
+	$html .= '</ul>';
+
+	$html .= '<div class="ig-mailer-promote-actions">';
+		$html .= '<button type="button" class="ig-mailer-promote-btn ig-mailer-install-btn" data-nonce="' . esc_attr( $install_nonce ) . '"><span class="ig-mailer-btn-text">' . esc_html( $btn_text ) . '</span><span class="ig-mailer-spinner" style="display:none;"></span></button>';
+	$html .= '<a href="' . esc_url( $link_url ) . '" target="_blank" class="ig-mailer-promote-link">' . wp_kses_post( $link_text ) . '</a>';
+	$html .= '</div>';
+
+	$html .= '</div>';
+
+	return $html;
+}
+
+/**
+ * AJAX handler to install and activate Icegram Mailer directly from the deactivation survey.
+ */
+function ig_es_ajax_install_activate_mailer() {
+	check_ajax_referer( 'ig_es_install_mailer_nonce', 'security' );
+
+	if ( ! current_user_can( 'install_plugins' ) || ! current_user_can( 'activate_plugins' ) ) {
+		wp_send_json_error( array( 'message' => __( 'You do not have permission to install plugins.', 'email-subscribers' ) ) );
+	}
+
+	global $ig_es_tracker;
+	$plugin_file = 'icegram-mailer/icegram-mailer.php';
+
+	if ( ! function_exists( 'is_plugin_active' ) ) {
+		include_once ABSPATH . 'wp-admin/includes/plugin.php';
+	}
+
+	// 1. Install if not installed
+	if ( ! $ig_es_tracker::is_plugin_installed( $plugin_file ) ) {
+		$install_result = ES_Common::install_plugin( 'icegram-mailer' );
+		if ( is_wp_error( $install_result ) ) {
+			wp_send_json_error( array( 'message' => $install_result->get_error_message() ) );
+		} elseif ( ! $install_result ) {
+			wp_send_json_error( array( 'message' => __( 'Failed to install Icegram Mailer. Please try again.', 'email-subscribers' ) ) );
+		}
+	}
+
+	// 2. Activate if not activated
+	if ( ! $ig_es_tracker::is_plugin_activated( $plugin_file ) && ! is_plugin_active( $plugin_file ) ) {
+		$activate_result = activate_plugin( $plugin_file );
+		if ( is_wp_error( $activate_result ) ) {
+			wp_send_json_error( array( 'message' => $activate_result->get_error_message() ) );
+		}
+	}
+
+	$redirect_url = admin_url( 'admin.php?page=icegram_mailer_dashboard' );
+
+	wp_send_json_success( array(
+		'message'      => __( 'Icegram Mailer has been installed and activated successfully! Redirecting...', 'email-subscribers' ),
+		'redirect_url' => $redirect_url,
+	) );
+}
+add_action( 'wp_ajax_ig_es_install_activate_mailer', 'ig_es_ajax_install_activate_mailer' );
+
+/**
+ * Output Icegram Mailer promote card CSS & JS on the plugins page.
+ *
+ * This renders the styles for the mailer promotion card shown inside the
+ * deactivation survey, as well as the click handler that installs and
+ * activates Icegram Mailer via AJAX.
+ *
+ * @since 5.8.x
+ */
+function ig_es_render_mailer_promote_assets() {
+
+	$screen = function_exists( 'get_current_screen' ) ? get_current_screen() : false;
+	if ( empty( $screen ) || ! in_array( $screen->id, array( 'plugins', 'plugins-network' ), true ) ) {
+		return;
+	}
+	?>
+	<style type="text/css">
+		.ig-mailer-promote-card {
+			background: #eff6ff;
+			border: 1px solid #bfdbfe;
+			border-radius: 10px;
+			padding: 18px 20px;
+			margin: 12px 0 16px;
+			box-sizing: border-box;
+		}
+		.ig-mailer-promote-badge {
+			display: inline-block;
+			background: #dbeafe;
+			color: #2271b1;
+			font-size: 10.5px;
+			font-weight: 700;
+			letter-spacing: .5px;
+			text-transform: uppercase;
+			padding: 3px 9px;
+			border-radius: 9999px;
+			margin-bottom: 8px;
+			line-height: 1.3;
+		}
+		.ig-mailer-promote-title {
+			font-size: 18px;
+			font-weight: 800;
+			color: #0f172a;
+			margin: 0 0 6px 0;
+			line-height: 1.3;
+		}
+		.ig-mailer-promote-desc {
+			font-size: 13.5px;
+			color: #475569;
+			margin: 0 0 12px 0;
+			line-height: 1.45;
+		}
+		.ig-mailer-promote-features {
+			list-style: none;
+			margin: 0 0 16px 0;
+			padding: 0;
+		}
+		.ig-mailer-promote-feature-item {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+			font-size: 13px;
+			color: #334155;
+			margin-bottom: 6px;
+			line-height: 1.4;
+		}
+		.ig-mailer-promote-feature-icon {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			flex-shrink: 0;
+			width: 16px;
+			height: 16px;
+		}
+		.ig-mailer-promote-actions {
+			display: flex;
+			align-items: center;
+			gap: 16px;
+			flex-wrap: wrap;
+		}
+		.ig-mailer-promote-btn {
+			background: #2271b1;
+			color: #ffffff !important;
+			padding: 9px 18px;
+			border-radius: 6px;
+			font-size: 13px;
+			font-weight: 600;
+			text-decoration: none;
+			display: inline-flex;
+			align-items: center;
+			gap: 8px;
+			border: none;
+			cursor: pointer;
+			font-family: inherit;
+			transition: background .15s ease, opacity .15s ease;
+		}
+		.ig-mailer-promote-btn:hover {
+			background: #135e96;
+			color: #ffffff !important;
+		}
+		.ig-mailer-promote-btn:disabled {
+			opacity: 0.85;
+			cursor: not-allowed;
+		}
+		.ig-mailer-promote-btn.is-success {
+			background: #16a34a !important;
+			color: #ffffff !important;
+		}
+		.ig-mailer-spinner {
+			display: inline-block;
+			width: 13px;
+			height: 13px;
+			border: 2px solid rgba(255,255,255,0.4);
+			border-radius: 50%;
+			border-top-color: #ffffff;
+			animation: ig-mailer-spin 0.6s linear infinite;
+			vertical-align: middle;
+			box-sizing: border-box;
+		}
+		@keyframes ig-mailer-spin {
+			to { transform: rotate(360deg); }
+		}
+		.ig-mailer-install-notice {
+			margin-top: 12px;
+			padding: 10px 14px;
+			border-radius: 6px;
+			font-size: 13px;
+			font-weight: 500;
+			line-height: 1.4;
+		}
+		.ig-mailer-install-success {
+			background: #dcfce7;
+			border: 1px solid #86efac;
+			color: #166534;
+		}
+		.ig-mailer-install-error {
+			background: #fee2e2;
+			border: 1px solid #fca5a5;
+			color: #991b1b;
+		}
+		.ig-mailer-promote-link {
+			color: #2271b1;
+			font-size: 13px;
+			font-weight: 500;
+			text-decoration: none;
+			display: inline-flex;
+			align-items: center;
+		}
+		.ig-mailer-promote-link:hover {
+			text-decoration: underline;
+			color: #135e96;
+		}
+	</style>
+
+	<script type="text/javascript">
+	jQuery(function($){
+		// Direct installation & activation of Icegram Mailer from deactivation survey
+		$(document).on('click', '.ig-mailer-install-btn', function(e){
+			e.preventDefault();
+			var $btn = $(this);
+			if ($btn.hasClass('is-installing') || $btn.hasClass('is-success')) {
+				return;
+			}
+			var origText = $btn.find('.ig-mailer-btn-text').text();
+			$btn.prop('disabled', true).addClass('is-installing');
+			$btn.find('.ig-mailer-btn-text').text('<?php echo esc_js( __( 'Installing & Activating...', 'email-subscribers' ) ); ?>');
+			$btn.find('.ig-mailer-spinner').show();
+			$btn.closest('.ig-mailer-promote-card').find('.ig-mailer-install-notice').remove();
+
+			$.post(ajaxurl, {
+				action: 'ig_es_install_activate_mailer',
+				security: $btn.data('nonce')
+			}).done(function(response){
+				if (response && response.success) {
+					$btn.removeClass('is-installing').addClass('is-success');
+					$btn.find('.ig-mailer-spinner').hide();
+					$btn.find('.ig-mailer-btn-text').html('&#10003; <?php echo esc_js( __( 'Installed &amp; Activated!', 'email-subscribers' ) ); ?>');
+					var msg = (response.data && response.data.message) ? response.data.message : '<?php echo esc_js( __( 'Icegram Mailer installed and activated successfully! Redirecting...', 'email-subscribers' ) ); ?>';
+					$btn.closest('.ig-mailer-promote-actions').after('<div class="ig-mailer-install-notice ig-mailer-install-success">' + msg + '</div>');
+					if (response.data && response.data.redirect_url) {
+						setTimeout(function(){
+							window.location.href = response.data.redirect_url;
+						}, 1500);
+					}
+				} else {
+					$btn.prop('disabled', false).removeClass('is-installing');
+					$btn.find('.ig-mailer-spinner').hide();
+					$btn.find('.ig-mailer-btn-text').text(origText);
+					var errMsg = (response && response.data && response.data.message) ? response.data.message : '<?php echo esc_js( __( 'Failed to install. Please try again.', 'email-subscribers' ) ); ?>';
+					$btn.closest('.ig-mailer-promote-actions').after('<div class="ig-mailer-install-notice ig-mailer-install-error">' + errMsg + '</div>');
+				}
+			}).fail(function(){
+				$btn.prop('disabled', false).removeClass('is-installing');
+				$btn.find('.ig-mailer-spinner').hide();
+				$btn.find('.ig-mailer-btn-text').text(origText);
+				$btn.closest('.ig-mailer-promote-actions').after('<div class="ig-mailer-install-notice ig-mailer-install-error"><?php echo esc_js( __( 'Installation request failed. Please try again.', 'email-subscribers' ) ); ?></div>');
+			});
+		});
+	});
+	</script>
+	<?php
+}
+add_action( 'admin_print_footer_scripts', 'ig_es_render_mailer_promote_assets' );
+
+/**
  * Per-option follow-up configuration for Screen 2.
  * Each key maps to a deactivation reason slug and defines:
  *   heading, body, sub_options, has_textarea, textarea_placeholder, body2, buttons.
@@ -757,16 +1128,27 @@ function ig_es_deactivation_followups( $followups ) {
 			'heading'     => __( 'What issue are you facing specifically?', 'email-subscribers' ),
 			'body'        => '',
 			'sub_options' => array(
-				__( 'Emails are not being sent at all', 'email-subscribers' ),
-				__( 'Emails are going to spam', 'email-subscribers' ),
-				__( 'Issue with setting up email service', 'email-subscribers' ),
-				__( 'Others', 'email-subscribers' ),
+				array(
+					'label'  => __( 'Emails are not being sent at all', 'email-subscribers' ),
+					'notice' => ig_es_get_mailer_promote_card_html( 'not_sending' ),
+				),
+				array(
+					'label'  => __( 'Emails are going to spam', 'email-subscribers' ),
+					'notice' => ig_es_get_mailer_promote_card_html( 'going_to_spam' ),
+				),
+				array(
+					'label'  => __( 'Issue with setting up email service', 'email-subscribers' ),
+					'notice' => ig_es_get_mailer_promote_card_html( 'service_setup' ),
+				),
+				array(
+					'label' => __( 'Others', 'email-subscribers' ),
+				),
 			),
 			'has_textarea' => false,
 			'body2'        => '',
 			'buttons'      => array(
-				array( 'label' => __( 'Get Expert Help', 'email-subscribers' ),       'cls' => 'ig-deactivation-btn-primary', 'action' => 'submit', 'skip_deactivation' => true, 'success_message' => __( 'Thank you for reaching out, we are here for you.', 'email-subscribers' ) ),
-				array( 'label' => __( 'Continue Deactivation', 'email-subscribers' ), 'cls' => 'ig-deactivation-btn-ghost',   'action' => 'submit' ),
+				array( 'label' => __( 'Get Expert Help', 'email-subscribers' ),             'cls' => 'ig-deactivation-btn-secondary', 'action' => 'submit', 'skip_deactivation' => true, 'success_message' => __( 'Thank you for reaching out, we are here for you.', 'email-subscribers' ) ),
+				array( 'label' => __( 'Continue Deactivation &rarr;', 'email-subscribers' ), 'cls' => 'ig-deactivation-btn-ghost',     'action' => 'submit' ),
 			),
 		),
 

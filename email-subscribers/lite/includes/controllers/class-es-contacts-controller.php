@@ -64,7 +64,7 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 			$advanced_filter = isset( $contact_args['advanced_filter'] ) ? $contact_args['advanced_filter'] : ''; 
 			$all_contacts = isset( $contact_args['all_contacts'] ) ? $contact_args['all_contacts'] : false;
 
-			if ($search === 'none') {
+			if ('none' === $search) {
 				$search = '';
 			}
 			
@@ -78,10 +78,10 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 				
 				foreach ( $contact_args['advanced_filter'] as $filter ) {
 
-					if ( $filter['field'] === 'List' ) {
+					if ( 'List' === $filter['field'] ) {
 						$list_filters[] = $filter;
 						
-					} elseif ( $filter['field'] === 'Status' ) {
+					} elseif ( 'Status' === $filter['field'] ) {
 						$status_filters[] = $filter;
 					} else {
 						$other_filters[] = $filter; 
@@ -209,7 +209,7 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 							}
 						}
 					}
-				} else if ( ! empty( $filter_by_list_id ) && $filter_by_list_id !== 'all' ) {
+				} else if ( ! empty( $filter_by_list_id ) && 'all' !== $filter_by_list_id ) {
 					// Handle simple list filter (dropdown without advanced filters)
 					$query_args['list_ids'] = array( intval( $filter_by_list_id ) );
 				}
@@ -219,7 +219,7 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 					$query_args['contact_ids'] = $filtered_contact_ids;
 				}
 
-			} else if ( ! empty( $filter_by_list_id ) && $filter_by_list_id !== 'all' ) {
+			} else if ( ! empty( $filter_by_list_id ) && 'all' !== $filter_by_list_id ) {
 				$query_args['list_ids'] = array( intval( $filter_by_list_id ) );
 			}
   
@@ -236,6 +236,10 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 					foreach ( $result as &$contact ) {
 						$contact_id = $contact['id'];
 						$list_statuses = isset( $all_list_statuses[ $contact_id ] ) ? $all_list_statuses[ $contact_id ] : array();
+
+						if ( 'yes' !== get_option( 'ig_es_track_ip_address', 'yes' ) ) {
+							unset( $contact['ip_address'] );
+						}
 						
 						if ( ! empty( $list_statuses ) ) {
 							$contact['list_statuses'] = $list_statuses;
@@ -646,7 +650,7 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 	 */
 
 		private static function build_es_filter_condition( $field, $operator, $value) {
-			if (empty($value) && $value !== '0' && $value !== 0) {
+			if (empty($value) && '0' !== $value && 0 !== $value) {
 				return null;
 			}
 			
@@ -657,8 +661,8 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 			
 			$processed_value = self::process_field_value($field, $value);
 			
-			if (is_array($processed_value) && count($processed_value) > 0) {
-				if (count($processed_value) === 1) {
+			if (is_array($processed_value) && 0 < count($processed_value)) {
+				if (1 === count($processed_value)) {
 					$processed_value = $processed_value[0];
 				} else {
 					return array(
@@ -747,10 +751,9 @@ if ( ! class_exists( 'ES_Contacts_Controller' ) ) {
 					
 				case 'Bounce Status':
 					if (is_array($value)) {
-						return array_map('intval', $value); // Convert to integers
-					} else {
-						return intval($value); // Convert to integer
+						return array_map('intval', $value);
 					}
+					return intval($value);
 					
 				case 'has received':
 					if (is_array($value) && isset($value['id'])) {

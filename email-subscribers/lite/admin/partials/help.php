@@ -49,7 +49,9 @@ $contact_us_btn_class = "ig-feedback-button-{$ig_es_feedback->plugin}";
 				<li>Create & Copy new Temporary Login link. <a href="https://www.icegram.com/r7gg" target="_blank" class="text-indigo-600">Learn why you should use this plugin</a></li>
 				<li>Click on <b>Contact Us</b> button and let us know your queries along with Temporary Login Link </li>
 			</ul>
-			<div class="flex w-2/2 py-2 justify-center <?php echo esc_attr( $contact_us_btn_class ); ?>">
+			<?php $ig_cu_preselected_plugin = ! empty( $_GET['plugin'] ) ? sanitize_key( wp_unslash( $_GET['plugin'] ) ) : ''; ?>
+			<div class="flex w-2/2 py-2 justify-center <?php echo esc_attr( $contact_us_btn_class ); ?>"
+				data-entry="contact-us"<?php if ( $ig_cu_preselected_plugin ) { echo ' data-plugin="' . esc_attr( $ig_cu_preselected_plugin ) . '"'; } ?>>
 				<span class="rounded-md shadow-sm">
 				<button type="button" class="inline-flex justify-center w-full px-4 py-2 text-sm font-medium leading-5 text-white transition duration-150 ease-in-out bg-white bg-indigo-600 border border-transparent rounded-md hover:bg-indigo-500 focus:outline-none focus:shadow-outline-blue">
 				<?php

@@ -182,7 +182,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 						
 						// If it's a WYSIWYG form, transform the data and use standard processor
 						if ( 'wysiwyg' === $editor_type ) {
-							$transformed_data = $this->transform_wysiwyg_form_data( wp_unslash( $_POST ), $form_id );
+							$transformed_data = $this->transform_wysiwyg_form_data( wp_unslash( $_POST ), $form_id ); // phpcs:ignore WordPress.Security.NonceVerification.Missing -- The shared subscription processor validates the public form submission.
 							$response = $this->process_request( $transformed_data );
 							$response = $this->do_response( $response );
 							wp_send_json( $response );
@@ -242,6 +242,9 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				if ( 'ERROR' === $validate_response['status'] ) {
 
 					if ( 'es_email_address_blocked' === $validate_response['message'] ) {
+						$validate_response['status']  = 'SUCCESS';
+						$validate_response['message'] = 'es_optin_success_message';
+					} elseif ( 'es_honeypot_field_altered' === $validate_response['message'] ) {
 						$validate_response['status']  = 'SUCCESS';
 						$validate_response['message'] = 'es_optin_success_message';
 					}
@@ -324,11 +327,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 								$this->list_hashes = array();
 							}
 						}
-					} else {
-						// No form settings found - fallback to existing behavior
 					}
-				} else {
-					// No form ID provided - fallback to existing behavior
 				}
 				$this->reference_site = isset( $form_data['esfpx_reference_site'] ) ? esc_url_raw( $form_data['esfpx_reference_site'] ) : null;
 				$this->es_optin_type  = get_option( 'ig_es_optin_type' );
@@ -577,7 +576,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				// $hp_key = "esfpx_es_hp" . wp_create_nonce( 'es_hp' );
 				$hp_key = 'esfpx_es_hp_email';
 				if ( ! isset( $data[ $hp_key ] ) || ! empty( $data[ $hp_key ] ) ) {
-					$es_response['message'] = 'es_unexpected_error_notice';
+					$es_response['message'] = 'es_honeypot_field_altered';
 
 					return $es_response;
 				}
