@@ -379,7 +379,6 @@ class ES_Shortcode {
 		$current_page_url = get_the_permalink( $current_page );
 
 		$unique_id = uniqid();
-		$hp_style  = 'position:absolute;top:-99999px;' . ( is_rtl() ? 'right' : 'left' ) . ':-99999px;z-index:-99;';
 		$nonce     = wp_create_nonce( 'es-subscribe' );
 
 		// Form html
@@ -406,8 +405,8 @@ class ES_Shortcode {
 			<input type="hidden" name="esfpx_es_email_page" value="' .esc_attr( $current_page ) . '"/>
 			<input type="hidden" name="esfpx_es_email_page_url" value="' .esc_attr( $current_page_url ) . '"/>
 			<input type="hidden" name="esfpx_status" value="Unconfirmed"/>
-			<input type="hidden" name="esfpx_es-subscribe" id="es-subscribe-' . esc_attr( $unique_id ) . '" value="' . esc_attr($nonce) . '"/>
-			<label style="' . $hp_style . '" aria-hidden="true"><span hidden>' . __( 'Please leave this field empty.', 'email-subscribers' ) . '</span><input type="email" name="esfpx_es_hp_email" class="es_required_field" tabindex="-1" autocomplete="-1" value=""/></label>';
+			<input type="hidden" name="esfpx_es-subscribe" id="es-subscribe-' . esc_attr( $unique_id ) . '" value="' . esc_attr($nonce) . '"/>'
+			. ES_Common::get_honeypot_html( $form_id );
 
 			$spinner_image_path = ES_PLUGIN_URL . 'lite/public/images/spinner.gif';
 
@@ -1953,7 +1952,6 @@ $field_required = false;
 		$current_page = get_the_ID();
 		$current_page_url = get_the_permalink( $current_page );
 		$nonce = wp_create_nonce( 'es-subscribe' );
-		$hp_style = 'position:absolute;top:-99999px;' . ( is_rtl() ? 'right' : 'left' ) . ':-99999px;z-index:-99;';
 		
 		$html = '<input type="hidden" name="es" value="subscribe" />';
 		$html .= '<input type="hidden" name="esfpx_form_id" value="' . esc_attr( $form_id ) . '" />';
@@ -1964,10 +1962,7 @@ $field_required = false;
 		$html .= '<input type="hidden" name="esfpx_es-subscribe" id="es-subscribe-' . esc_attr( $unique_id ) . '" value="' . esc_attr( $nonce ) . '"/>';
 		
 		// Honeypot field
-		$html .= '<label style="' . esc_attr( $hp_style ) . '" aria-hidden="true">';
-		$html .= '<span hidden>' . __( 'Please leave this field empty.', 'email-subscribers' ) . '</span>';
-		$html .= '<input type="email" name="esfpx_es_hp_email" class="es_required_field" tabindex="-1" autocomplete="-1" value=""/>';
-		$html .= '</label>';
+		$html .= ES_Common::get_honeypot_html( $form_id );
 		
 		// Hidden list IDs - only add if form doesn't have a visible list field
 		$has_list_field = ! empty( $settings['has_list_field'] ) && 'yes' === $settings['has_list_field'];

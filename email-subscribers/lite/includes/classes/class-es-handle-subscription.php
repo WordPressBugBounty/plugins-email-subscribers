@@ -572,11 +572,15 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 
 			if ( ! $this->from_rainmaker ) {
 
-				// Honeypot validation
-				// $hp_key = "esfpx_es_hp" . wp_create_nonce( 'es_hp' );
-				$hp_key = 'esfpx_es_hp_email';
-				if ( ! isset( $data[ $hp_key ] ) || ! empty( $data[ $hp_key ] ) ) {
-					$es_response['message'] = 'es_honeypot_field_altered';
+				// Dynamic honeypot validation: must be present, scalar, and strictly empty.
+				$form_id     = isset( $data['esfpx_form_id'] ) && is_scalar( $data['esfpx_form_id'] )
+					? (int) $data['esfpx_form_id']
+					: ( ! empty( $this->form_id ) ? (int) $this->form_id : 0 );
+				$hp_key      = ES_Common::get_honeypot_field_name( $form_id );
+				$is_valid_hp = isset( $data[ $hp_key ] ) && is_scalar( $data[ $hp_key ] ) && ( '' === trim( (string) $data[ $hp_key ] ) );
+
+				if ( ! $is_valid_hp ) {
+					$es_response['message'] = 'es_unexpected_error_notice';
 
 					return $es_response;
 				}
@@ -741,13 +745,14 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 					$hp_email   = ig_es_get_request_data( 'es_hp_email' );
 					$ip_address = ig_es_get_request_data( 'ip_address' );
 
+					$hp_key    = ES_Common::get_honeypot_field_name( 0 );
 					$form_data = array(
-						'esfpx_name'        => $name,
-						'esfpx_email'       => $email,
-						'esfpx_es_hp_email' => $hp_email,
-						'esfpx_ip_address'  => $ip_address,
-						'esfpx_lists'       => $lists_hash,
-						'form_type'         => 'external',
+						'esfpx_name'       => $name,
+						'esfpx_email'      => $email,
+						$hp_key            => $hp_email,
+						'esfpx_ip_address' => $ip_address,
+						'esfpx_lists'      => $lists_hash,
+						'form_type'        => 'external',
 					);
 					$response = $this->process_request( $form_data );
 					wp_send_json( $response );

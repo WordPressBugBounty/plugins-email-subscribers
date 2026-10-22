@@ -1213,8 +1213,9 @@ class ES_DB_Campaigns extends ES_DB {
 				foreach ( $conditions as $i => $condition_group ) {
 					if ( ! empty( $condition_group ) ) {
 						foreach ( $condition_group as $j => $condition ) {
-							$condition_field = isset( $condition['field'] ) ? $condition['field'] : '';
-							if ( '_lists__in' === $condition_field ) {
+							$condition_field    = isset( $condition['field'] ) ? $condition['field'] : '';
+							$condition_operator = isset( $condition['operator'] ) ? $condition['operator'] : '';
+							if ( '_lists__in' === $condition_field || ( 'list' === $condition_field && 'is' === $condition_operator ) ) {
 								if ( ! empty( $condition['value'] ) ) {
 									if ( is_array( $condition['value'] ) ) {
 										$list_ids = array_merge( $list_ids, $condition['value'] );

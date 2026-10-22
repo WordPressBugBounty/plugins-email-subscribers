@@ -6,7 +6,7 @@ Tags: email subscribers, WooCommerce emails, lead generation, newsletter, email 
 Requires at least: 3.9
 Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 5.9.39
+Stable tag: 5.9.40
 License: GPLv3
 
 License URI: http://www.gnu.org/licenses
@@ -364,12 +364,17 @@ You can customize form and email styling using the built-in style editor, or add
 
 == Upgrade Notice ==
 
-= 5.9.39 =
+= 5.9.40 =
 
-* Improvement: Show subscriber IP addresses when Track IP Address setting is enabled [MAX]
-* Fix: Fixed an issue where <title> tag was missing when viewing archived campaign [MAX]
+* Improvement: Improved spam protection for subscription forms
+* Fix: Fixed "No Lists" appearing on the campaigns list page for some older campaigns
 
 == Changelog ==
+
+**5.9.40 (22.10.2026)**
+
+* Improvement: Improved spam protection for subscription forms
+* Fix: Fixed "No Lists" appearing on the campaigns list page for some older campaigns
 
 **5.9.39 (14.10.2026)**
 

@@ -376,7 +376,7 @@ if ( ! class_exists( 'ES_Forms_Controller' ) ) {
 				$embed_html .= "<input type='hidden' name='esfpx_status' value='Unconfirmed' />";
 				$embed_html .= "<input type='hidden' name='esfpx_es-subscribe' value='" . esc_attr( $unique_id ) . "' />";
 				$embed_html .= "<input type='hidden' name='esfpx_form_id' value='" . esc_attr( $form_id ) . "' />";
-				$embed_html .= "<label style='position:absolute;top:-99999px;'><input type='email' name='esfpx_es_hp_email' class='es_required_field' tabindex='-1' autocomplete='-1' value=''/></label>";
+				$embed_html .= ES_Common::get_honeypot_html( $form_id );
 
 				if ( ! $is_dnd_editor ) {
 					if ( 'yes' === $gdpr_consent ) {

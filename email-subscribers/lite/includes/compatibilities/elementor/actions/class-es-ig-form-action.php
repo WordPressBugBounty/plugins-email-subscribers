@@ -89,7 +89,7 @@ class Es_Form_Action extends Integration_Base {
 		}
 		$subscriber['esfpx_ip_address']  = $ip_address;
 		$subscriber['form_type']         = 'external';
-		$subscriber['esfpx_es_hp_email'] = '';
+		$subscriber[ ES_Common::get_honeypot_field_name( 0 ) ] = '';
 		// This constant is defined to return the response form process_request method
 		// Because process_request using wp_send_json function to return response,
 		defined( 'IG_ES_RETURN_HANDLE_RESPONSE' ) || define( 'IG_ES_RETURN_HANDLE_RESPONSE', true );

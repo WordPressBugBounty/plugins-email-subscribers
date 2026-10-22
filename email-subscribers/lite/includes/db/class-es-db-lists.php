@@ -181,15 +181,14 @@ class ES_DB_Lists extends ES_DB {
 			return array();
 		}
 		
-		// Get all unique list IDs across all campaigns
+		// Resolve IDs from both the legacy column and recipient-rule metadata.
 		$all_list_ids = array();
+		$campaign_list_ids_map = array();
 		foreach ( $campaigns as $campaign ) {
-			if ( ! empty( $campaign['list_ids'] ) ) {
-				$campaign_list_ids = is_array( $campaign['list_ids'] ) 
-					? $campaign['list_ids'] 
-					: explode( ',', $campaign['list_ids'] );
-				$all_list_ids = array_merge( $all_list_ids, $campaign_list_ids );
-			}
+			$campaign_list_ids = ES()->campaigns_db->get_list_ids( $campaign );
+			$campaign_list_ids = array_filter( array_map( 'intval', $campaign_list_ids ) );
+			$campaign_list_ids_map[ $campaign['id'] ] = $campaign_list_ids;
+			$all_list_ids = array_merge( $all_list_ids, $campaign_list_ids );
 		}
 		
 		$all_list_ids = array_unique( array_filter( array_map( 'intval', $all_list_ids ) ) );
@@ -216,14 +215,7 @@ class ES_DB_Lists extends ES_DB {
 		$campaign_list_names = array();
 		foreach ( $campaigns as $campaign ) {
 			$campaign_id = $campaign['id'];
-			$campaign_list_ids = array();
-			
-			if ( ! empty( $campaign['list_ids'] ) ) {
-				$campaign_list_ids = is_array( $campaign['list_ids'] ) 
-					? $campaign['list_ids'] 
-					: explode( ',', $campaign['list_ids'] );
-				$campaign_list_ids = array_filter( array_map( 'intval', $campaign_list_ids ) );
-			}
+			$campaign_list_ids = $campaign_list_ids_map[ $campaign_id ];
 			
 			$list_names = array();
 			foreach ( $campaign_list_ids as $list_id ) {

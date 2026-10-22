@@ -3441,6 +3441,62 @@ class ES_Common {
 
 		return $site_logo_url;
 	}
-	
+
+	/**
+	 * Get dynamic and unique honeypot field name per site and per form.
+	 *
+	 * @param int $form_id Form ID.
+	 *
+	 * @return string Honeypot input field name.
+	 *
+	 * @since 5.8.1
+	 */
+	public static function get_honeypot_field_name( $form_id = 0 ) {
+		$salt = '';
+		if ( function_exists( 'wp_salt' ) ) {
+			$salt = wp_salt( 'nonce' );
+		}
+		if ( empty( $salt ) && defined( 'NONCE_SALT' ) ) {
+			$salt = NONCE_SALT;
+		}
+		if ( empty( $salt ) ) {
+			// Use a dedicated, stable salt stored in wp_options.
+			// add_option() is a no-op if the key already exists, so it is safe to call on every request.
+			// autoload=false keeps it out of the options cache on every page load.
+			$salt = get_option( 'ig_es_honeypot_salt' );
+			if ( empty( $salt ) ) {
+				$salt = wp_generate_password( 64, true, true );
+				add_option( 'ig_es_honeypot_salt', $salt, '', false );
+			}
+		}
+
+		$site_prefix = is_multisite() ? get_current_blog_id() . '_' : '';
+		$hash        = substr( hash_hmac( 'sha256', 'es_form_' . (int) $form_id, $site_prefix . $salt ), 0, 10 );
+		$field_name  = 'esfpx_field_' . $hash;
+
+		return apply_filters( 'ig_es_honeypot_field_name', $field_name, $form_id );
+	}
+
+	/**
+	 * Get honeypot HTML markup for a form.
+	 *
+	 * @param int $form_id Form ID.
+	 *
+	 * @return string Honeypot HTML markup.
+	 *
+	 * @since 5.8.1
+	 */
+	public static function get_honeypot_html( $form_id = 0 ) {
+		$field_name = self::get_honeypot_field_name( $form_id );
+		$hp_style   = 'position:absolute;top:-99999px;' . ( is_rtl() ? 'right' : 'left' ) . ':-99999px;z-index:-99;';
+
+		$html  = '<label style="' . esc_attr( $hp_style ) . '" aria-hidden="true">';
+		$html .= '<span hidden>' . esc_html__( 'Please leave this field empty.', 'email-subscribers' ) . '</span>';
+		$html .= '<input type="text" name="' . esc_attr( $field_name ) . '" class="es_form_field" tabindex="-1" autocomplete="off" value=""/>';
+		$html .= '</label>';
+
+		return apply_filters( 'ig_es_honeypot_html', $html, $form_id, $field_name );
+	}
 
 }
+
