@@ -725,7 +725,8 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 
 			$external_action = ig_es_get_request_data( 'ig_es_external_action' );
 			if ( ! empty( $external_action ) && 'subscribe' === $external_action ) {
-				$subscription_api_enabled = 'yes' === get_option( 'ig_es_allow_api', 'yes' );
+				// Keyless endpoint: keep it off unless the admin explicitly enabled the API (same default as the Settings page).
+				$subscription_api_enabled = 'yes' === get_option( 'ig_es_allow_api', 'no' );
 				if ( ! $subscription_api_enabled ) {
 					return;
 				}

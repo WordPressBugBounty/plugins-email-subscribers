@@ -47,6 +47,14 @@ if ( ! class_exists( 'ES_Action_Add_To_List' ) ) {
 			$list_field->set_required();
 			$this->add_field( $list_field );
 
+			$update_existing_field = new ES_Checkbox();
+			$update_existing_field->set_name( 'ig-es-update-existing-contacts' );
+			$update_existing_field->set_title( __( 'Update existing contacts', 'email-subscribers' ) );
+			$update_existing_field->set_description( __( 'If checked, contacts already in the selected list are re-added and their list status is overwritten. If unchecked, they are left as they are, so unsubscribed contacts stay unsubscribed.', 'email-subscribers' ) );
+			$update_existing_field->add_classes( 'form-checkbox text-indigo-600' );
+			$update_existing_field->default_to_checked = false;
+			$this->add_field( $update_existing_field );
+
 		}
 
 		/**
@@ -127,6 +135,13 @@ if ( ! class_exists( 'ES_Action_Add_To_List' ) ) {
 			$source     = trim( $data['source'] );
 			$status     = ! empty( $data['status'] ) ? trim( $data['status'] ) : 'verified';
 			$wp_user_id = ! empty( $data['wp_user_id'] ) ? trim( $data['wp_user_id'] ) : 0;
+
+			if ( ! $this->get_option( 'ig-es-update-existing-contacts' ) ) {
+				$existing_contact = ES()->contacts_db->is_contact_exist_in_list( $email, $list_id );
+				if ( ! empty( $existing_contact['list_id'] ) ) {
+					return;
+				}
+			}
 
 			// If first name is set, get the first name and last name from $data.
 			// Else prepare the first name and last name from $data['name'] field or $data['email'] field.

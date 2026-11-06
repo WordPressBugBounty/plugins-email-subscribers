@@ -86,7 +86,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 			}
 
 			$csv_output = self::generate_csv_for_single_list( $selected_list_id, $status );
-			$file_name = 'list-' . $selected_list_id . '-contacts.csv';
+			$file_name = self::get_timestamped_filename( 'list-' . $selected_list_id . '-contacts.csv' );
 			self::output_CSV( $csv_output, $file_name );
 		}
 
@@ -117,7 +117,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 			}
 
 			$csv_output = self::generate_csv_for_multiple_lists( $list_ids, $status );
-			$file_name = 'selected-lists-contacts.csv';
+			$file_name = self::get_timestamped_filename( 'selected-lists-contacts.csv' );
 			self::output_CSV( $csv_output, $file_name );
 		}
 
@@ -362,7 +362,7 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 			$selected_list_id = $args['selected_list_id'];
 		
 			$csv       = self::generate_csv( $status, $selected_list_id );
-			$file_name = sprintf( '%s-contacts.csv', strtolower( $status ) );
+			$file_name = self::get_timestamped_filename( sprintf( '%s-contacts.csv', strtolower( $status ) ) );
 			self::output_CSV( $csv, $file_name );
 		}
 
@@ -399,6 +399,24 @@ if ( ! class_exists( 'ES_Contact_Export_Controller' ) ) {
 		private static function show_error_message( $message) {
 			ES_Common::show_message($message, 'error');
 			exit();
+		}
+
+		/**
+		 * Add the site's local date and time to an export filename.
+		 *
+		 * @param string $file_name
+		 * @return string
+		 */
+		private static function get_timestamped_filename( $file_name ) {
+			$file_info = pathinfo( $file_name );
+			$timestamp = current_time( 'Y-m-d_H-i-s' );
+			$filename  = $file_info['filename'] . '-' . $timestamp;
+
+			if ( ! empty( $file_info['extension'] ) ) {
+				$filename .= '.' . $file_info['extension'];
+			}
+
+			return $filename;
 		}
 
 		private static function output_CSV( $csv_content, $file_name) {

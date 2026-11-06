@@ -16,13 +16,10 @@ if ( ! defined( 'ABSPATH' ) ) {
 </style>
 <?php
 $plan    = ES()->get_plan();
-$offer_name = 'offer_bfcm_2025';
-$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm-express-free-pro-banner-2025.png';
-if ( ES()->is_pro() ) {
-	$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm-common-max-banner-2025.png';
-}
+$offer_name = 'offer_pre_bfcm_2026';
+$img_url = esc_url( ES_PLUGIN_URL ) . 'lite/admin/images/bfcm-express-max-banner.png';
 
-if ( ( get_option( 'ig_es_offer_bfcm_2025' ) !== 'yes' ) && ES()->is_offer_period( 'bfcm' ) ) { 
+if ( ( get_option( 'ig_es_offer_pre_bfcm_2026' ) !== 'yes' ) && ES()->is_offer_period( 'bfcm' ) && ! ES()->is_pro()) { 
 	$notice_dismiss_url = wp_nonce_url(
 		add_query_arg(
 			array(

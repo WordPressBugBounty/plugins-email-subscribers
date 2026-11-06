@@ -2149,8 +2149,8 @@ if ( ! class_exists( 'Email_Subscribers' ) ) {
 			$offer_start_time = 0;
 			$offer_end_time   = 0;
 			if ( 'bfcm' === $offer_name ) {
-				$offer_start_time = strtotime( '2025-11-14 12:30:00' ); // Offer start time in IST
-				$offer_end_time   = strtotime( '2025-12-05 12:30:00' ); // Offer end time in IST
+				$offer_start_time = strtotime( '2026-11-05 12:30:00' ); // Offer start time in IST
+				$offer_end_time   = strtotime( '2026-11-16 12:30:00' ); // Offer end time in IST
 			}
 
 			$is_offer_period = $current_ist_time >= $offer_start_time && $current_ist_time <= $offer_end_time;
