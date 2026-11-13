@@ -62,7 +62,7 @@ class ES_Templates_Table {
 		?>
 		<!-- Start-IG-Code -->
 		<p id="post_notification">
-			<a href="https://www.icegram.com/documentation/what-keywords-can-be-used-while-designing-the-campaign/?utm_source=es&amp;utm_medium=in_app&amp;utm_campaign=view_docs_help_page" target="_blank"><?php esc_html_e( 'Available Keywords', 'email-subscribers' ); ?></a> <?php esc_html_e( 'for Post Notification: ', 'email-subsribers' ); ?> {{subscriber.first_name | fallback:'there'}},
+			<a href="https://www.icegram.com/documentation/what-keywords-can-be-used-while-designing-the-campaign/?utm_source=es&amp;utm_medium=in_app&amp;utm_campaign=view_docs_help_page" target="_blank"><?php esc_html_e( 'Available Keywords', 'email-subscribers' ); ?></a> <?php esc_html_e( 'for Post Notification: ', 'email-subscribers' ); ?> {{subscriber.first_name | fallback:'there'}},
 			{{subscriber.last_name}}, {{subscriber.name}}, {{subscriber.email}},
 			{{post.date}}, {{post.title}}, {{post.image}}, {{post.excerpt}}, {{post.description}}, {{post.description_html}},
 			{{post.author}}, {{post.author_avatar}}, {{post.author_avatar_url}}, {{post.link}}, {{post.link_with_title}}, {{post.link_only}}, {{post.full}} </p>
@@ -211,40 +211,77 @@ class ES_Templates_Table {
 
 	public function duplicate_template() {
 		$action      = ig_es_get_request_data( 'action' );
-		$template_id = ig_es_get_request_data( 'template_id' );
+		$template_id = absint( ig_es_get_request_data( 'template_id' ) );
+
 		if ( ! empty( $template_id ) && 'duplicate-template' === $action ) {
 
-			
+			// Verify nonce
 			check_admin_referer( 'ig_es_duplicate_template_nonce' );
+			$post = get_post( $template_id );
 
-			// duplicate tempalte
-			$this->duplicate_in_db( $template_id );
-			// $location = admin_url( 'post.php?post='.$duplicate_template_id.'&action=edit');
+			// Check 1: Post must exist and must be an 'es_template'
+			if ( ! $post || 'es_template' !== $post->post_type ) {
+				wp_die( esc_html__( 'Invalid template.', 'email-subscribers' ), '', array( 'response' => 400 ) );
+			}
+
+			// Check 2: Must NOT be private or trashed
+			if ( 'private' === $post->post_status || 'trash' === $post->post_status ) {
+				wp_die( esc_html__( 'Private or trashed templates cannot be duplicated.', 'email-subscribers' ), '', array( 'response' => 403 ) );
+			}
+
+			// Check 3: Current user must have permission to edit this post
+			if ( ! current_user_can( 'edit_post', $template_id ) ) {
+				wp_die( esc_html__( 'You do not have permission to duplicate this template.', 'email-subscribers' ), '', array( 'response' => 403 ) );
+			}
+
+			// Duplicate template
+			$duplicate_template_id = $this->duplicate_in_db( $template_id );
+
+			if ( empty( $duplicate_template_id ) || is_wp_error( $duplicate_template_id ) ) {
+				wp_die( esc_html__( 'Failed to duplicate template. Please try again.', 'email-subscribers' ), '', array( 'response' => 500 ) );
+			}
+			
 			$location = admin_url( 'edit.php?post_type=es_template' );
 			wp_safe_redirect( $location );
 			exit;
+
 		}
 	}
 
 	public function duplicate_in_db( $original_id ) {
+
+		$original_id = absint( $original_id );
+		$post        = get_post( $original_id );
+
+		// All 3 checks before touching the database:
+		// 1. Post exists & is es_template
+		// 2. Status is not private/trash
+		// 3. User has capability to edit it
+		if ( ! $post || 'es_template' !== $post->post_type || 'private' === $post->post_status || 'trash' === $post->post_status || ! current_user_can( 'edit_post', $original_id ) ) {
+			return 0;
+		}
+
 		// Get access to the database
 		global $wpdb;
+
 		// Get the post as an array
 		$duplicate = get_post( $original_id, 'ARRAY_A' );
-		// Modify some of the elements
+
+		// Enforce post_type is explicitly es_template
+		$duplicate['post_type']   = 'es_template';
 		$duplicate['post_title']  = $duplicate['post_title'] . ' ' . __( 'Copy', 'email-subscribers' );
 		$duplicate['post_status'] = 'draft';
+
 		// Set the post date
 		$timestamp = current_time( 'timestamp', 0 );
-
 		$duplicate['post_date'] = gmdate( 'Y-m-d H:i:s', $timestamp );
 
 		// Remove some of the keys
 		unset( $duplicate['ID'] );
 		unset( $duplicate['guid'] );
 		unset( $duplicate['comment_count'] );
-
 		$current_user_id = get_current_user_id();
+
 		if ( ! empty( $current_user_id ) ) {
 			// Set post author to current logged in author.
 			$duplicate['post_author'] = $current_user_id;
@@ -254,8 +291,7 @@ class ES_Templates_Table {
 		$duplicate_id = wp_insert_post( $duplicate );
 
 		// Duplicate all taxonomies/terms
-		$taxonomies = get_object_taxonomies( $duplicate['post_type'] );
-
+		$taxonomies = get_object_taxonomies( 'es_template' );
 		foreach ( $taxonomies as $taxonomy ) {
 			$terms = wp_get_post_terms( $original_id, $taxonomy, array( 'fields' => 'names' ) );
 			wp_set_object_terms( $duplicate_id, $terms, $taxonomy );
@@ -263,10 +299,33 @@ class ES_Templates_Table {
 
 		// Duplicate all custom fields
 		$custom_fields = get_post_custom( $original_id );
-		foreach ( $custom_fields as $key => $value ) {
-			add_post_meta( $duplicate_id, $key, ig_es_maybe_unserialize( $value[0] ) );
-		}
+		if ( ! empty( $custom_fields ) && is_array( $custom_fields ) ) {
+			
+			$exclude_meta_keys = array(
+				'_edit_lock',
+				'_edit_last',
+				'_wp_old_slug',
+				'_wp_trash_meta_status',
+				'_wp_trash_meta_time',
+			);
 
+			$exclude_meta_keys = apply_filters( 'ig_es_exclude_template_meta_keys', $exclude_meta_keys, $original_id );
+
+			foreach ( $custom_fields as $key => $values ) {
+
+				// Skip excluded keys
+				if ( in_array( $key, $exclude_meta_keys, true ) ) {
+					continue;
+				}
+				
+				if ( is_array( $values ) ) {
+					foreach ( $values as $value ) {
+						add_post_meta( $duplicate_id, $key, ig_es_maybe_unserialize( $value ) );
+					}
+				}
+			}
+		}
+		
 		return $duplicate_id;
 	}
 

@@ -1,10 +1,10 @@
 === Email Subscribers & Newsletters by Icegram Express – Email Marketing, Post Notifications & WooCommerce Marekting Automation for WordPress ===
-Contributors: icegram, niravmehta, sandhyam, storeapps, mansipatel, kishanranawat, shubhanshukandani
+Contributors: icegram, niravmehta, sandhyam, storeapps, kishanranawat, shubhanshukandani
 Tags: email marketing, newsletter, post notification, email automation, woocommerce emails
 Requires at least: 3.9
-Tested up to: 7.1.3
+Tested up to: 7.1
 Requires PHP: 7.0
-Stable tag: 5.9.41
+Stable tag: 5.9.43
 License: GPLv3 or later
 License URI: https://www.gnu.org/licenses/gpl-3.0.html
 
@@ -255,8 +255,13 @@ Copy your unique Cron URL from **Icegram Express > Settings > Email Sending**. I
 
 == Changelog ==
 
-= 5.9.41 (05.11.2026) = 
+= 5.9.43 (13.11.2026) = 
+* Fix: Fixed PHP warning "must be passed by reference" when sending emails through Amazon SES [MAX]
 
+= 5.9.42 (12.11.2026) = 
+* Improvement: Improved duplicate template functionality
+
+= 5.9.41 (05.11.2026) = 
 * New: Added "Update existing contacts" option to "Add to list" workflow action
 * Improvement: Contact list export files now include the date and time of export in the file name
 
@@ -318,6 +323,5 @@ Copy your unique Cron URL from **Icegram Express > Settings > Email Sending**. I
 
 == Upgrade Notice ==
 
-= 5.9.41 =
-* New: Added "Update existing contacts" option to "Add to list" workflow action
-* Improvement: Contact list export files now include the date and time of export in the file name
+= 5.9.43 =
+* Fix: Fixed PHP warning "must be passed by reference" when sending emails through Amazon SES [MAX]

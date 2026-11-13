@@ -69,7 +69,7 @@ $categories = array();
 
 	// Step 2: If we need more templates to reach the limit, fetch remote templates
 	$local_count = count( $gallery_items );
-	$need_remote = $include_remote && ( $limit === -1 || ( $limit > 0 && $local_count < $limit ) );
+	$need_remote = $include_remote && ( -1 === $limit || ( $limit > 0 && $local_count < $limit ) );
 	
 	$remote_gallery_items = array();
 			if ( $need_remote ) {
@@ -282,39 +282,48 @@ $categories = array();
 				'meta' => $meta
 			)
 			);
-		}		public static function import_local_gallery_item( $template_id, $campaign_type, $campaign_id = 0 ) {
+		}		
+		
+		public static function import_local_gallery_item( $template_id, $campaign_type, $campaign_id = 0 ) {
 			if ( ! empty( $template_id ) ) {
 				$template = get_post( $template_id );
-				if ( ! empty( $template ) ) {
-					$subject     = $template->post_title;
-					$content     = $template->post_content;
-					$from_email  = ES_Common::get_ig_option( 'from_email' );
-					$from_name   = ES_Common::get_ig_option( 'from_name' );
-					$editor_type = get_post_meta( $template_id, 'es_editor_type', true );
-					
-					if ( empty( $editor_type ) ) {
-						$editor_type = IG_ES_CLASSIC_EDITOR;
-					}
 
-					$campaign_meta = array(
-						'editor_type' => $editor_type,
-					);
+				// Check 1: Post must exist and must be an 'es_template'
+				// Check 2: Must NOT be private or trashed
+				// Check 3: Current user must have permission to edit this post
+				if ( empty( $template ) || 'es_template' !== $template->post_type || 'private' === $template->post_status || 'trash' === $template->post_status ) {
+					return 0;
+				}
+				
+				$subject     = $template->post_title;
+				$content     = $template->post_content;
+				$from_email  = ES_Common::get_ig_option( 'from_email' );
+				$from_name   = ES_Common::get_ig_option( 'from_name' );
+				$editor_type = get_post_meta( $template_id, 'es_editor_type', true );
+				
+				if ( empty( $editor_type ) ) {
+					$editor_type = IG_ES_CLASSIC_EDITOR;
+				}
 
-					if ( IG_ES_DRAG_AND_DROP_EDITOR === $editor_type ) {
-						$dnd_editor_data = get_post_meta( $template_id, 'es_dnd_editor_data', true );
-						if ( ! empty( $dnd_editor_data ) ) {
-							$campaign_meta['dnd_editor_data'] = wp_json_encode( $dnd_editor_data );
-						}
-					} else {
-						if ( false === strpos( $content, '<html' ) ) {
-							// In classic edior, we need to add p tag to content when not already added.
-							$content = wpautop( $content );
-						}
-						$custom_css = get_post_meta( $template_id, 'es_custom_css', true );
-						if ( ! empty( $custom_css ) ) {
-							$campaign_meta['es_custom_css'] = $custom_css;
-						}
+				$campaign_meta = array(
+					'editor_type' => $editor_type,
+				);
+
+				if ( IG_ES_DRAG_AND_DROP_EDITOR === $editor_type ) {
+					$dnd_editor_data = get_post_meta( $template_id, 'es_dnd_editor_data', true );
+					if ( ! empty( $dnd_editor_data ) ) {
+						$campaign_meta['dnd_editor_data'] = wp_json_encode( $dnd_editor_data );
 					}
+				} else {
+					if ( false === strpos( $content, '<html' ) ) {
+						// In classic edior, we need to add p tag to content when not already added.
+						$content = wpautop( $content );
+					}
+					$custom_css = get_post_meta( $template_id, 'es_custom_css', true );
+					if ( ! empty( $custom_css ) ) {
+						$campaign_meta['es_custom_css'] = $custom_css;
+					}
+				}
 
 				$campaign_meta = maybe_serialize( $campaign_meta );
 
@@ -330,45 +339,46 @@ $categories = array();
 					'meta'             => $campaign_meta,
 				);
 
-					if ( ! empty( $campaign_id ) ) {
-						// When updating existing campaign, only update design fields
-						// Preserve user's saved data (name, subject, sender, recipients, schedule, settings)
-						$existing_campaign = ES()->campaigns_db->get( $campaign_id );
-						if ( ! empty( $existing_campaign ) ) {
-							$existing_meta = ! empty( $existing_campaign['meta'] ) ? ig_es_maybe_unserialize( $existing_campaign['meta'] ) : array();
-							$new_meta = ig_es_maybe_unserialize( $campaign_meta );
-						
-							// Merge: keep existing meta, only update editor-related fields
-							$merged_meta = array_merge( $existing_meta, array(
-							'editor_type' => $new_meta['editor_type'],
-							'dnd_editor_data' => ! empty( $new_meta['dnd_editor_data'] ) ? $new_meta['dnd_editor_data'] : ( ! empty( $existing_meta['dnd_editor_data'] ) ? $existing_meta['dnd_editor_data'] : '' ),
-							'es_custom_css' => ! empty( $new_meta['es_custom_css'] ) ? $new_meta['es_custom_css'] : ( ! empty( $existing_meta['es_custom_css'] ) ? $existing_meta['es_custom_css'] : '' )
-							));
-						
-							// Only update body, template_id, and editor meta - preserve everything else
-							$update_data = array(
-								'body'             => $content,
-								'base_template_id' => $template_id,
-								'meta'             => maybe_serialize( $merged_meta )
-							);
-						
-							ES()->campaigns_db->update( $campaign_id, $update_data );
-						} else {
-							// Campaign doesn't exist, use full data
-							ES()->campaigns_db->update( $campaign_id, $campaign_data );
-						}
+				if ( ! empty( $campaign_id ) ) {
+					// When updating existing campaign, only update design fields
+					// Preserve user's saved data (name, subject, sender, recipients, schedule, settings)
+					$existing_campaign = ES()->campaigns_db->get( $campaign_id );
+					if ( ! empty( $existing_campaign ) ) {
+						$existing_meta = ! empty( $existing_campaign['meta'] ) ? ig_es_maybe_unserialize( $existing_campaign['meta'] ) : array();
+						$new_meta = ig_es_maybe_unserialize( $campaign_meta );
+					
+						// Merge: keep existing meta, only update editor-related fields
+						$merged_meta = array_merge( $existing_meta, array(
+						'editor_type' => $new_meta['editor_type'],
+						'dnd_editor_data' => ! empty( $new_meta['dnd_editor_data'] ) ? $new_meta['dnd_editor_data'] : ( ! empty( $existing_meta['dnd_editor_data'] ) ? $existing_meta['dnd_editor_data'] : '' ),
+						'es_custom_css' => ! empty( $new_meta['es_custom_css'] ) ? $new_meta['es_custom_css'] : ( ! empty( $existing_meta['es_custom_css'] ) ? $existing_meta['es_custom_css'] : '' )
+						));
+					
+						// Only update body, template_id, and editor meta - preserve everything else
+						$update_data = array(
+							'body'             => $content,
+							'base_template_id' => $template_id,
+							'meta'             => maybe_serialize( $merged_meta )
+						);
+					
+						ES()->campaigns_db->update( $campaign_id, $update_data );
 					} else {
-						$campaign_id = ES()->campaigns_db->save_campaign( $campaign_data );
-						if ( in_array( $campaign_type, array( IG_CAMPAIGN_TYPE_POST_NOTIFICATION, IG_CAMPAIGN_TYPE_POST_DIGEST ), true ) ) {
-							ES_Campaign_Controller::add_to_new_category_format_campaign_ids( $campaign_id );
-						}
+						// Campaign doesn't exist, use full data
+						ES()->campaigns_db->update( $campaign_id, $campaign_data );
 					}
-
+				} else {
+					$campaign_id = ES()->campaigns_db->save_campaign( $campaign_data );
+					if ( in_array( $campaign_type, array( IG_CAMPAIGN_TYPE_POST_NOTIFICATION, IG_CAMPAIGN_TYPE_POST_DIGEST ), true ) ) {
+						ES_Campaign_Controller::add_to_new_category_format_campaign_ids( $campaign_id );
+					}
 				}
+
 			}
 
 			return $campaign_id;
-		}		public static function import_remote_gallery_item( $template_id, $campaign_type, $campaign_id = 0 ) {
+		}		
+		
+		public static function import_remote_gallery_item( $template_id, $campaign_type, $campaign_id = 0 ) {
 			$gallery_item  = self::get_remote_gallery_item( $template_id );
 			if ( empty( $gallery_item ) ) {
 				return $campaign_id;
@@ -567,11 +577,25 @@ $categories = array();
 		}
 
 		public static function duplicate_template( $template_id ) {
+
+			$template_id = absint( $template_id );
+			$post        = get_post( $template_id );
+
+			// Check 1: Post exists & is es_template
+			// Check 2: Status is not private/trash
+			// Check 3: User has capability to edit it
+			if ( ! $post || 'es_template' !== $post->post_type || 'private' === $post->post_status || 'trash' === $post->post_status || ! current_user_can( 'edit_post', $template_id ) ) {
+				return 0;
+			}
+
 			// Get access to the database
 			global $wpdb;
+
 			// Get the post as an array
 			$duplicate = get_post( $template_id, 'ARRAY_A' );
+
 			// Modify some of the elements
+			$duplicate['post_type']   = 'es_template';
 			$duplicate['post_title']  = $duplicate['post_title'] . ' ' . __( 'Copy', 'email-subscribers' );
 			$duplicate['post_status'] = 'publish';
 			// Set the post date

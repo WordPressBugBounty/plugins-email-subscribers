@@ -167,14 +167,39 @@ if ( ! class_exists( 'ES_Gallery' ) ) {
 					exit();
 				}
 			} elseif ( 'ig_es_duplicate_template' === $action ) {
+				
 				check_admin_referer( 'ig-es-admin-ajax-nonce' );
-				$template_id = ig_es_get_request_data( 'template-id' );
-				$duplicate_template_id = ES_Gallery_Controller::duplicate_template( $template_id );
-				if ( ! empty( $duplicate_template_id ) ) {
-					$redirect_url = admin_url( 'admin.php?page=es_campaigns#!/template/edit/' . $duplicate_template_id );
-					wp_safe_redirect( $redirect_url );
-					exit();
+				
+				$template_id = absint( ig_es_get_request_data( 'template-id' ) );
+				
+				$post        = get_post( $template_id );
+				
+				// Check 1: Post must exist and must be an 'es_template'
+				if ( ! $post || 'es_template' !== $post->post_type ) {
+					wp_die( esc_html__( 'Invalid template.', 'email-subscribers' ), '', array( 'response' => 400 ) );
 				}
+				
+				// Check 2: Must NOT be private or trashed
+				if ( 'private' === $post->post_status || 'trash' === $post->post_status ) {
+					wp_die( esc_html__( 'Private or trashed templates cannot be duplicated.', 'email-subscribers' ), '', array( 'response' => 403 ) );
+				}
+				
+				// Check 3: Current user must have permission to edit this post
+				if ( ! current_user_can( 'edit_post', $template_id ) ) {
+					wp_die( esc_html__( 'You do not have permission to duplicate this template.', 'email-subscribers' ), '', array( 'response' => 403 ) );
+				}
+				
+				$duplicate_template_id = ES_Gallery_Controller::duplicate_template( $template_id );
+				
+				// Check for failure
+				if ( empty( $duplicate_template_id ) || is_wp_error( $duplicate_template_id ) ) {
+					wp_die( esc_html__( 'Failed to duplicate template. Please try again.', 'email-subscribers' ), '', array( 'response' => 500 ) );
+				}
+				
+				$redirect_url = admin_url( 'admin.php?page=es_campaigns#!/template/edit/' . $duplicate_template_id );
+				
+				wp_safe_redirect( $redirect_url );
+				exit();
 			}
 		}
 	}

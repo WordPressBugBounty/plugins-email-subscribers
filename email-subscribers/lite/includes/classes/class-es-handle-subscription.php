@@ -143,6 +143,26 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 		 */
 		private $from_rainmaker = false;
 
+		/**
+		 * Longest form submission log entry to write, in bytes.
+		 *
+		 * The form is public, so this stops oversized requests from filling the log.
+		 *
+		 * @since 5.9.42
+		 * @var int
+		 */
+		const LOG_ENTRY_MAX_LENGTH = 5000;
+
+		/**
+		 * Logger context
+		 *
+		 * @since 5.9.42
+		 * @var array
+		 */
+		public $logger_context = array(
+			'source' => 'ig_es_form_submission',
+		);
+
 	/**
 	 * ES_Handle_Subscription constructor.
 	 *
@@ -236,6 +256,8 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				} else {
 					$form_data = wp_unslash( $_POST );
 				}
+				$this->log_form_submission( $form_data );
+
 				$validate_response = $this->validate_data( $form_data );
 				$validate_response = apply_filters( 'ig_es_validate_subscription', $validate_response, $form_data );
 
@@ -532,6 +554,64 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 		}
 
 		/**
+		 * Log a form submission along with the submitter's browser details
+		 *
+		 * The values are visitor controlled. JSON encoding keeps each entry on one line, and its
+		 * ASCII output keeps the file valid UTF-8, without which the logs screen shows it as empty.
+		 *
+		 * @param array  $form_data      Submitted form data.
+		 * @param string $blocked_reason Why the submission was stopped before processing, if it was.
+		 *
+		 * @since 5.9.42
+		 */
+		private function log_form_submission( $form_data, $blocked_reason = '' ) {
+			$browser = new ES_Browser();
+
+			$log_entry = wp_json_encode(
+				array(
+					'ip'              => ig_es_get_ip(),
+					'user_agent'      => $browser->getUserAgent(),
+					'browser'         => $browser->getBrowser(),
+					'browser_version' => $browser->getVersion(),
+					'platform'        => $browser->getPlatform(),
+					'referer'         => esc_url_raw( wp_get_raw_referer() ),
+					'get'             => ig_es_get_data( $_GET ),
+					'request_data'    => $form_data,
+				),
+				JSON_UNESCAPED_SLASHES
+			);
+
+			$message = '' === $blocked_reason ? 'Form submission: ' : 'Form submission blocked (' . $blocked_reason . '): ';
+
+			ES()->logger->info( $message . substr( $log_entry, 0, self::LOG_ENTRY_MAX_LENGTH ), $this->logger_context );
+		}
+
+		/**
+		 * Get the external subscribe parameters for a blocked request's log entry
+		 *
+		 * These can arrive by POST as well as GET, so each value is cut short to keep the
+		 * log entry, and the memory used to build it, small.
+		 *
+		 * @return array
+		 *
+		 * @since 5.9.42
+		 */
+		private function get_external_subscribe_log_data() {
+			$data = array();
+
+			foreach ( array( 'name', 'email', 'list', 'lists', 'es_hp_email', 'ip_address' ) as $key ) {
+				$data[ $key ] = map_deep(
+					ig_es_get_request_data( $key, '', false ),
+					function ( $value ) {
+						return is_string( $value ) ? substr( $value, 0, 1000 ) : $value;
+					}
+				);
+			}
+
+			return $data;
+		}
+
+		/**
 		 * Send Response
 		 *
 		 * @param $response
@@ -728,6 +808,7 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 				// Keyless endpoint: keep it off unless the admin explicitly enabled the API (same default as the Settings page).
 				$subscription_api_enabled = 'yes' === get_option( 'ig_es_allow_api', 'no' );
 				if ( ! $subscription_api_enabled ) {
+					$this->log_form_submission( $this->get_external_subscribe_log_data(), 'subscribe API disabled' );
 					return;
 				}
 				$list_hash  = ig_es_get_request_data( 'list' );
@@ -758,6 +839,8 @@ if ( ! class_exists( 'ES_Handle_Subscription' ) ) {
 					$response = $this->process_request( $form_data );
 					wp_send_json( $response );
 				}
+
+				$this->log_form_submission( $this->get_external_subscribe_log_data(), 'no matching list' );
 			}
 
 			$doing_ajax = defined( 'DOING_AJAX' ) && DOING_AJAX;
