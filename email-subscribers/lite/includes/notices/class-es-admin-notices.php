@@ -225,8 +225,8 @@ class ES_Admin_Notices {
 				}
 
 				// BFCM 2026 offer
-				if ( 'offer_pre_bfcm_2026' === $option_name ) {
-					$redirect_url = 'https://www.icegram.com/checkout/?buy-now=404335&qty=1&with-cart=1&page=6&coupon=bfcm-50-pre-2026&utm_source=in-app&utm_medium=banner&utm_id=bfcm-pre-sale-2026';
+				if ( 'offer_bfcm_2026' === $option_name ) {
+					$redirect_url = 'https://www.icegram.com/coupon-code/bfcm-50-2026/?buy-now=404335&qty=1&page=6&with-cart=1&utm_source=in-app&utm_medium=banner&utm_campaign=bfcm-2026-express';
 					
 					header( "Location: {$redirect_url}" );
 					exit();
